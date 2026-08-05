@@ -23,6 +23,8 @@ dependencies {
     compileOnly(libs.compose.gradlePlugin)
     compileOnly(libs.detekt.gradlePlugin)
     compileOnly(libs.ktlint.gradlePlugin)
+    compileOnly(libs.koin.compiler.gradlePlugin)
+    compileOnly(libs.roborazzi.gradlePlugin)
 }
 
 gradlePlugin {
@@ -58,6 +60,10 @@ gradlePlugin {
         register("androidJacoco") {
             id = "shakelamp.android.jacoco"
             implementationClass = "AndroidJacocoConventionPlugin"
+        }
+        register("androidRoborazzi") {
+            id = "shakelamp.android.roborazzi"
+            implementationClass = "AndroidRoborazziConventionPlugin"
         }
     }
 }

@@ -11,8 +11,16 @@ class AndroidApplicationConventionPlugin : Plugin<Project> {
             pluginManager.apply("com.android.application")
             extensions.configure<ApplicationExtension> {
                 configureKotlinAndroidApp(this)
+                configureJUnit5(this)
                 defaultConfig.targetSdk = 36
             }
+            addSharedTestingDependencies()
+            addTimberDependency()
+            addKoinCoreDependencies()
+            addKoinAndroidDependencies()
+            addKoinComposeDependencies()
+            addNavigation3RuntimeDependency()
+            addNavigation3UiDependencies()
         }
     }
 }

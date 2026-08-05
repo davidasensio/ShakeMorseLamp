@@ -142,22 +142,25 @@ class MorseViewModel(private val sendMorseMessage: SendMorseMessageUseCase) : Vi
 
 ## Dependency Injection (Koin)
 
-- Use Koin with **Koin Annotations** (`io.insert-koin:koin-annotations` +
-  `io.insert-koin:koin-ksp-compiler` via KSP) — annotate classes with `@Single`, `@Factory`,
-  `@KoinViewModel`, and group them with `@Module @ComponentScan` per module/feature, instead of
-  hand-written `module { }` DSL blocks.
-- Each feature module exposes one generated Koin module (via `@Module` on a marker class in that
-  feature's root package); `:app` aggregates all feature/core modules at `startKoin { }` in the
-  `Application` class.
+- Use Koin with the **Koin Compiler Plugin** (`io.insert-koin.compiler.plugin`, applied via
+  `libs.plugins.koin.compiler`) plus **Koin Annotations** (`io.insert-koin:koin-annotations`) —
+  annotate classes with `@Single`, `@Factory`, `@KoinViewModel`, and group them with `@Module
+  @ComponentScan` per module/feature, instead of hand-written `module { }` DSL blocks. This is a
+  native Kotlin compiler plugin (requires Kotlin 2.3.20+), **not KSP** — Koin's older
+  KSP-based `koin-ksp-compiler` is deprecated; do not reintroduce KSP for this.
+- Each feature module exposes one Koin module (via `@Module` on a marker class in that feature's
+  root package); `:app` aggregates all feature/core modules at Koin startup in the `Application`
+  class.
 - Domain use cases and repositories are injected by constructor; never resolve dependencies with
   `get()` / service-locator calls inside domain or data classes — only at the composition edges
   (ViewModel factories, `Application`).
-- ViewModels are provided with `@KoinViewModel` and obtained in Compose via `koinViewModel()`.
+- ViewModels are provided with `@KoinViewModel` and obtained in Compose via `koinViewModel()`
+  (`io.insert-koin:koin-androidx-compose`).
 
 ## Navigation
 
-- Navigation 3 (`androidx.navigation3`), with type-safe route objects (`@Serializable data
-  object`/`data class` per destination) defined next to each feature's top-level Composable.
+- Navigation 3 (`androidx.navigation3`), with type-safe route objects (a `NavKey` data
+  object/data class per destination) defined next to each feature's top-level Composable.
 - Each feature module exposes its destinations/entry points; the nav graph is assembled in
   `:app` (or a thin navigation aggregator if the graph grows large enough to warrant it) —
   feature modules must not depend on each other to link screens together.
@@ -191,10 +194,14 @@ compileSdk, minSdk, Java toolchain, or Compose directly in a module build file.
 | `shakelamp.jvm.library` | Pure Kotlin modules (no Android) |
 | `shakelamp.android.quality` | Opt-in: ktlint + Detekt |
 | `shakelamp.android.jacoco` | Opt-in: JaCoCo coverage |
+| `shakelamp.android.roborazzi` | Opt-in: Roborazzi screenshot tests (Robolectric-based) |
 
-Koin (KSP) wiring belongs in the `shakelamp.android.feature` and `shakelamp.android.library`
-convention plugins (apply the KSP plugin + add `koin-annotations`/`koin-ksp-compiler` there)
-rather than repeating it in every module's `build.gradle.kts`.
+Koin wiring (Koin Compiler Plugin + `koin-core`/`koin-annotations`) lives in
+`shakelamp.android.library` (base, every module) and `shakelamp.android.feature`/
+`shakelamp.android.application` add the Compose/Android-specific pieces on top
+(`koin-androidx-compose`, `koin-android`) — rather than repeating any of this in every module's
+`build.gradle.kts`. Likewise Navigation 3, Timber, JUnit5/Turbine/MockK are wired centrally in
+these convention plugins, not per module.
 
 ### Adding a new feature module
 

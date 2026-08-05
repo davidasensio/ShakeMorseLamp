@@ -11,8 +11,12 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             pluginManager.apply("com.android.library")
             extensions.configure<LibraryExtension> {
                 configureKotlinAndroidLib(this)
+                configureJUnit5(this)
                 defaultConfig.consumerProguardFiles("consumer-rules.pro")
             }
+            addSharedTestingDependencies()
+            addTimberDependency()
+            addKoinCoreDependencies()
         }
     }
 }
