@@ -1,0 +1,40 @@
+## EditorConfig — ktlint + IDE alignment
+## https://editorconfig.org
+## https://pinterest.github.io/ktlint/
+
+root = true
+
+[*]
+charset = utf-8
+end_of_line = lf
+indent_size = 4
+indent_style = space
+insert_final_newline = true
+trim_trailing_whitespace = true
+
+[*.{kt,kts}]
+max_line_length = 120
+
+# ktlint rules
+ktlint_standard = enabled
+ktlint_standard_no-wildcard-imports = enabled
+ktlint_standard_import-ordering = enabled
+
+# Android-specific ktlint ruleset
+ktlint_android = enabled
+
+# Trailing commas
+ij_kotlin_allow_trailing_comma = true
+ij_kotlin_allow_trailing_comma_on_call_site = true
+
+# Imports
+ij_kotlin_imports_layout = *,java.**,javax.**,kotlin.**,^
+
+[*.{json,yml,yaml}]
+indent_size = 2
+
+[*.md]
+trim_trailing_whitespace = false
+
+[{Makefile,*.mk}]
+indent_style = tab

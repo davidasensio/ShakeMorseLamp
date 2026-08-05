@@ -1,4 +1,5 @@
 pluginManagement {
+    includeBuild("build-logic")
     repositories {
         google {
             content {
@@ -23,4 +24,14 @@ dependencyResolutionManagement {
 }
 
 rootProject.name = "ShakeMorseLamp"
+
+// Application module
 include(":app")
+
+// Core modules
+include(":core:ui")
+include(":core:common")
+
+// Feature modules
+include(":feature:flashlight")
+include(":feature:morse")
