@@ -20,6 +20,7 @@ internal fun Project.addSharedTestingDependencies() {
         add("testRuntimeOnly", libs.findLibrary("junit5-vintage-engine").get())
         add("testImplementation", libs.findLibrary("turbine").get())
         add("testImplementation", libs.findLibrary("mockk").get())
+        add("testImplementation", libs.findLibrary("kotlinx-coroutines-test").get())
     }
 }
 

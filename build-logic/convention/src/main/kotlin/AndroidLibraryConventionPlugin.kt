@@ -17,6 +17,7 @@ class AndroidLibraryConventionPlugin : Plugin<Project> {
             addSharedTestingDependencies()
             addTimberDependency()
             addKoinCoreDependencies()
+            addCoroutinesDependency()
         }
     }
 }

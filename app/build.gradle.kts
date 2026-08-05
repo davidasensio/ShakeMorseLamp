@@ -6,6 +6,10 @@ plugins {
 android {
     namespace = "com.handysparksoft.shakelamp"
 
+    buildFeatures {
+        buildConfig = true
+    }
+
     defaultConfig {
         applicationId = "com.handysparksoft.shakelamp"
         versionCode = 1
@@ -22,6 +26,7 @@ android {
 
 dependencies {
     implementation(project(":core:designsystem"))
+    implementation(project(":feature:flashlight"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

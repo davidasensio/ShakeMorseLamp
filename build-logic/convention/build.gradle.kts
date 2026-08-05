@@ -25,6 +25,7 @@ dependencies {
     compileOnly(libs.ktlint.gradlePlugin)
     compileOnly(libs.koin.compiler.gradlePlugin)
     compileOnly(libs.roborazzi.gradlePlugin)
+    compileOnly(libs.kotlin.serialization.gradlePlugin)
 }
 
 gradlePlugin {

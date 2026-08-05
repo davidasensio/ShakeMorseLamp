@@ -14,13 +14,18 @@ Instructions as something to consult under `docs/`.
    Color/Theme/Type moved out of `:app`; real tokens/components deferred to step 3.
 3. Generate a minimal design-system token/component set (colors, typography, spacing, and a
    handful of base components — buttons, text fields, cards) in `:core:designsystem`, based on a
-   real design connected via Google Stitch over MCP rather than invented from scratch. Do this
-   before the walking skeleton so the first real screen is built against actual tokens/components
-   instead of placeholders that would just get thrown away.
+   real design connected via Google Stitch over MCP rather than invented from scratch. **Done** —
+   light + dark color schemes (Lumen Utility / Luminous Ecological), type/shape/spacing tokens,
+   and SMLButton/SMLTextField/SMLCard/SMLSwitch, each with an internal `@PreviewLightDark` and a
+   Roborazzi screenshot.
 4. Build one feature end-to-end as a walking skeleton — MVI ViewModel, Koin DI, a
    design-system-based screen, Navigation 3 entry point, JUnit5+Turbine+MockK tests, one
    Roborazzi screenshot. Flashlight is the natural first pick (simpler than Morse encoding).
+   **Done** — bare minimum slice (header + power toggle only, per explicit scope decision); the
+   full "Main Array" screen with timer/broadcast/widget-promo is feature-build-order item 1 below.
 5. Wire `:app` — `startKoin`, Navigation 3 `NavHost`, theme applied from `:core:designsystem`.
+   **Done** as part of step 4 — `ShakeMorseLampApplication` + `NavDisplay` hosting the one
+   `FlashlightRoute` entry that exists so far.
 6. Build out `:feature:morse` the same way, now that the pattern is proven.
 7. Add shake detection (sensor wrapper).
 8. Fill the process gaps `AGENTS.md` already references but the repo doesn't have yet:

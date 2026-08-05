@@ -5,13 +5,14 @@ import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
 import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.navigation3.runtime.entryProvider
+import androidx.navigation3.runtime.rememberNavBackStack
+import androidx.navigation3.ui.NavDisplay
 import com.handysparksoft.shakelamp.core.designsystem.theme.ShakeMorseLampTheme
+import com.handysparksoft.shakelamp.feature.flashlight.ui.FlashlightEntry
+import com.handysparksoft.shakelamp.feature.flashlight.ui.FlashlightRoute
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,29 +20,20 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             ShakeMorseLampTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Android",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                ShakeMorseLampApp()
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
+private fun ShakeMorseLampApp() {
+    val backStack = rememberNavBackStack(FlashlightRoute)
+    NavDisplay(
+        backStack = backStack,
+        modifier = Modifier.fillMaxSize(),
+        entryProvider = entryProvider {
+            entry<FlashlightRoute> { FlashlightEntry() }
+        },
     )
-}
-
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    ShakeMorseLampTheme {
-        Greeting("Android")
-    }
 }

@@ -7,3 +7,9 @@ plugins {
 android {
     namespace = "com.handysparksoft.shakelamp.feature.flashlight"
 }
+
+dependencies {
+    implementation(project(":core:designsystem"))
+
+    testImplementation(testFixtures(project(":core:common")))
+}
