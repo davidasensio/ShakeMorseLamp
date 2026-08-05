@@ -1,4 +1,4 @@
-package com.handysparksoft.shakelamp.ui.theme
+package com.handysparksoft.shakelamp.core.designsystem.theme
 
 import androidx.compose.ui.graphics.Color
 

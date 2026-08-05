@@ -177,8 +177,12 @@ exceptions:
   TooGenericExceptionThrown:
     active: true
 
+# ktlint (via shakelamp.android.quality) already owns formatting/style. detekt's own
+# formatting ruleset is vendored separately and disagrees with ktlint's canonical style on
+# some indentation edge cases (e.g. multi-line RHS call expressions) — keep it disabled to
+# avoid the two fighting each other.
 formatting:
-  active: true
+  active: false
   android: true
   autoCorrect: true
   AnnotationOnSeparateLine:

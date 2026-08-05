@@ -30,6 +30,7 @@ include(":app")
 
 // Core modules
 include(":core:ui")
+include(":core:designsystem")
 include(":core:common")
 
 // Feature modules
