@@ -6,17 +6,24 @@ Instructions as something to consult under `docs/`.
 
 ## Engineering Setup (do first, in order)
 
-1. Wire the version catalog + convention plugins for the stack documented in `AGENTS.md`: Koin +
-   Koin Annotations/KSP, JUnit 5, Turbine, MockK, Timber, Roborazzi, Navigation 3.
+1. Wire the version catalog + convention plugins for the stack documented in `AGENTS.md`: Koin
+   (native compiler plugin, not KSP), JUnit 5, Turbine, MockK, Timber, Roborazzi, Navigation 3.
+   **Done.**
 2. Scaffold `:core:designsystem` (theme/typography/color, base components); slim `:core:ui` down
-   to its cross-feature composite role.
-3. Build one feature end-to-end as a walking skeleton — MVI ViewModel, Koin DI, a
+   to its cross-feature composite role. **Done** — module created with the default
+   Color/Theme/Type moved out of `:app`; real tokens/components deferred to step 3.
+3. Generate a minimal design-system token/component set (colors, typography, spacing, and a
+   handful of base components — buttons, text fields, cards) in `:core:designsystem`, based on a
+   real design connected via Google Stitch over MCP rather than invented from scratch. Do this
+   before the walking skeleton so the first real screen is built against actual tokens/components
+   instead of placeholders that would just get thrown away.
+4. Build one feature end-to-end as a walking skeleton — MVI ViewModel, Koin DI, a
    design-system-based screen, Navigation 3 entry point, JUnit5+Turbine+MockK tests, one
    Roborazzi screenshot. Flashlight is the natural first pick (simpler than Morse encoding).
-4. Wire `:app` — `startKoin`, Navigation 3 `NavHost`, theme applied from `:core:designsystem`.
-5. Build out `:feature:morse` the same way, now that the pattern is proven.
-6. Add shake detection (sensor wrapper).
-7. Fill the process gaps `AGENTS.md` already references but the repo doesn't have yet:
+5. Wire `:app` — `startKoin`, Navigation 3 `NavHost`, theme applied from `:core:designsystem`.
+6. Build out `:feature:morse` the same way, now that the pattern is proven.
+7. Add shake detection (sensor wrapper).
+8. Fill the process gaps `AGENTS.md` already references but the repo doesn't have yet:
    `README.md`, this `docs/` folder (in progress), `.github/PULL_REQUEST_TEMPLATE.md`,
    `scripts/update_readme_loc_breakdown.sh`.
 
