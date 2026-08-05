@@ -48,7 +48,7 @@ These take priority over everything else in this file:
 | Screenshot Testing | Roborazzi |
 | Code Quality | ktlint + Detekt |
 | Coverage | JaCoCo (opt-in per module) |
-| Branching / Commits | git-flow |
+| Branching / Commits | Trunk-based, type-prefixed branches (see Git Workflow) |
 | Min SDK | 30 (Android 11) |
 | Target SDK | 36 |
 
@@ -240,14 +240,21 @@ rather than repeating it in every module's `build.gradle.kts`.
 - **Coverage**: `./gradlew jacocoDebugTestReport` per module that opts into
   `shakelamp.android.jacoco`.
 
-## Git Workflow (git-flow)
+## Git Workflow
 
-- `main` — always releasable/production.
-- `develop` — integration branch; base for new work.
-- `feature/<short-description>` — branched from `develop`, merged back via PR.
-- `release/<version>` — branched from `develop` when preparing a release.
-- `hotfix/<short-description>` — branched from `main` for urgent production fixes, merged into
-  both `main` and `develop`.
+Trunk-based, not full git-flow: there is no `develop`/`release`/`hotfix` branch. `main` is always
+releasable; all work happens on short-lived branches cut directly from `main`.
+
+- Branch naming: `<type>/<short-description>`, using the same type vocabulary as commits —
+  `feature`, `fix`, `refactor`, `chore`, `docs`, `test`, `perf`, `build`, `ci`, `style`.
+- **Never commit directly to `main`.** Before starting any work, check the current branch. If
+  it's `main`, stop and ask the user which branch type to create (`feature`, `fix`, `chore`,
+  etc.) and a short description, then create and switch to `<type>/<short-description>` before
+  making any changes.
+- **Before merging a branch into `main`**: run `./gradlew ktlintCheck detekt` on the branch.
+  Report and fix any violations first — only merge once both are clean. Merge as a single
+  squashed commit onto `main` (no merge commits, no leftover WIP history), written in the
+  [Commit Message Format](#commit-message-format) below.
 - Commit messages follow the format in [Commits](#commits) below.
 
 ## Commits
