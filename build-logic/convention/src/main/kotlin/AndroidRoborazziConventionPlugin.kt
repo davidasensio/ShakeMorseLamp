@@ -14,6 +14,11 @@ import org.gradle.kotlin.dsl.dependencies
  * Tasks added:
  *   - recordRoborazziDebug   (record screenshot baselines)
  *   - verifyRoborazziDebug   (verify screenshots against baselines)
+ *
+ * Library modules have no real targetSdk, so Robolectric's SDK auto-detection falls back to
+ * compileSdk — which is ahead of what Robolectric ships shadows for. Annotate every Roborazzi
+ * test class with `@Config(sdk = [36])` (matching AGENTS.md's Target SDK) to pin the runtime
+ * platform explicitly and skip that auto-detection.
  */
 class AndroidRoborazziConventionPlugin : Plugin<Project> {
     override fun apply(target: Project) {

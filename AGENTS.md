@@ -235,7 +235,10 @@ these convention plugins, not per module.
   fake would be disproportionate to what the test needs (e.g. verifying interactions, one-off
   edge-case stubbing).
 - **Compose UI tests**: Jetpack Compose testing APIs (`createComposeRule`,
-  `ComposeContentTestRule`) for interaction/state assertions on individual screens.
+  `ComposeContentTestRule`) for interaction/state assertions on individual screens. These are
+  inherently JUnit 4 (`@RunWith`, `@get:Rule`) — there's no JUnit 5 equivalent yet. The JUnit
+  Vintage Engine is wired into every module's test runtime specifically so these still run on
+  the same `useJUnitPlatform()` test task alongside JUnit 5 tests; don't remove it.
 - **Page Object pattern**: for screens with non-trivial UI tests, wrap `ComposeTestRule`
   interactions in a Page Object class (e.g. `MorseScreenRobot`/`MorsePage` with methods like
   `typeMessage(text)`, `tapSend()`, `assertTransmitting()`) instead of repeating
@@ -243,7 +246,10 @@ these convention plugins, not per module.
   screen, next to that screen's tests; share reusable pieces via `testFixtures` if more than one
   module's tests need them.
 - **Screenshot tests**: Roborazzi for a small set of key screens/states per feature — not
-  exhaustive per-component coverage. Run on Robolectric, no emulator required.
+  exhaustive per-component coverage. Run on Robolectric, no emulator required. Annotate every
+  Roborazzi test class with `@Config(sdk = [36])` (matching Target SDK) — library modules have
+  no real `targetSdk`, so Robolectric's SDK auto-detection otherwise falls back to `compileSdk`
+  (37), which Robolectric doesn't ship shadows for yet.
 - **Coverage**: `./gradlew jacocoDebugTestReport` per module that opts into
   `shakelamp.android.jacoco`.
 

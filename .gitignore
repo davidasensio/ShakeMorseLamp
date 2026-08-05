@@ -34,3 +34,4 @@ Thumbs.db
 
 # ── Detekt baseline files (generated, commit separately if desired) ────────────
 config/detekt/baseline.xml
+/temp/**

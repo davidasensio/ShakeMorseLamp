@@ -1,59 +1,71 @@
 package com.handysparksoft.shakelamp.core.designsystem.theme
 
-import android.os.Build
-import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.darkColorScheme
-import androidx.compose.material3.dynamicDarkColorScheme
-import androidx.compose.material3.dynamicLightColorScheme
-import androidx.compose.material3.lightColorScheme
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.platform.LocalContext
 
-private val DarkColorScheme =
+private val LumenDarkColorScheme =
     darkColorScheme(
-        primary = Purple80,
-        secondary = PurpleGrey80,
-        tertiary = Pink80,
+        primary = LumenColor.Primary,
+        onPrimary = LumenColor.OnPrimary,
+        primaryContainer = LumenColor.PrimaryContainer,
+        onPrimaryContainer = LumenColor.OnPrimaryContainer,
+        inversePrimary = LumenColor.InversePrimary,
+        secondary = LumenColor.Secondary,
+        onSecondary = LumenColor.OnSecondary,
+        secondaryContainer = LumenColor.SecondaryContainer,
+        onSecondaryContainer = LumenColor.OnSecondaryContainer,
+        tertiary = LumenColor.Tertiary,
+        onTertiary = LumenColor.OnTertiary,
+        tertiaryContainer = LumenColor.TertiaryContainer,
+        onTertiaryContainer = LumenColor.OnTertiaryContainer,
+        background = LumenColor.Background,
+        onBackground = LumenColor.OnBackground,
+        surface = LumenColor.Surface,
+        onSurface = LumenColor.OnSurface,
+        surfaceVariant = LumenColor.SurfaceVariant,
+        onSurfaceVariant = LumenColor.OnSurfaceVariant,
+        surfaceTint = LumenColor.SurfaceTint,
+        inverseSurface = LumenColor.InverseSurface,
+        inverseOnSurface = LumenColor.InverseOnSurface,
+        error = LumenColor.Error,
+        onError = LumenColor.OnError,
+        errorContainer = LumenColor.ErrorContainer,
+        onErrorContainer = LumenColor.OnErrorContainer,
+        outline = LumenColor.Outline,
+        outlineVariant = LumenColor.OutlineVariant,
+        surfaceBright = LumenColor.SurfaceBright,
+        surfaceDim = LumenColor.SurfaceDim,
+        surfaceContainer = LumenColor.SurfaceContainer,
+        surfaceContainerHigh = LumenColor.SurfaceContainerHigh,
+        surfaceContainerHighest = LumenColor.SurfaceContainerHighest,
+        surfaceContainerLow = LumenColor.SurfaceContainerLow,
+        surfaceContainerLowest = LumenColor.SurfaceContainerLowest,
+        primaryFixed = LumenColor.PrimaryFixed,
+        primaryFixedDim = LumenColor.PrimaryFixedDim,
+        onPrimaryFixed = LumenColor.OnPrimaryFixed,
+        onPrimaryFixedVariant = LumenColor.OnPrimaryFixedVariant,
+        secondaryFixed = LumenColor.SecondaryFixed,
+        secondaryFixedDim = LumenColor.SecondaryFixedDim,
+        onSecondaryFixed = LumenColor.OnSecondaryFixed,
+        onSecondaryFixedVariant = LumenColor.OnSecondaryFixedVariant,
+        tertiaryFixed = LumenColor.TertiaryFixed,
+        tertiaryFixedDim = LumenColor.TertiaryFixedDim,
+        onTertiaryFixed = LumenColor.OnTertiaryFixed,
+        onTertiaryFixedVariant = LumenColor.OnTertiaryFixedVariant,
     )
 
-private val LightColorScheme =
-    lightColorScheme(
-        primary = Purple40,
-        secondary = PurpleGrey40,
-        tertiary = Pink40,
-    /* Other default colors to override
-    background = Color(0xFFFFFBFE),
-    surface = Color(0xFFFFFBFE),
-    onPrimary = Color.White,
-    onSecondary = Color.White,
-    onTertiary = Color.White,
-    onBackground = Color(0xFF1C1B1F),
-    onSurface = Color(0xFF1C1B1F),
-     */
-    )
-
+/**
+ * "Lumen Utility" — a Night Mode Utility aesthetic sourced from the Stitch design system.
+ * Dark-only by design: no light palette has been designed yet, so this theme does not
+ * follow the system light/dark setting.
+ */
 @Composable
-fun ShakeMorseLampTheme(
-    darkTheme: Boolean = isSystemInDarkTheme(),
-    // Dynamic color is available on Android 12+
-    dynamicColor: Boolean = true,
-    content: @Composable () -> Unit,
-) {
-    val colorScheme =
-        when {
-            dynamicColor && Build.VERSION.SDK_INT >= Build.VERSION_CODES.S -> {
-                val context = LocalContext.current
-                if (darkTheme) dynamicDarkColorScheme(context) else dynamicLightColorScheme(context)
-            }
-
-            darkTheme -> DarkColorScheme
-            else -> LightColorScheme
-        }
-
+fun ShakeMorseLampTheme(content: @Composable () -> Unit) {
     MaterialTheme(
-        colorScheme = colorScheme,
-        typography = Typography,
+        colorScheme = LumenDarkColorScheme,
+        typography = LumenTypography,
+        shapes = LumenShapes,
         content = content,
     )
 }
