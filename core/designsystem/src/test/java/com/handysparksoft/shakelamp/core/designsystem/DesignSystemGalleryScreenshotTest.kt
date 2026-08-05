@@ -1,28 +1,13 @@
 package com.handysparksoft.shakelamp.core.designsystem
 
-import androidx.compose.foundation.layout.Arrangement
-import androidx.compose.foundation.layout.Column
-import androidx.compose.foundation.layout.Row
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Surface
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.remember
-import androidx.compose.runtime.setValue
-import androidx.compose.ui.Modifier
 import androidx.compose.ui.test.junit4.createComposeRule
 import androidx.compose.ui.test.onRoot
 import com.github.takahirom.roborazzi.captureRoboImage
-import com.handysparksoft.shakelamp.core.designsystem.component.LumenButton
-import com.handysparksoft.shakelamp.core.designsystem.component.LumenButtonVariant
-import com.handysparksoft.shakelamp.core.designsystem.component.LumenCard
-import com.handysparksoft.shakelamp.core.designsystem.component.LumenSwitch
-import com.handysparksoft.shakelamp.core.designsystem.component.LumenTextField
-import com.handysparksoft.shakelamp.core.designsystem.theme.LumenSpacing
-import com.handysparksoft.shakelamp.core.designsystem.theme.ShakeMorseLampTheme
+import com.handysparksoft.shakelamp.core.designsystem.component.SMLButtonPreview
+import com.handysparksoft.shakelamp.core.designsystem.component.SMLCardPreview
+import com.handysparksoft.shakelamp.core.designsystem.component.SMLSwitchPreview
+import com.handysparksoft.shakelamp.core.designsystem.component.SMLTextFieldPreview
 import org.junit.Rule
 import org.junit.Test
 import org.junit.runner.RunWith
@@ -31,9 +16,10 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 /**
- * Renders every base component together as a visual gallery. There's no Android
- * emulator in this workflow, so this screenshot is the verification that the
- * components actually look like the Stitch design once composed together.
+ * Captures each component's own `@PreviewLightDark` composable. There's no Android emulator
+ * in this workflow, so these screenshots are the actual visual verification that components
+ * look like the Stitch design — one screenshot per component's existing preview, rather than
+ * hand-rolled gallery content that would drift from what Android Studio's Preview shows.
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -43,59 +29,22 @@ class DesignSystemGalleryScreenshotTest {
     val composeTestRule = createComposeRule()
 
     @Test
-    fun gallery() {
-        composeTestRule.setContent {
-            ShakeMorseLampTheme {
-                Surface { GalleryContent() }
-            }
-        }
-        composeTestRule.onRoot().captureRoboImage("src/test/screenshots/designsystem_gallery.png")
-    }
-}
+    fun button() = captureComponent("SMLButton") { SMLButtonPreview() }
 
-@Composable
-private fun GalleryContent() {
-    var switchOn by remember { mutableStateOf(true) }
-    var text by remember { mutableStateOf("") }
+    @Test
+    fun textField() = captureComponent("SMLTextField") { SMLTextFieldPreview() }
 
-    Column(
-        modifier =
-            Modifier
-                .fillMaxWidth()
-                .padding(LumenSpacing.Margin),
-        verticalArrangement = Arrangement.spacedBy(LumenSpacing.Gutter),
+    @Test
+    fun card() = captureComponent("SMLCard") { SMLCardPreview() }
+
+    @Test
+    fun switch() = captureComponent("SMLSwitch") { SMLSwitchPreview() }
+
+    private fun captureComponent(
+        name: String,
+        content: @Composable () -> Unit,
     ) {
-        LumenCard {
-            Column(verticalArrangement = Arrangement.spacedBy(LumenSpacing.Unit)) {
-                Text("Morse Broadcast")
-                LumenTextField(
-                    value = text,
-                    onValueChange = { text = it },
-                    placeholder = "Enter message to broadcast...",
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                LumenButton(
-                    text = "Transmit Signal",
-                    onClick = {},
-                    variant = LumenButtonVariant.Secondary,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-                LumenButton(
-                    text = "Configure Widget",
-                    onClick = {},
-                    variant = LumenButtonVariant.Primary,
-                    modifier = Modifier.fillMaxWidth(),
-                )
-            }
-        }
-        LumenCard {
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-            ) {
-                Text("Shake to Turn On")
-                LumenSwitch(checked = switchOn, onCheckedChange = { switchOn = it })
-            }
-        }
+        composeTestRule.setContent(content)
+        composeTestRule.onRoot().captureRoboImage("src/test/screenshots/$name.png")
     }
 }

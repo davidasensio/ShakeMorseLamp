@@ -3,11 +3,10 @@ package com.handysparksoft.shakelamp.core.designsystem.theme
 import androidx.compose.ui.graphics.Color
 
 /**
- * "Lumen Utility" palette — a Night Mode Utility aesthetic sourced from the Stitch design
- * system (project "Shake Morse Flashlight", design system "Lumen Utility"). Dark-only: no
- * light palette has been designed yet.
+ * Color palette sourced from the Stitch design system (project "Shake Morse Flashlight",
+ * design system "Lumen Utility"). Dark-only: no light palette has been designed yet.
  */
-object LumenColor {
+object SMLColor {
     val Primary = Color(0xFFFFFFFF)
     val OnPrimary = Color(0xFF2A3400)
     val PrimaryContainer = Color(0xFFCBF200)

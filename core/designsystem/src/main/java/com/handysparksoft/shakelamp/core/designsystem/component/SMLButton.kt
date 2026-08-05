@@ -1,39 +1,46 @@
 package com.handysparksoft.shakelamp.core.designsystem.component
 
 import androidx.compose.foundation.BorderStroke
+import androidx.compose.foundation.layout.Arrangement
+import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.height
+import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.width
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.OutlinedButton
+import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.em
+import com.handysparksoft.shakelamp.core.designsystem.theme.ShakeMorseLampTheme
+import com.handysparksoft.shakelamp.core.designsystem.theme.Spacing
 
 /**
  * A pill-shaped, uppercase-label button matching the Lumen Utility design system
  * (e.g. "Configure Widget", "Transmit Signal").
  */
 @Composable
-fun LumenButton(
+fun SMLButton(
     text: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
-    variant: LumenButtonVariant = LumenButtonVariant.Primary,
+    variant: SMLButtonVariant = SMLButtonVariant.Primary,
     enabled: Boolean = true,
     leadingIcon: (@Composable () -> Unit)? = null,
 ) {
     val shape = MaterialTheme.shapes.extraLarge
     val content: @Composable () -> Unit = {
-        LumenButtonContent(text = text, leadingIcon = leadingIcon)
+        ButtonContent(text = text, leadingIcon = leadingIcon)
     }
     when (variant) {
-        LumenButtonVariant.Primary ->
+        SMLButtonVariant.Primary ->
             Button(
                 onClick = onClick,
                 modifier = modifier.height(48.dp),
@@ -47,7 +54,7 @@ fun LumenButton(
                 content = { content() },
             )
 
-        LumenButtonVariant.Secondary ->
+        SMLButtonVariant.Secondary ->
             OutlinedButton(
                 onClick = onClick,
                 modifier = modifier.height(48.dp),
@@ -65,7 +72,7 @@ fun LumenButton(
 }
 
 @Composable
-private fun LumenButtonContent(
+private fun ButtonContent(
     text: String,
     leadingIcon: (@Composable () -> Unit)?,
 ) {
@@ -79,4 +86,20 @@ private fun LumenButtonContent(
         fontWeight = FontWeight.Bold,
         letterSpacing = 0.1.em,
     )
+}
+
+@PreviewLightDark
+@Composable
+internal fun SMLButtonPreview() {
+    ShakeMorseLampTheme {
+        Surface {
+            Column(
+                modifier = Modifier.padding(Spacing.Margin),
+                verticalArrangement = Arrangement.spacedBy(Spacing.Unit),
+            ) {
+                SMLButton(text = "Configure Widget", onClick = {})
+                SMLButton(text = "Transmit Signal", onClick = {}, variant = SMLButtonVariant.Secondary)
+            }
+        }
+    }
 }

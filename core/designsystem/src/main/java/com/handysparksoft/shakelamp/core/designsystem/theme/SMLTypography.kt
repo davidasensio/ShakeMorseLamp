@@ -9,15 +9,15 @@ import androidx.compose.ui.unit.sp
 
 // Inter / JetBrains Mono aren't bundled yet — these fall back to the closest system family
 // until real font resources are added. Swap here only; the rest of the type scale won't change.
-private val LumenSansFamily = FontFamily.SansSerif
-private val LumenMonoFamily = FontFamily.Monospace
+private val SansFamily = FontFamily.SansSerif
+private val MonoFamily = FontFamily.Monospace
 
-/** Type scale sourced from the Lumen Utility design system (display/headline-mobile/body/label). */
-val LumenTypography =
+/** Type scale sourced from the Stitch design system (display/headline-mobile/body/label). */
+val SMLTypography =
     Typography(
         displayLarge =
             TextStyle(
-                fontFamily = LumenSansFamily,
+                fontFamily = SansFamily,
                 fontWeight = FontWeight.Bold,
                 fontSize = 56.sp,
                 lineHeight = 64.sp,
@@ -25,21 +25,21 @@ val LumenTypography =
             ),
         headlineLarge =
             TextStyle(
-                fontFamily = LumenSansFamily,
+                fontFamily = SansFamily,
                 fontWeight = FontWeight.SemiBold,
                 fontSize = 28.sp,
                 lineHeight = 36.sp,
             ),
         bodyMedium =
             TextStyle(
-                fontFamily = LumenSansFamily,
+                fontFamily = SansFamily,
                 fontWeight = FontWeight.Normal,
                 fontSize = 16.sp,
                 lineHeight = 24.sp,
             ),
         labelSmall =
             TextStyle(
-                fontFamily = LumenMonoFamily,
+                fontFamily = MonoFamily,
                 fontWeight = FontWeight.Medium,
                 fontSize = 12.sp,
                 lineHeight = 16.sp,
