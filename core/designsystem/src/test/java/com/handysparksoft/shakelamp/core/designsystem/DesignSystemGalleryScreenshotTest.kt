@@ -16,10 +16,12 @@ import org.robolectric.annotation.Config
 import org.robolectric.annotation.GraphicsMode
 
 /**
- * Captures each component's own `@PreviewLightDark` composable. There's no Android emulator
- * in this workflow, so these screenshots are the actual visual verification that components
- * look like the Stitch design — one screenshot per component's existing preview, rather than
- * hand-rolled gallery content that would drift from what Android Studio's Preview shows.
+ * Captures each component's own `@PreviewLightDark` composable, once per UI mode. There's no
+ * Android emulator in this workflow, so these screenshots are the actual visual verification
+ * that both themes look like the Stitch design — one screenshot per component per mode,
+ * rather than hand-rolled gallery content that would drift from what Android Studio's
+ * Preview shows. The "+night" qualifier is what `@PreviewLightDark` itself toggles to render
+ * its dark variant; ShakeMorseLampTheme reads it via isSystemInDarkTheme() by default.
  */
 @RunWith(RobolectricTestRunner::class)
 @GraphicsMode(GraphicsMode.Mode.NATIVE)
@@ -29,16 +31,32 @@ class DesignSystemGalleryScreenshotTest {
     val composeTestRule = createComposeRule()
 
     @Test
-    fun button() = captureComponent("SMLButton") { SMLButtonPreview() }
+    fun buttonLight() = captureComponent("SMLButton_light") { SMLButtonPreview() }
+
+    @Config(qualifiers = "+night")
+    @Test
+    fun buttonDark() = captureComponent("SMLButton_dark") { SMLButtonPreview() }
 
     @Test
-    fun textField() = captureComponent("SMLTextField") { SMLTextFieldPreview() }
+    fun textFieldLight() = captureComponent("SMLTextField_light") { SMLTextFieldPreview() }
+
+    @Config(qualifiers = "+night")
+    @Test
+    fun textFieldDark() = captureComponent("SMLTextField_dark") { SMLTextFieldPreview() }
 
     @Test
-    fun card() = captureComponent("SMLCard") { SMLCardPreview() }
+    fun cardLight() = captureComponent("SMLCard_light") { SMLCardPreview() }
+
+    @Config(qualifiers = "+night")
+    @Test
+    fun cardDark() = captureComponent("SMLCard_dark") { SMLCardPreview() }
 
     @Test
-    fun switch() = captureComponent("SMLSwitch") { SMLSwitchPreview() }
+    fun switchLight() = captureComponent("SMLSwitch_light") { SMLSwitchPreview() }
+
+    @Config(qualifiers = "+night")
+    @Test
+    fun switchDark() = captureComponent("SMLSwitch_dark") { SMLSwitchPreview() }
 
     private fun captureComponent(
         name: String,
