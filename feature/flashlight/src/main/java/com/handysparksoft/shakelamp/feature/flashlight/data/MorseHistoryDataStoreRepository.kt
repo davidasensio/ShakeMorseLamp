@@ -24,9 +24,11 @@ class MorseHistoryDataStoreRepository(
         context.morseHistoryDataStore.data.map { preferences -> preferences.decodeHistory() }
 
     override suspend fun addMessage(text: String) {
+        val trimmed = text.trim()
+        if (trimmed.isBlank()) return
         context.morseHistoryDataStore.edit { preferences ->
             val updated =
-                (listOf(text) + preferences.decodeHistory().filterNot { it.equals(text, ignoreCase = true) })
+                (listOf(trimmed) + preferences.decodeHistory().filterNot { it.equals(trimmed, ignoreCase = true) })
                     .take(MAX_HISTORY_SIZE)
             preferences[HISTORY_KEY] = Json.encodeToString(updated)
         }

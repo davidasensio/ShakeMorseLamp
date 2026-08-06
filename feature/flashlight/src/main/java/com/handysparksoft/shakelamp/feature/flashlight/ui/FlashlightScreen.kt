@@ -14,9 +14,12 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.CircularProgressIndicator
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
@@ -56,14 +59,10 @@ fun FlashlightScreen(
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
                 .verticalScroll(rememberScrollState())
+                .statusBarsPadding()
                 .padding(Spacing.Margin),
         verticalArrangement = Arrangement.spacedBy(Spacing.Gutter),
     ) {
-        Text(
-            text = "Flashlight",
-            style = MaterialTheme.typography.headlineLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
         StatusRow(isOn = uiState.isOn)
         Column(
             modifier = Modifier.fillMaxWidth(),
@@ -72,13 +71,9 @@ fun FlashlightScreen(
             PowerButton(
                 isOn = uiState.isOn,
                 enabled = uiState.isAvailable,
+                autoOffProgress = autoOffProgress(uiState),
                 onClick = { onAction(FlashlightUiAction.TogglePower) },
                 modifier = Modifier.padding(vertical = Spacing.Margin),
-            )
-            Text(
-                text = "Main Array",
-                style = MaterialTheme.typography.headlineLarge,
-                color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
                 text = statusLabel(uiState),
@@ -103,6 +98,16 @@ private fun statusLabel(uiState: FlashlightUiState): String =
         uiState.isOn -> "Active - Emitting Light"
         else -> "Ready to ignite"
     }
+
+/** Fraction of the auto-off timer remaining, or null when no countdown is active. */
+private fun autoOffProgress(uiState: FlashlightUiState): Float? {
+    val remainingMillis = uiState.autoOffRemainingMillis ?: return null
+    if (uiState.timerMinutes <= 0) return null
+    val totalMillis = uiState.timerMinutes * MILLIS_PER_MINUTE
+    return (remainingMillis.toFloat() / totalMillis.toFloat()).coerceIn(0f, 1f)
+}
+
+private const val MILLIS_PER_MINUTE = 60_000L
 
 /** A generic dummy icon placeholder — swap for real Material Symbols glyphs once provided. */
 @Composable
@@ -172,6 +177,7 @@ private fun StatusRow(
 private fun PowerButton(
     isOn: Boolean,
     enabled: Boolean,
+    autoOffProgress: Float?,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -186,6 +192,15 @@ private fun PowerButton(
                             brush = Brush.radialGradient(listOf(glowColor.copy(alpha = 0.35f), Color.Transparent)),
                             shape = CircleShape,
                         ),
+            )
+        }
+        if (autoOffProgress != null) {
+            CircularProgressIndicator(
+                progress = { autoOffProgress },
+                modifier = Modifier.size(200.dp),
+                color = MaterialTheme.colorScheme.primaryContainer,
+                trackColor = MaterialTheme.colorScheme.surfaceContainerHighest,
+                strokeWidth = 4.dp,
             )
         }
         Box(
@@ -387,6 +402,8 @@ private fun QuickSignalsRow(
     }
 }
 
+private val HistoryChipMaxWidth = 160.dp
+
 @Composable
 private fun HistorySection(
     history: List<String>,
@@ -418,7 +435,12 @@ private fun HistorySection(
             Spacer(Modifier.height(Spacing.Unit / 2))
             FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.Unit)) {
                 history.forEach { message ->
-                    SMLChip(label = message, onClick = { onMessageSelected(message) }, enabled = !isTransmitting)
+                    SMLChip(
+                        label = message,
+                        onClick = { onMessageSelected(message) },
+                        enabled = !isTransmitting,
+                        modifier = Modifier.widthIn(max = HistoryChipMaxWidth),
+                    )
                 }
             }
         }
@@ -495,6 +517,7 @@ internal fun FlashlightScreenPreview() {
                         isOn = true,
                         isAvailable = true,
                         timerMinutes = 30,
+                        autoOffRemainingMillis = 20 * 60_000L,
                         morseMessage = "SOS",
                         isLoopEnabled = true,
                         sentMessageHistory = listOf("SOS", "MEET AT DAWN", "OK"),

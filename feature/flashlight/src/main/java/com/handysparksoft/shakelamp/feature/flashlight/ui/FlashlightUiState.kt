@@ -9,6 +9,8 @@ data class FlashlightUiState(
     val isAvailable: Boolean = true,
     /** 0 = off. */
     val timerMinutes: Int = 0,
+    /** Time left on the current auto-off countdown, or null when none is active. */
+    val autoOffRemainingMillis: Long? = null,
     val morseMessage: String = "",
     val isLoopEnabled: Boolean = false,
     val isTransmitting: Boolean = false,

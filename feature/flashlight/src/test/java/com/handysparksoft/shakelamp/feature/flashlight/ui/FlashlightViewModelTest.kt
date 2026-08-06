@@ -281,6 +281,18 @@ class FlashlightViewModelTest {
         }
 
     @Test
+    fun `history trims whitespace before recording`() =
+        runTest {
+            val viewModel = newViewModel()
+            viewModel.onAction(FlashlightUiAction.MessageChanged("  SOS  "))
+
+            viewModel.onAction(FlashlightUiAction.TransmitClicked)
+            runCurrent()
+
+            assertEquals(listOf("SOS"), viewModel.uiState.value.sentMessageHistory)
+        }
+
+    @Test
     fun `resending a message moves it to front, no dupe`() =
         runTest {
             val viewModel = newViewModel()
@@ -315,6 +327,80 @@ class FlashlightViewModelTest {
             assertEquals(true, viewModel.uiState.value.isHistoryExpanded)
         }
 
+    @Test
+    fun `looping transmission exposes auto-off progress`() =
+        runTest {
+            coEvery { sendMorseMessage(any(), any(), any()) } coAnswers {
+                delay(TRANSMISSION_STEP_MILLIS)
+                PlaybackResult.Completed
+            }
+            val viewModel = newViewModel()
+            viewModel.onAction(FlashlightUiAction.MessageChanged("SOS"))
+            viewModel.onAction(FlashlightUiAction.LoopToggled)
+            viewModel.onAction(FlashlightUiAction.TimerChanged(5))
+
+            viewModel.onAction(FlashlightUiAction.TransmitClicked)
+            runCurrent()
+
+            assertEquals(FIVE_MINUTES_MILLIS, viewModel.uiState.value.autoOffRemainingMillis)
+        }
+
+    @Test
+    fun `single-shot transmission ignores the auto-off`() =
+        runTest {
+            val viewModel = newViewModel()
+            viewModel.onAction(FlashlightUiAction.MessageChanged("SOS"))
+            viewModel.onAction(FlashlightUiAction.TimerChanged(5))
+
+            viewModel.onAction(FlashlightUiAction.TransmitClicked)
+            runCurrent()
+
+            assertEquals(null, viewModel.uiState.value.autoOffRemainingMillis)
+        }
+
+    @Test
+    fun `looping transmission stops when auto-off fires`() =
+        runTest {
+            coEvery { sendMorseMessage(any(), any(), any()) } coAnswers {
+                delay(TRANSMISSION_STEP_MILLIS)
+                PlaybackResult.Completed
+            }
+            val viewModel = newViewModel()
+            viewModel.onAction(FlashlightUiAction.MessageChanged("SOS"))
+            viewModel.onAction(FlashlightUiAction.LoopToggled)
+            viewModel.onAction(FlashlightUiAction.TimerChanged(5))
+
+            viewModel.onAction(FlashlightUiAction.TransmitClicked)
+            runCurrent()
+            assertEquals(true, viewModel.uiState.value.isTransmitting)
+
+            advanceTimeBy(FIVE_MINUTES_MILLIS + 1)
+            runCurrent()
+
+            assertEquals(false, viewModel.uiState.value.isTransmitting)
+            assertEquals(false, viewModel.uiState.value.isOn)
+        }
+
+    @Test
+    fun `stopping a loop cancels its auto-off`() =
+        runTest {
+            coEvery { sendMorseMessage(any(), any(), any()) } coAnswers {
+                delay(TRANSMISSION_STEP_MILLIS)
+                PlaybackResult.Completed
+            }
+            val viewModel = newViewModel()
+            viewModel.onAction(FlashlightUiAction.MessageChanged("SOS"))
+            viewModel.onAction(FlashlightUiAction.LoopToggled)
+            viewModel.onAction(FlashlightUiAction.TimerChanged(5))
+            viewModel.onAction(FlashlightUiAction.TransmitClicked)
+            runCurrent()
+
+            viewModel.onAction(FlashlightUiAction.TransmitClicked)
+            runCurrent()
+
+            assertEquals(null, viewModel.uiState.value.autoOffRemainingMillis)
+        }
+
     private suspend fun TestScope.sendAndAwait(
         viewModel: FlashlightViewModel,
         message: String,
@@ -332,8 +418,10 @@ class FlashlightViewModelTest {
         override fun observeHistory(): Flow<List<String>> = history
 
         override suspend fun addMessage(text: String) {
+            val trimmed = text.trim()
+            if (trimmed.isBlank()) return
             history.update { current ->
-                (listOf(text) + current.filterNot { it.equals(text, ignoreCase = true) }).take(MAX_HISTORY_SIZE)
+                (listOf(trimmed) + current.filterNot { it.equals(trimmed, ignoreCase = true) }).take(MAX_HISTORY_SIZE)
             }
         }
     }
@@ -350,5 +438,6 @@ class FlashlightViewModelTest {
         private const val LOOP_ITERATIONS_TO_OBSERVE = 5L
         private const val MAX_HISTORY_SIZE = 10
         private const val HISTORY_OVERFLOW_COUNT = 11
+        private const val TRANSMISSION_STEP_MILLIS = 30_000L
     }
 }

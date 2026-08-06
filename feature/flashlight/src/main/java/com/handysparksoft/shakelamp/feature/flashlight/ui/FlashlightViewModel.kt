@@ -82,7 +82,12 @@ class FlashlightViewModel(
 
     private fun changeTimer(minutes: Int) {
         _uiState.update { it.copy(timerMinutes = minutes) }
-        if (_uiState.value.isOn) scheduleAutoOff(minutes)
+        val state = _uiState.value
+        // A running single-shot transmission ends on its own shortly; don't saddle it with
+        // a timeout. Manual power-on and a looping transmission (no natural end) both want
+        // the countdown rescheduled against the new duration.
+        val appliesHere = state.isOn && (!state.isTransmitting || state.isLoopEnabled)
+        if (appliesHere) scheduleAutoOff(minutes)
     }
 
     private fun scheduleAutoOff(minutes: Int) {
@@ -90,18 +95,39 @@ class FlashlightViewModel(
         if (minutes <= 0) return
         autoOffJob =
             viewModelScope.launch {
-                delay(minutes * MILLIS_PER_MINUTE)
-                if (toggleFlashlight(false)) {
-                    _uiState.update { it.copy(isOn = false) }
+                var remainingMillis = minutes * MILLIS_PER_MINUTE
+                _uiState.update { it.copy(autoOffRemainingMillis = remainingMillis) }
+                while (remainingMillis > 0) {
+                    val step = minOf(AUTO_OFF_TICK_MILLIS, remainingMillis)
+                    delay(step)
+                    remainingMillis -= step
+                    _uiState.update { it.copy(autoOffRemainingMillis = remainingMillis) }
+                }
+                _uiState.update { it.copy(autoOffRemainingMillis = null) }
+                if (_uiState.value.isTransmitting) {
+                    // Stop the transmission directly rather than via stopTransmission(),
+                    // which would cancel this very job (self-cancellation) — harmless, but
+                    // needless since this coroutine is already about to finish anyway.
+                    transmitJob?.cancel()
+                    transmitJob = null
                 } else {
-                    _uiEvent.emit(FlashlightUiEvent.ShowError("Couldn't turn off the flashlight"))
+                    turnOffFlashlight()
                 }
             }
+    }
+
+    private suspend fun turnOffFlashlight() {
+        if (toggleFlashlight(false)) {
+            _uiState.update { it.copy(isOn = false) }
+        } else {
+            _uiEvent.emit(FlashlightUiEvent.ShowError("Couldn't turn off the flashlight"))
+        }
     }
 
     private fun cancelAutoOff() {
         autoOffJob?.cancel()
         autoOffJob = null
+        _uiState.update { it.copy(autoOffRemainingMillis = null) }
     }
 
     private fun toggleTransmission() {
@@ -116,9 +142,14 @@ class FlashlightViewModel(
         val state = _uiState.value
         if (!state.isAvailable || state.morseMessage.isBlank()) return
 
-        // The timer and a transmission both drive the same torch; a mid-transmission
-        // auto-off would cut the message short.
-        cancelAutoOff()
+        if (state.isLoopEnabled && state.timerMinutes > 0) {
+            // A loop has no natural end — let the configured auto-off duration cap it,
+            // same as it would the manual power button.
+            scheduleAutoOff(state.timerMinutes)
+        } else {
+            // A single-shot transmission ends on its own; don't let a stale timer cut it short.
+            cancelAutoOff()
+        }
         _uiState.update { it.copy(isTransmitting = true, isOn = true) }
         viewModelScope.launch { historyRepository.addMessage(state.morseMessage) }
 
@@ -135,11 +166,13 @@ class FlashlightViewModel(
     }
 
     private fun stopTransmission() {
+        cancelAutoOff()
         transmitJob?.cancel()
         transmitJob = null
     }
 
     private companion object {
         const val MILLIS_PER_MINUTE = 60_000L
+        const val AUTO_OFF_TICK_MILLIS = 1_000L
     }
 }
