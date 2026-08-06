@@ -3,7 +3,6 @@ package com.handysparksoft.shakelamp.feature.flashlight.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
-import com.handysparksoft.shakelamp.feature.flashlight.domain.AutoOffWakeLock
 import com.handysparksoft.shakelamp.feature.flashlight.domain.FlashlightRepository
 import com.handysparksoft.shakelamp.feature.flashlight.domain.MorseHistoryRepository
 import com.handysparksoft.shakelamp.feature.flashlight.domain.ToggleFlashlightUseCase
@@ -26,7 +25,6 @@ class FlashlightViewModel(
     private val toggleFlashlight: ToggleFlashlightUseCase,
     private val sendMorseMessage: SendMorseMessageUseCase,
     private val historyRepository: MorseHistoryRepository,
-    private val autoOffWakeLock: AutoOffWakeLock,
 ) : ViewModel() {
     private val _uiState =
         MutableStateFlow(
@@ -95,11 +93,9 @@ class FlashlightViewModel(
     private fun scheduleAutoOff(minutes: Int) {
         cancelAutoOff()
         if (minutes <= 0) return
-        val totalMillis = minutes * MILLIS_PER_MINUTE
-        autoOffWakeLock.acquire(totalMillis)
         autoOffJob =
             viewModelScope.launch {
-                var remainingMillis = totalMillis
+                var remainingMillis = minutes * MILLIS_PER_MINUTE
                 _uiState.update { it.copy(autoOffRemainingMillis = remainingMillis) }
                 while (remainingMillis > 0) {
                     val step = minOf(AUTO_OFF_TICK_MILLIS, remainingMillis)
@@ -108,7 +104,6 @@ class FlashlightViewModel(
                     _uiState.update { it.copy(autoOffRemainingMillis = remainingMillis) }
                 }
                 _uiState.update { it.copy(autoOffRemainingMillis = null) }
-                autoOffWakeLock.release()
                 if (_uiState.value.isTransmitting) {
                     // Stop the transmission directly rather than via stopTransmission(),
                     // which would cancel this very job (self-cancellation) — harmless, but
@@ -132,12 +127,7 @@ class FlashlightViewModel(
     private fun cancelAutoOff() {
         autoOffJob?.cancel()
         autoOffJob = null
-        autoOffWakeLock.release()
         _uiState.update { it.copy(autoOffRemainingMillis = null) }
-    }
-
-    override fun onCleared() {
-        autoOffWakeLock.release()
     }
 
     private fun toggleTransmission() {

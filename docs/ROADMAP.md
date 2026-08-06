@@ -32,6 +32,21 @@ Instructions as something to consult under `docs/`.
    `README.md`, this `docs/` folder (in progress), `.github/PULL_REQUEST_TEMPLATE.md`,
    `scripts/update_readme_loc_breakdown.sh`.
 
+## Known Constraints
+
+- **Reliable background execution requires a foreground service.** Confirmed via on-device
+  testing while building the auto-off timer: Android's app freezer suspends a backgrounded
+  process — including pending coroutine timers *and* already-dispatched `WorkManager`/
+  `JobScheduler` jobs — until something else unfreezes it (e.g. the user reopening the app). A
+  `PARTIAL_WAKE_LOCK` and a `WorkManager` `OneTimeWorkRequest` backstop were both tried and both
+  failed identically: the job sat queued the whole time the screen was locked and only ran the
+  instant the process was unfrozen by reopening the app. Only a foreground service (with its
+  required persistent notification) keeps a component alive through a screen lock. Applies to:
+  - **Auto-off timer** (item 3 below) — needs a foreground service to guarantee the torch turns
+    off on schedule even while locked.
+  - **Shake detection** (items 2/5 below) — needs a foreground service to keep the accelerometer
+    listener alive continuously in the background.
+
 ## Feature List
 
 Each entry: what it does, likely module home, and open questions to resolve before or while
@@ -55,11 +70,17 @@ building it.
      the app is small?
    - Needs a persistence mechanism (e.g. Jetpack DataStore) — not yet in `AGENTS.md`'s tech
      stack; add it there when this feature starts.
+   - See **Known Constraints** above — the shake-detection service needs to run as a foreground
+     service to survive backgrounding, so this toggle should set user expectations accordingly
+     (persistent notification while enabled).
 
 3. **Auto-off timer**
    - Turn the flashlight off automatically after an elapsed/selected duration.
    - Lives with flashlight control (`:feature:flashlight`), most likely as part of its existing
      `UiState` (e.g. a countdown field) rather than a separate screen.
+   - See **Known Constraints** above — requires a foreground service (persistent notification
+     while the timer is counting down) to actually fire while the screen is locked; a plain
+     coroutine timer, even backed by a wake lock or a WorkManager backstop, does not.
 
 4. **Emergency / SOS shortcut**
    - One-tap shortcut to start transmitting a fixed emergency pattern (e.g. SOS) via the
@@ -113,7 +134,8 @@ building it.
 2. Auto-off timer — small addition on top of flashlight.
 3. Dimmable flashlight (torch strength) — natural extension of the same on/off control.
 4. Settings screen — needed by shake detection, theme, and the widget's presets.
-5. Shake detection background service — depends on the Settings toggle.
+5. Shake detection background service — depends on the Settings toggle; see **Known
+   Constraints** above (needs a foreground service to stay alive in the background).
 6. Emergency/SOS shortcut.
 7. Quick Settings Tile.
 8. Home screen widget (Glance).

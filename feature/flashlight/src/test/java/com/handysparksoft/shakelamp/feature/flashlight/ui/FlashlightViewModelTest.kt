@@ -4,7 +4,6 @@ import app.cash.turbine.test
 import com.handysparksoft.shakelamp.core.common.testing.MainDispatcherExtension
 import com.handysparksoft.shakelamp.core.morse.domain.PlaybackResult
 import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
-import com.handysparksoft.shakelamp.feature.flashlight.domain.AutoOffWakeLock
 import com.handysparksoft.shakelamp.feature.flashlight.domain.FlashlightRepository
 import com.handysparksoft.shakelamp.feature.flashlight.domain.MorseHistoryRepository
 import com.handysparksoft.shakelamp.feature.flashlight.domain.ToggleFlashlightUseCase
@@ -12,8 +11,6 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.verify
-import io.mockk.verifyOrder
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,7 +31,6 @@ class FlashlightViewModelTest {
     private val toggleFlashlight = mockk<ToggleFlashlightUseCase>()
     private val sendMorseMessage = mockk<SendMorseMessageUseCase>()
     private val historyRepository = FakeMorseHistoryRepository()
-    private val autoOffWakeLock = mockk<AutoOffWakeLock>(relaxed = true)
 
     @BeforeEach
     fun setUp() {
@@ -162,66 +158,6 @@ class FlashlightViewModelTest {
             runCurrent()
 
             coVerify(exactly = 1) { toggleFlashlight(false) }
-        }
-
-    @Test
-    fun `scheduling auto-off acquires the wake lock`() =
-        runTest {
-            val viewModel = newViewModel()
-
-            viewModel.onAction(FlashlightUiAction.TimerChanged(5))
-            viewModel.onAction(FlashlightUiAction.TogglePower)
-            runCurrent()
-
-            verify(exactly = 1) { autoOffWakeLock.acquire(FIVE_MINUTES_MILLIS) }
-        }
-
-    @Test
-    fun `auto-off firing releases the wake lock`() =
-        runTest {
-            val viewModel = newViewModel()
-
-            viewModel.onAction(FlashlightUiAction.TimerChanged(5))
-            viewModel.onAction(FlashlightUiAction.TogglePower)
-            runCurrent()
-
-            advanceTimeBy(FIVE_MINUTES_MILLIS + 1)
-            runCurrent()
-
-            verify(atLeast = 1) { autoOffWakeLock.release() }
-        }
-
-    @Test
-    fun `manual toggle off releases the wake lock`() =
-        runTest {
-            val viewModel = newViewModel()
-
-            viewModel.onAction(FlashlightUiAction.TimerChanged(5))
-            viewModel.onAction(FlashlightUiAction.TogglePower)
-            runCurrent()
-            viewModel.onAction(FlashlightUiAction.TogglePower)
-            runCurrent()
-
-            verify(atLeast = 1) { autoOffWakeLock.release() }
-        }
-
-    @Test
-    fun `changing timer while on reacquires the wake lock`() =
-        runTest {
-            val viewModel = newViewModel()
-
-            viewModel.onAction(FlashlightUiAction.TimerChanged(TEN_MINUTES))
-            viewModel.onAction(FlashlightUiAction.TogglePower)
-            runCurrent()
-
-            viewModel.onAction(FlashlightUiAction.TimerChanged(2))
-            runCurrent()
-
-            verifyOrder {
-                autoOffWakeLock.acquire(TEN_MINUTES_MILLIS)
-                autoOffWakeLock.release()
-                autoOffWakeLock.acquire(TWO_MINUTES_MILLIS)
-            }
         }
 
     @Test
@@ -474,8 +410,7 @@ class FlashlightViewModelTest {
         runCurrent()
     }
 
-    private fun newViewModel() =
-        FlashlightViewModel(repository, toggleFlashlight, sendMorseMessage, historyRepository, autoOffWakeLock)
+    private fun newViewModel() = FlashlightViewModel(repository, toggleFlashlight, sendMorseMessage, historyRepository)
 
     private class FakeMorseHistoryRepository : MorseHistoryRepository {
         private val history = MutableStateFlow<List<String>>(emptyList())
@@ -499,7 +434,6 @@ class FlashlightViewModelTest {
         private const val TEN_MINUTES = 10
         private const val FIVE_MINUTES_MILLIS = 5 * 60_000L
         private const val TEN_MINUTES_MILLIS = TEN_MINUTES * 60_000L
-        private const val TWO_MINUTES_MILLIS = 2 * 60_000L
         private const val LONG_TRANSMISSION_MILLIS = 60_000L
         private const val LOOP_ITERATIONS_TO_OBSERVE = 5L
         private const val MAX_HISTORY_SIZE = 10
