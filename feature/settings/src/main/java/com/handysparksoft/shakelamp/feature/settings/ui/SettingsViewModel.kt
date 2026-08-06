@@ -40,7 +40,6 @@ class SettingsViewModel(
                 _uiState.update { it.copy(emergencyMessage = action.text) }
             }
             SettingsUiAction.StrobeToggled -> toggleStrobe()
-            SettingsUiAction.AboutClicked -> Unit
         }
     }
 

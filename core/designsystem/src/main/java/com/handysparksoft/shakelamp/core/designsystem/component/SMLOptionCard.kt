@@ -83,19 +83,19 @@ internal fun SMLOptionCardPreview() {
             ) {
                 SMLOptionCard(
                     label = "Dark",
-                    icon = painterResource(R.drawable.ic_dark_mode),
+                    icon = painterResource(R.drawable.ic_theme_dark),
                     selected = true,
                     onClick = {},
                 )
                 SMLOptionCard(
                     label = "Light",
-                    icon = painterResource(R.drawable.ic_light_mode),
+                    icon = painterResource(R.drawable.ic_theme_light),
                     selected = false,
                     onClick = {},
                 )
                 SMLOptionCard(
                     label = "Auto",
-                    icon = painterResource(R.drawable.ic_brightness_auto),
+                    icon = painterResource(R.drawable.ic_theme_light_dark),
                     selected = false,
                     onClick = {},
                 )

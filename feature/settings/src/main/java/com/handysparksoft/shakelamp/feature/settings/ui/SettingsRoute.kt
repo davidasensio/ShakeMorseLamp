@@ -20,7 +20,7 @@ data class AppVersionInfo(
 @Composable
 fun SettingsEntry(
     onNavigateBack: () -> Unit,
-    appVersion: AppVersionInfo,
+    onNavigateToAbout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val viewModel: SettingsViewModel = koinViewModel()
@@ -29,7 +29,7 @@ fun SettingsEntry(
         uiState = uiState,
         onAction = viewModel::onAction,
         onNavigateBack = onNavigateBack,
-        appVersion = appVersion,
+        onNavigateToAbout = onNavigateToAbout,
         modifier = modifier,
     )
 }

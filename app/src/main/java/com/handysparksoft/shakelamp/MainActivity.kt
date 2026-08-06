@@ -18,6 +18,8 @@ import com.handysparksoft.shakelamp.feature.flashlight.ui.FlashlightEntry
 import com.handysparksoft.shakelamp.feature.flashlight.ui.FlashlightRoute
 import com.handysparksoft.shakelamp.feature.settings.domain.ThemeMode
 import com.handysparksoft.shakelamp.feature.settings.domain.ThemePreferenceRepository
+import com.handysparksoft.shakelamp.feature.settings.ui.AboutEntry
+import com.handysparksoft.shakelamp.feature.settings.ui.AboutRoute
 import com.handysparksoft.shakelamp.feature.settings.ui.AppVersionInfo
 import com.handysparksoft.shakelamp.feature.settings.ui.SettingsEntry
 import com.handysparksoft.shakelamp.feature.settings.ui.SettingsRoute
@@ -56,6 +58,12 @@ private fun ShakeMorseLampApp() {
                     }
                     entry<SettingsRoute> {
                         SettingsEntry(
+                            onNavigateBack = { backStack.removeLastOrNull() },
+                            onNavigateToAbout = { backStack.add(AboutRoute) },
+                        )
+                    }
+                    entry<AboutRoute> {
+                        AboutEntry(
                             onNavigateBack = { backStack.removeLastOrNull() },
                             appVersion = AppVersionInfo(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE),
                         )

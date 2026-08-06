@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -18,7 +19,6 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -45,7 +45,7 @@ fun SettingsScreen(
     uiState: SettingsUiState,
     onAction: (SettingsUiAction) -> Unit,
     onNavigateBack: () -> Unit,
-    appVersion: AppVersionInfo,
+    onNavigateToAbout: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -58,7 +58,7 @@ fun SettingsScreen(
                 .padding(Spacing.Margin),
         verticalArrangement = Arrangement.spacedBy(Spacing.Gutter),
     ) {
-        SettingsHeader(onNavigateBack = onNavigateBack)
+        ScreenHeader(title = "Settings", onNavigateBack = onNavigateBack)
         GesturesCard()
         HardwareCard()
         EmergencyModeCard(
@@ -71,35 +71,7 @@ fun SettingsScreen(
             themeMode = uiState.themeMode,
             onThemeModeChanged = { onAction(SettingsUiAction.ThemeModeChanged(it)) },
         )
-        AboutVersionCard(
-            appVersion = appVersion,
-            onAboutClicked = { onAction(SettingsUiAction.AboutClicked) },
-        )
-    }
-}
-
-@Composable
-private fun SettingsHeader(
-    onNavigateBack: () -> Unit,
-    modifier: Modifier = Modifier,
-) {
-    Row(
-        modifier = modifier.fillMaxWidth(),
-        verticalAlignment = Alignment.CenterVertically,
-        horizontalArrangement = Arrangement.spacedBy(Spacing.Unit),
-    ) {
-        IconButton(onClick = onNavigateBack) {
-            Icon(
-                painter = painterResource(R.drawable.ic_arrow_back),
-                contentDescription = "Back",
-                tint = MaterialTheme.colorScheme.onSurface,
-            )
-        }
-        Text(
-            text = "Settings",
-            style = MaterialTheme.typography.titleLarge,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
+        AboutCard(onAboutClicked = onNavigateToAbout)
     }
 }
 
@@ -185,7 +157,11 @@ private fun GesturesCard(modifier: Modifier = Modifier) {
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically,
             ) {
-                Text("Sensor Sensitivity", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    text = "Sensor Sensitivity",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
                 Badge(text = "Medium")
             }
             Spacer(Modifier.height(Spacing.Unit))
@@ -193,14 +169,14 @@ private fun GesturesCard(modifier: Modifier = Modifier) {
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(Spacing.Unit),
             ) {
-                SliderEndIcon(R.drawable.ic_vibration)
+                SliderEndIcon(R.drawable.ic_mobile_vibrate)
                 SMLSlider(
                     value = SENSITIVITY_PLACEHOLDER,
                     onValueChange = {},
                     enabled = false,
                     modifier = Modifier.weight(1f),
                 )
-                SliderEndIcon(R.drawable.ic_vibration)
+                SliderEndIcon(R.drawable.ic_mobile_vibrate)
             }
         }
     }
@@ -212,7 +188,11 @@ private fun HardwareCard(modifier: Modifier = Modifier) {
         SectionLabel(text = "HARDWARE", color = MaterialTheme.colorScheme.primaryContainer)
         Spacer(Modifier.height(Spacing.Unit))
         SMLCard(modifier = Modifier.fillMaxWidth()) {
-            Text("Flashlight Dimmer", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = "Flashlight Dimmer",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
             Text(
                 text = "Requires supported hardware",
                 style = MaterialTheme.typography.labelSmall,
@@ -267,7 +247,11 @@ private fun EmergencyModeCard(
                         shape = MaterialTheme.shapes.small,
                     ),
         ) {
-            Text("Morse Message", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = "Morse Message",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
             Spacer(Modifier.height(Spacing.Unit / 2))
             SMLTextField(
                 value = message,
@@ -301,7 +285,11 @@ private fun AppearanceCard(
         SectionLabel(text = "APPEARANCE", color = MaterialTheme.colorScheme.primaryContainer)
         Spacer(Modifier.height(Spacing.Unit))
         SMLCard(modifier = Modifier.fillMaxWidth()) {
-            Text("App Theme", style = MaterialTheme.typography.bodyMedium)
+            Text(
+                text = "App Theme",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
             Spacer(Modifier.height(Spacing.Gutter))
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -309,21 +297,21 @@ private fun AppearanceCard(
             ) {
                 SMLOptionCard(
                     label = "Dark",
-                    icon = painterResource(R.drawable.ic_dark_mode),
+                    icon = painterResource(R.drawable.ic_theme_dark),
                     selected = themeMode == ThemeMode.DARK,
                     onClick = { onThemeModeChanged(ThemeMode.DARK) },
                     modifier = Modifier.weight(1f),
                 )
                 SMLOptionCard(
                     label = "Light",
-                    icon = painterResource(R.drawable.ic_light_mode),
+                    icon = painterResource(R.drawable.ic_theme_light),
                     selected = themeMode == ThemeMode.LIGHT,
                     onClick = { onThemeModeChanged(ThemeMode.LIGHT) },
                     modifier = Modifier.weight(1f),
                 )
                 SMLOptionCard(
                     label = "Auto",
-                    icon = painterResource(R.drawable.ic_brightness_auto),
+                    icon = painterResource(R.drawable.ic_theme_light_dark),
                     selected = themeMode == ThemeMode.AUTO,
                     onClick = { onThemeModeChanged(ThemeMode.AUTO) },
                     modifier = Modifier.weight(1f),
@@ -334,14 +322,17 @@ private fun AppearanceCard(
 }
 
 @Composable
-private fun AboutVersionCard(
-    appVersion: AppVersionInfo,
+private fun AboutCard(
     onAboutClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
-    SMLCard(modifier = modifier.fillMaxWidth()) {
+    SMLCard(modifier = modifier.fillMaxWidth(), contentPadding = PaddingValues(0.dp)) {
         Row(
-            modifier = Modifier.fillMaxWidth().clickable(onClick = onAboutClicked),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onAboutClicked)
+                    .padding(horizontal = Spacing.Margin, vertical = Spacing.Margin),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
@@ -354,28 +345,17 @@ private fun AboutVersionCard(
                     contentDescription = null,
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                Text("About", style = MaterialTheme.typography.bodyMedium)
+                Text(
+                    text = "About",
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
             }
             Icon(
                 painter = painterResource(R.drawable.ic_arrow_forward),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.size(16.dp),
-            )
-        }
-        Spacer(Modifier.height(Spacing.Gutter))
-        SectionDivider()
-        Spacer(Modifier.height(Spacing.Gutter))
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Text("Version", style = MaterialTheme.typography.bodyMedium)
-            Text(
-                text = "v${appVersion.versionName} (Build ${appVersion.versionCode})",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
         }
     }
@@ -401,7 +381,7 @@ internal fun SettingsScreenPreview() {
                     ),
                 onAction = {},
                 onNavigateBack = {},
-                appVersion = AppVersionInfo(versionName = "1.0", versionCode = 1),
+                onNavigateToAbout = {},
             )
         }
     }

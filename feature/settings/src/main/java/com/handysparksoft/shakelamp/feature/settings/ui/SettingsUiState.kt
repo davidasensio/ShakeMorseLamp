@@ -20,7 +20,4 @@ sealed interface SettingsUiAction {
     ) : SettingsUiAction
 
     data object StrobeToggled : SettingsUiAction
-
-    // TODO: wire real About navigation once that screen exists.
-    data object AboutClicked : SettingsUiAction
 }
