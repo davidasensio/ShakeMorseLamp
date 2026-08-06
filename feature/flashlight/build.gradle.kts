@@ -10,6 +10,7 @@ android {
 
 dependencies {
     implementation(project(":core:designsystem"))
+    implementation(project(":core:morse"))
 
     testImplementation(testFixtures(project(":core:common")))
 }

@@ -2,17 +2,21 @@ package com.handysparksoft.shakelamp.feature.flashlight.ui
 
 import app.cash.turbine.test
 import com.handysparksoft.shakelamp.core.common.testing.MainDispatcherExtension
+import com.handysparksoft.shakelamp.core.morse.domain.PlaybackResult
+import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
 import com.handysparksoft.shakelamp.feature.flashlight.domain.FlashlightRepository
 import com.handysparksoft.shakelamp.feature.flashlight.domain.ToggleFlashlightUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
 import org.junit.jupiter.api.Assertions.assertEquals
 import org.junit.jupiter.api.Assertions.assertInstanceOf
+import org.junit.jupiter.api.Assertions.assertTrue
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.RegisterExtension
@@ -20,19 +24,21 @@ import org.junit.jupiter.api.extension.RegisterExtension
 class FlashlightViewModelTest {
     private val repository = mockk<FlashlightRepository>()
     private val toggleFlashlight = mockk<ToggleFlashlightUseCase>()
+    private val sendMorseMessage = mockk<SendMorseMessageUseCase>()
 
     @BeforeEach
     fun setUp() {
         every { repository.isFlashAvailable() } returns true
         coEvery { toggleFlashlight(true) } returns true
         coEvery { toggleFlashlight(false) } returns true
+        coEvery { sendMorseMessage(any(), any(), any()) } returns PlaybackResult.Completed
     }
 
     @Test
     fun `initial state reflects flash unavailability`() =
         runTest {
             every { repository.isFlashAvailable() } returns false
-            val viewModel = FlashlightViewModel(repository, toggleFlashlight)
+            val viewModel = newViewModel()
 
             viewModel.uiState.test {
                 val state = awaitItem()
@@ -44,7 +50,7 @@ class FlashlightViewModelTest {
     @Test
     fun `TogglePower turns flashlight on when successful`() =
         runTest {
-            val viewModel = FlashlightViewModel(repository, toggleFlashlight)
+            val viewModel = newViewModel()
 
             viewModel.uiState.test {
                 assertEquals(false, awaitItem().isOn)
@@ -57,7 +63,7 @@ class FlashlightViewModelTest {
     fun `TogglePower emits error when use case fails`() =
         runTest {
             coEvery { toggleFlashlight(true) } returns false
-            val viewModel = FlashlightViewModel(repository, toggleFlashlight)
+            val viewModel = newViewModel()
 
             viewModel.uiEvent.test {
                 viewModel.onAction(FlashlightUiAction.TogglePower)
@@ -69,7 +75,7 @@ class FlashlightViewModelTest {
     @Test
     fun `TimerChanged updates minutes, keeps power off`() =
         runTest {
-            val viewModel = FlashlightViewModel(repository, toggleFlashlight)
+            val viewModel = newViewModel()
 
             viewModel.onAction(FlashlightUiAction.TimerChanged(15))
 
@@ -80,7 +86,7 @@ class FlashlightViewModelTest {
     @Test
     fun `MessageChanged updates the morse message`() =
         runTest {
-            val viewModel = FlashlightViewModel(repository, toggleFlashlight)
+            val viewModel = newViewModel()
 
             viewModel.onAction(FlashlightUiAction.MessageChanged("SOS"))
 
@@ -90,7 +96,7 @@ class FlashlightViewModelTest {
     @Test
     fun `LoopToggled flips the loop flag`() =
         runTest {
-            val viewModel = FlashlightViewModel(repository, toggleFlashlight)
+            val viewModel = newViewModel()
 
             viewModel.onAction(FlashlightUiAction.LoopToggled)
 
@@ -100,7 +106,7 @@ class FlashlightViewModelTest {
     @Test
     fun `flashlight auto-offs after the timer duration`() =
         runTest {
-            val viewModel = FlashlightViewModel(repository, toggleFlashlight)
+            val viewModel = newViewModel()
 
             viewModel.onAction(FlashlightUiAction.TimerChanged(5))
             viewModel.onAction(FlashlightUiAction.TogglePower)
@@ -117,7 +123,7 @@ class FlashlightViewModelTest {
     @Test
     fun `changing timer while on reschedules the auto-off`() =
         runTest {
-            val viewModel = FlashlightViewModel(repository, toggleFlashlight)
+            val viewModel = newViewModel()
 
             viewModel.onAction(FlashlightUiAction.TimerChanged(TEN_MINUTES))
             viewModel.onAction(FlashlightUiAction.TogglePower)
@@ -134,7 +140,7 @@ class FlashlightViewModelTest {
     @Test
     fun `manual toggle off cancels the scheduled auto-off`() =
         runTest {
-            val viewModel = FlashlightViewModel(repository, toggleFlashlight)
+            val viewModel = newViewModel()
 
             viewModel.onAction(FlashlightUiAction.TimerChanged(5))
             viewModel.onAction(FlashlightUiAction.TogglePower)
@@ -148,6 +154,116 @@ class FlashlightViewModelTest {
             coVerify(exactly = 1) { toggleFlashlight(false) }
         }
 
+    @Test
+    fun `TransmitClicked sends the message, resets after`() =
+        runTest {
+            val viewModel = newViewModel()
+            viewModel.onAction(FlashlightUiAction.MessageChanged("SOS"))
+
+            viewModel.onAction(FlashlightUiAction.TransmitClicked)
+            runCurrent()
+
+            coVerify { sendMorseMessage("SOS", any(), any()) }
+            assertEquals(false, viewModel.uiState.value.isTransmitting)
+            assertEquals(false, viewModel.uiState.value.isOn)
+        }
+
+    @Test
+    fun `TransmitClicked with a blank message is a no-op`() =
+        runTest {
+            val viewModel = newViewModel()
+
+            viewModel.onAction(FlashlightUiAction.TransmitClicked)
+            runCurrent()
+
+            assertEquals(false, viewModel.uiState.value.isTransmitting)
+            coVerify(exactly = 0) { sendMorseMessage(any(), any(), any()) }
+        }
+
+    @Test
+    fun `TransmitClicked again stops the transmission`() =
+        runTest {
+            coEvery { sendMorseMessage(any(), any(), any()) } coAnswers {
+                delay(LONG_TRANSMISSION_MILLIS)
+                PlaybackResult.Completed
+            }
+            val viewModel = newViewModel()
+            viewModel.onAction(FlashlightUiAction.MessageChanged("SOS"))
+
+            viewModel.onAction(FlashlightUiAction.TransmitClicked)
+            runCurrent()
+            assertEquals(true, viewModel.uiState.value.isTransmitting)
+
+            viewModel.onAction(FlashlightUiAction.TransmitClicked)
+            runCurrent()
+
+            assertEquals(false, viewModel.uiState.value.isTransmitting)
+            assertEquals(false, viewModel.uiState.value.isOn)
+        }
+
+    @Test
+    fun `loop mode keeps transmitting until stopped`() =
+        runTest {
+            coEvery { sendMorseMessage(any(), any(), any()) } coAnswers {
+                delay(1)
+                PlaybackResult.Completed
+            }
+            val viewModel = newViewModel()
+            viewModel.onAction(FlashlightUiAction.MessageChanged("SOS"))
+            viewModel.onAction(FlashlightUiAction.LoopToggled)
+
+            viewModel.onAction(FlashlightUiAction.TransmitClicked)
+            advanceTimeBy(LOOP_ITERATIONS_TO_OBSERVE)
+            runCurrent()
+
+            assertEquals(true, viewModel.uiState.value.isTransmitting)
+            coVerify(atLeast = 2) { sendMorseMessage(any(), any(), any()) }
+
+            viewModel.onAction(FlashlightUiAction.TransmitClicked)
+            runCurrent()
+
+            assertEquals(false, viewModel.uiState.value.isTransmitting)
+        }
+
+    @Test
+    fun `starting a transmission cancels the auto-off`() =
+        runTest {
+            val viewModel = newViewModel()
+            viewModel.onAction(FlashlightUiAction.TimerChanged(5))
+            viewModel.onAction(FlashlightUiAction.TogglePower)
+            runCurrent()
+            viewModel.onAction(FlashlightUiAction.MessageChanged("SOS"))
+
+            viewModel.onAction(FlashlightUiAction.TransmitClicked)
+            runCurrent()
+
+            advanceTimeBy(FIVE_MINUTES_MILLIS + 1)
+            runCurrent()
+
+            coVerify(exactly = 0) { toggleFlashlight(false) }
+        }
+
+    @Test
+    fun `TogglePower is ignored during a transmission`() =
+        runTest {
+            coEvery { sendMorseMessage(any(), any(), any()) } coAnswers {
+                delay(LONG_TRANSMISSION_MILLIS)
+                PlaybackResult.Completed
+            }
+            val viewModel = newViewModel()
+            viewModel.onAction(FlashlightUiAction.MessageChanged("SOS"))
+            viewModel.onAction(FlashlightUiAction.TransmitClicked)
+            runCurrent()
+
+            viewModel.onAction(FlashlightUiAction.TogglePower)
+            runCurrent()
+
+            coVerify(exactly = 0) { toggleFlashlight(any()) }
+            assertTrue(viewModel.uiState.value.isTransmitting)
+        }
+
+    private fun newViewModel() = FlashlightViewModel(repository, toggleFlashlight, sendMorseMessage)
+
     companion object {
         @JvmField
         @RegisterExtension
@@ -156,5 +272,7 @@ class FlashlightViewModelTest {
         private const val TEN_MINUTES = 10
         private const val FIVE_MINUTES_MILLIS = 5 * 60_000L
         private const val TEN_MINUTES_MILLIS = TEN_MINUTES * 60_000L
+        private const val LONG_TRANSMISSION_MILLIS = 60_000L
+        private const val LOOP_ITERATIONS_TO_OBSERVE = 5L
     }
 }

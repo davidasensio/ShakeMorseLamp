@@ -85,13 +85,7 @@ fun FlashlightScreen(
             timerMinutes = uiState.timerMinutes,
             onTimerChanged = { onAction(FlashlightUiAction.TimerChanged(it)) },
         )
-        MorseBroadcastCard(
-            message = uiState.morseMessage,
-            isLoopEnabled = uiState.isLoopEnabled,
-            onMessageChanged = { onAction(FlashlightUiAction.MessageChanged(it)) },
-            onLoopToggled = { onAction(FlashlightUiAction.LoopToggled) },
-            onTransmitClicked = { onAction(FlashlightUiAction.TransmitClicked) },
-        )
+        MorseBroadcastCard(uiState = uiState, onAction = onAction)
         QuickAccessWidgetCard(
             onConfigureClicked = { onAction(FlashlightUiAction.ConfigureWidgetClicked) },
         )
@@ -256,13 +250,11 @@ private fun AutoOffTimerCard(
 
 @Composable
 private fun MorseBroadcastCard(
-    message: String,
-    isLoopEnabled: Boolean,
-    onMessageChanged: (String) -> Unit,
-    onLoopToggled: () -> Unit,
-    onTransmitClicked: () -> Unit,
+    uiState: FlashlightUiState,
+    onAction: (FlashlightUiAction) -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val isTransmitting = uiState.isTransmitting
     SMLCard(modifier = modifier.fillMaxWidth()) {
         Row(
             modifier = Modifier.fillMaxWidth(),
@@ -289,21 +281,27 @@ private fun MorseBroadcastCard(
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
-                SMLSwitch(checked = isLoopEnabled, onCheckedChange = { onLoopToggled() })
+                SMLSwitch(
+                    checked = uiState.isLoopEnabled,
+                    onCheckedChange = { onAction(FlashlightUiAction.LoopToggled) },
+                    enabled = !isTransmitting,
+                )
             }
         }
         Spacer(Modifier.height(Spacing.Gutter))
         SMLTextField(
-            value = message,
-            onValueChange = onMessageChanged,
+            value = uiState.morseMessage,
+            onValueChange = { onAction(FlashlightUiAction.MessageChanged(it)) },
             placeholder = "Enter message to broadcast...",
+            enabled = !isTransmitting,
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(Spacing.Unit))
         SMLButton(
-            text = "Transmit Signal",
-            onClick = onTransmitClicked,
+            text = if (isTransmitting) "Stop Transmission" else "Transmit Signal",
+            onClick = { onAction(FlashlightUiAction.TransmitClicked) },
             variant = SMLButtonVariant.Secondary,
+            enabled = isTransmitting || uiState.morseMessage.isNotBlank(),
             leadingIcon = { PlaceholderIcon(size = 16.dp) },
             modifier = Modifier.fillMaxWidth(),
         )

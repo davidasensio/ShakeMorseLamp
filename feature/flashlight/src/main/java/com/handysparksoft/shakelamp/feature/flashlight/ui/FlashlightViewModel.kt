@@ -2,6 +2,7 @@ package com.handysparksoft.shakelamp.feature.flashlight.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
 import com.handysparksoft.shakelamp.feature.flashlight.domain.FlashlightRepository
 import com.handysparksoft.shakelamp.feature.flashlight.domain.ToggleFlashlightUseCase
 import kotlinx.coroutines.Job
@@ -13,6 +14,7 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
 
@@ -20,6 +22,7 @@ import org.koin.core.annotation.KoinViewModel
 class FlashlightViewModel(
     private val repository: FlashlightRepository,
     private val toggleFlashlight: ToggleFlashlightUseCase,
+    private val sendMorseMessage: SendMorseMessageUseCase,
 ) : ViewModel() {
     private val _uiState =
         MutableStateFlow(
@@ -31,6 +34,7 @@ class FlashlightViewModel(
     val uiEvent: SharedFlow<FlashlightUiEvent> = _uiEvent.asSharedFlow()
 
     private var autoOffJob: Job? = null
+    private var transmitJob: Job? = null
 
     fun onAction(action: FlashlightUiAction) {
         when (action) {
@@ -42,14 +46,16 @@ class FlashlightViewModel(
             FlashlightUiAction.LoopToggled -> {
                 _uiState.update { it.copy(isLoopEnabled = !it.isLoopEnabled) }
             }
-            FlashlightUiAction.TransmitClicked -> Unit
+            FlashlightUiAction.TransmitClicked -> toggleTransmission()
             FlashlightUiAction.ConfigureWidgetClicked -> Unit
         }
     }
 
     private fun togglePower() {
         val state = _uiState.value
-        if (!state.isAvailable) return
+        // A Morse transmission already owns the torch; ignore manual toggles until it's
+        // done (or explicitly stopped) instead of racing two independent torch callers.
+        if (!state.isAvailable || state.isTransmitting) return
         val newIsOn = !state.isOn
         viewModelScope.launch {
             if (toggleFlashlight(newIsOn)) {
@@ -83,6 +89,40 @@ class FlashlightViewModel(
     private fun cancelAutoOff() {
         autoOffJob?.cancel()
         autoOffJob = null
+    }
+
+    private fun toggleTransmission() {
+        if (_uiState.value.isTransmitting) {
+            stopTransmission()
+        } else {
+            startTransmission()
+        }
+    }
+
+    private fun startTransmission() {
+        val state = _uiState.value
+        if (!state.isAvailable || state.morseMessage.isBlank()) return
+
+        // The timer and a transmission both drive the same torch; a mid-transmission
+        // auto-off would cut the message short.
+        cancelAutoOff()
+        _uiState.update { it.copy(isTransmitting = true, isOn = true) }
+
+        transmitJob =
+            viewModelScope.launch {
+                try {
+                    do {
+                        sendMorseMessage(state.morseMessage, state.morseSpeedWpm)
+                    } while (_uiState.value.isLoopEnabled && isActive)
+                } finally {
+                    _uiState.update { it.copy(isTransmitting = false, isOn = false) }
+                }
+            }
+    }
+
+    private fun stopTransmission() {
+        transmitJob?.cancel()
+        transmitJob = null
     }
 
     private companion object {

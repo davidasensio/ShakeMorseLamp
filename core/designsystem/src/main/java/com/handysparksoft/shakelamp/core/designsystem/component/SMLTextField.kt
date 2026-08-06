@@ -24,11 +24,13 @@ fun SMLTextField(
     placeholder: String? = null,
     singleLine: Boolean = true,
     keyboardType: KeyboardType = KeyboardType.Text,
+    enabled: Boolean = true,
 ) {
     OutlinedTextField(
         value = value,
         onValueChange = onValueChange,
         modifier = modifier,
+        enabled = enabled,
         placeholder = placeholder?.let { { Text(it) } },
         singleLine = singleLine,
         shape = MaterialTheme.shapes.extraLarge,

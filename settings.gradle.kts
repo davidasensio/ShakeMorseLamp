@@ -32,6 +32,7 @@ include(":app")
 include(":core:ui")
 include(":core:designsystem")
 include(":core:common")
+include(":core:morse")
 
 // Feature modules
 include(":feature:flashlight")
