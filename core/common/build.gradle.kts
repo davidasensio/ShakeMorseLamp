@@ -11,6 +11,8 @@ android {
 }
 
 dependencies {
+    implementation(libs.androidx.datastore.preferences)
+
     testFixturesImplementation(platform(libs.junit5.bom))
     testFixturesImplementation(libs.junit5.jupiter)
     testFixturesImplementation(libs.kotlinx.coroutines.test)

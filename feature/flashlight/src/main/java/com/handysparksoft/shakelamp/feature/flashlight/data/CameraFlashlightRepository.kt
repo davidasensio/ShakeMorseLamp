@@ -4,8 +4,11 @@ import android.content.Context
 import android.hardware.camera2.CameraAccessException
 import android.hardware.camera2.CameraCharacteristics
 import android.hardware.camera2.CameraManager
+import android.os.Build
+import com.handysparksoft.shakelamp.core.common.domain.TorchBrightnessRepository
 import com.handysparksoft.shakelamp.feature.flashlight.domain.FlashlightRepository
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.withContext
 import org.koin.core.annotation.Single
 import timber.log.Timber
@@ -13,6 +16,7 @@ import timber.log.Timber
 @Single
 class CameraFlashlightRepository(
     context: Context,
+    private val torchBrightnessRepository: TorchBrightnessRepository,
 ) : FlashlightRepository {
     private val cameraManager = context.getSystemService(Context.CAMERA_SERVICE) as CameraManager
 
@@ -30,12 +34,25 @@ class CameraFlashlightRepository(
         val id = cameraId ?: return false
         return withContext(Dispatchers.IO) {
             try {
-                cameraManager.setTorchMode(id, enabled)
+                if (enabled) {
+                    turnOnTorch(id)
+                } else {
+                    cameraManager.setTorchMode(id, false)
+                }
                 true
             } catch (e: CameraAccessException) {
                 Timber.e(e, "Failed to set torch mode")
                 false
             }
+        }
+    }
+
+    private suspend fun turnOnTorch(id: String) {
+        val level = torchBrightnessRepository.observeStrengthLevel().first()
+        if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU && level > 1) {
+            cameraManager.turnOnTorchWithStrengthLevel(id, level)
+        } else {
+            cameraManager.setTorchMode(id, true)
         }
     }
 }

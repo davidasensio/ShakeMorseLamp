@@ -40,6 +40,7 @@ import com.handysparksoft.shakelamp.core.designsystem.component.SMLTextField
 import com.handysparksoft.shakelamp.core.designsystem.theme.ShakeMorseLampTheme
 import com.handysparksoft.shakelamp.core.designsystem.theme.Spacing
 import com.handysparksoft.shakelamp.feature.settings.domain.ThemeMode
+import kotlin.math.roundToInt
 
 @Composable
 fun SettingsScreen(
@@ -62,7 +63,11 @@ fun SettingsScreen(
     ) {
         ScreenHeader(title = "Settings", onNavigateBack = onNavigateBack)
         GesturesCard()
-        HardwareCard()
+        HardwareCard(
+            dimmerLevel = uiState.dimmerLevel,
+            dimmerMaxLevel = uiState.dimmerMaxLevel,
+            onDimmerLevelChanged = { onAction(SettingsUiAction.DimmerLevelChanged(it)) },
+        )
         EmergencyModeCard(
             message = uiState.emergencyMessage,
             isStrobeActive = uiState.isStrobeActive,
@@ -185,7 +190,13 @@ private fun GesturesCard(modifier: Modifier = Modifier) {
 }
 
 @Composable
-private fun HardwareCard(modifier: Modifier = Modifier) {
+private fun HardwareCard(
+    dimmerLevel: Int,
+    dimmerMaxLevel: Int,
+    onDimmerLevelChanged: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val isSupported = dimmerMaxLevel > 1
     Column(modifier = modifier) {
         SectionLabel(text = "HARDWARE", color = MaterialTheme.colorScheme.primaryContainer)
         Spacer(Modifier.height(Spacing.Unit))
@@ -196,7 +207,7 @@ private fun HardwareCard(modifier: Modifier = Modifier) {
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Text(
-                text = "Requires supported hardware",
+                text = if (isSupported) "Adjust flashlight brightness" else "Requires supported hardware",
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -207,9 +218,10 @@ private fun HardwareCard(modifier: Modifier = Modifier) {
             ) {
                 SliderEndIcon(R.drawable.ic_brightness_low)
                 SMLSlider(
-                    value = DIMMER_PLACEHOLDER,
-                    onValueChange = {},
-                    enabled = false,
+                    value = dimmerLevel.toFloat(),
+                    onValueChange = { onDimmerLevelChanged(it.roundToInt()) },
+                    valueRange = 1f..dimmerMaxLevel.coerceAtLeast(1).toFloat(),
+                    enabled = isSupported,
                     modifier = Modifier.weight(1f),
                 )
                 SliderEndIcon(R.drawable.ic_brightness_high)
@@ -367,7 +379,6 @@ private const val DIVIDER_ALPHA = 0.08f
 private const val BADGE_BACKGROUND_ALPHA = 0.2f
 private const val EMERGENCY_BORDER_ALPHA = 0.3f
 private const val SENSITIVITY_PLACEHOLDER = 0.5f
-private const val DIMMER_PLACEHOLDER = 0.7f
 
 @PreviewLightDark
 @Composable

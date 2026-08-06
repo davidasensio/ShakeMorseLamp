@@ -2,6 +2,7 @@ package com.handysparksoft.shakelamp.feature.settings.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.handysparksoft.shakelamp.core.common.domain.TorchBrightnessRepository
 import com.handysparksoft.shakelamp.core.morse.domain.MorseTimingDefaults
 import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
 import com.handysparksoft.shakelamp.feature.settings.domain.ThemeMode
@@ -19,8 +20,10 @@ import org.koin.core.annotation.KoinViewModel
 class SettingsViewModel(
     private val themePreferenceRepository: ThemePreferenceRepository,
     private val sendMorseMessage: SendMorseMessageUseCase,
+    private val torchBrightnessRepository: TorchBrightnessRepository,
 ) : ViewModel() {
-    private val _uiState = MutableStateFlow(SettingsUiState())
+    private val _uiState =
+        MutableStateFlow(SettingsUiState(dimmerMaxLevel = torchBrightnessRepository.maxStrengthLevel()))
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
     private var strobeJob: Job? = null
@@ -29,6 +32,11 @@ class SettingsViewModel(
         viewModelScope.launch {
             themePreferenceRepository.observeThemeMode().collect { mode ->
                 _uiState.update { it.copy(themeMode = mode) }
+            }
+        }
+        viewModelScope.launch {
+            torchBrightnessRepository.observeStrengthLevel().collect { level ->
+                _uiState.update { it.copy(dimmerLevel = level) }
             }
         }
     }
@@ -40,11 +48,16 @@ class SettingsViewModel(
                 _uiState.update { it.copy(emergencyMessage = action.text) }
             }
             SettingsUiAction.StrobeToggled -> toggleStrobe()
+            is SettingsUiAction.DimmerLevelChanged -> changeDimmerLevel(action.level)
         }
     }
 
     private fun changeThemeMode(mode: ThemeMode) {
         viewModelScope.launch { themePreferenceRepository.setThemeMode(mode) }
+    }
+
+    private fun changeDimmerLevel(level: Int) {
+        viewModelScope.launch { torchBrightnessRepository.setStrengthLevel(level) }
     }
 
     private fun toggleStrobe() {

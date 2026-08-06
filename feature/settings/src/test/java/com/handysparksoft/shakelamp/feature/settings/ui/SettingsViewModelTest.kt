@@ -1,5 +1,6 @@
 package com.handysparksoft.shakelamp.feature.settings.ui
 
+import com.handysparksoft.shakelamp.core.common.domain.TorchBrightnessRepository
 import com.handysparksoft.shakelamp.core.common.testing.MainDispatcherExtension
 import com.handysparksoft.shakelamp.core.morse.domain.PlaybackResult
 import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
@@ -24,6 +25,7 @@ import org.junit.jupiter.api.extension.RegisterExtension
 class SettingsViewModelTest {
     private val themePreferenceRepository = FakeThemePreferenceRepository()
     private val sendMorseMessage = mockk<SendMorseMessageUseCase>()
+    private val torchBrightnessRepository = FakeTorchBrightnessRepository()
 
     @BeforeEach
     fun setUp() {
@@ -98,7 +100,33 @@ class SettingsViewModelTest {
             coVerify(exactly = 0) { sendMorseMessage(any(), any(), any()) }
         }
 
-    private fun newViewModel() = SettingsViewModel(themePreferenceRepository, sendMorseMessage)
+    @Test
+    fun `initial state reflects persisted dimmer level`() =
+        runTest {
+            torchBrightnessRepository.seed(initialLevel = 3, max = 5)
+            val viewModel = newViewModel()
+            runCurrent()
+
+            assertEquals(3, viewModel.uiState.value.dimmerLevel)
+            assertEquals(5, viewModel.uiState.value.dimmerMaxLevel)
+        }
+
+    @Test
+    fun `DimmerLevelChanged persists and updates state`() =
+        runTest {
+            torchBrightnessRepository.seed(initialLevel = 1, max = 5)
+            val viewModel = newViewModel()
+            runCurrent()
+
+            viewModel.onAction(SettingsUiAction.DimmerLevelChanged(4))
+            runCurrent()
+
+            assertEquals(4, viewModel.uiState.value.dimmerLevel)
+            assertEquals(4, torchBrightnessRepository.current())
+        }
+
+    private fun newViewModel() =
+        SettingsViewModel(themePreferenceRepository, sendMorseMessage, torchBrightnessRepository)
 
     private class FakeThemePreferenceRepository : ThemePreferenceRepository {
         private val mode = MutableStateFlow(ThemeMode.AUTO)
@@ -113,6 +141,29 @@ class SettingsViewModelTest {
 
         override suspend fun setThemeMode(mode: ThemeMode) {
             this.mode.value = mode
+        }
+    }
+
+    private class FakeTorchBrightnessRepository : TorchBrightnessRepository {
+        private val level = MutableStateFlow(1)
+        private var maxLevel = 1
+
+        fun seed(
+            initialLevel: Int,
+            max: Int,
+        ) {
+            level.value = initialLevel
+            maxLevel = max
+        }
+
+        fun current(): Int = level.value
+
+        override fun maxStrengthLevel(): Int = maxLevel
+
+        override fun observeStrengthLevel(): Flow<Int> = level
+
+        override suspend fun setStrengthLevel(level: Int) {
+            this.level.value = level
         }
     }
 

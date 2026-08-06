@@ -1,6 +1,8 @@
 package com.handysparksoft.shakelamp
 
 import android.app.Application
+import com.handysparksoft.shakelamp.core.common.CommonModule
+import com.handysparksoft.shakelamp.core.common.module
 import com.handysparksoft.shakelamp.core.morse.MorseModule
 import com.handysparksoft.shakelamp.core.morse.module
 import com.handysparksoft.shakelamp.feature.flashlight.FlashlightModule
@@ -19,7 +21,12 @@ class ShakeMorseLampApplication : Application() {
         }
         startKoin {
             androidContext(this@ShakeMorseLampApplication)
-            modules(MorseModule().module(), FlashlightModule().module(), SettingsModule().module())
+            modules(
+                CommonModule().module(),
+                MorseModule().module(),
+                FlashlightModule().module(),
+                SettingsModule().module(),
+            )
         }
     }
 }
