@@ -7,6 +7,7 @@ import com.github.takahirom.roborazzi.captureRoboImage
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLButtonPreview
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLCardPreview
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLChipPreview
+import com.handysparksoft.shakelamp.core.designsystem.component.SMLOptionCardPreview
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLSliderPreview
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLSwitchPreview
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLTextFieldPreview
@@ -73,6 +74,13 @@ class DesignSystemGalleryScreenshotTest {
     @Config(qualifiers = "+night")
     @Test
     fun chipDark() = captureComponent("SMLChip_dark") { SMLChipPreview() }
+
+    @Test
+    fun optionCardLight() = captureComponent("SMLOptionCard_light") { SMLOptionCardPreview() }
+
+    @Config(qualifiers = "+night")
+    @Test
+    fun optionCardDark() = captureComponent("SMLOptionCard_dark") { SMLOptionCardPreview() }
 
     private fun captureComponent(
         name: String,

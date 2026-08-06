@@ -1,4 +1,4 @@
-package com.handysparksoft.shakelamp.feature.flashlight.ui
+package com.handysparksoft.shakelamp.feature.settings.ui
 
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.getValue
@@ -8,21 +8,28 @@ import androidx.navigation3.runtime.NavKey
 import kotlinx.serialization.Serializable
 import org.koin.androidx.compose.koinViewModel
 
-/** :app owns the back stack. */
 @Serializable
-data object FlashlightRoute : NavKey
+data object SettingsRoute : NavKey
+
+/** Static app version info, owned by :app's own BuildConfig — passed in, not resolved via Koin. */
+data class AppVersionInfo(
+    val versionName: String,
+    val versionCode: Int,
+)
 
 @Composable
-fun FlashlightEntry(
-    onNavigateToSettings: () -> Unit,
+fun SettingsEntry(
+    onNavigateBack: () -> Unit,
+    appVersion: AppVersionInfo,
     modifier: Modifier = Modifier,
 ) {
-    val viewModel: FlashlightViewModel = koinViewModel()
+    val viewModel: SettingsViewModel = koinViewModel()
     val uiState by viewModel.uiState.collectAsStateWithLifecycle()
-    FlashlightScreen(
+    SettingsScreen(
         uiState = uiState,
         onAction = viewModel::onAction,
-        onNavigateToSettings = onNavigateToSettings,
+        onNavigateBack = onNavigateBack,
+        appVersion = appVersion,
         modifier = modifier,
     )
 }

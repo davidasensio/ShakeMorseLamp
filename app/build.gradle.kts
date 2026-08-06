@@ -28,6 +28,7 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:morse"))
     implementation(project(":feature:flashlight"))
+    implementation(project(":feature:settings"))
 
     implementation(libs.androidx.core.ktx)
     implementation(libs.androidx.activity.compose)

@@ -37,3 +37,4 @@ include(":core:morse")
 // Feature modules
 include(":feature:flashlight")
 include(":feature:morse")
+include(":feature:settings")

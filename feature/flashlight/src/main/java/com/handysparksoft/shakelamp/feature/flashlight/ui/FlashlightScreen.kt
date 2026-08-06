@@ -51,6 +51,7 @@ import kotlin.math.roundToInt
 fun FlashlightScreen(
     uiState: FlashlightUiState,
     onAction: (FlashlightUiAction) -> Unit,
+    onNavigateToSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(
@@ -63,7 +64,7 @@ fun FlashlightScreen(
                 .padding(Spacing.Margin),
         verticalArrangement = Arrangement.spacedBy(Spacing.Gutter),
     ) {
-        StatusRow(isOn = uiState.isOn)
+        StatusRow(isOn = uiState.isOn, onSettingsClicked = onNavigateToSettings)
         Column(
             modifier = Modifier.fillMaxWidth(),
             horizontalAlignment = Alignment.CenterHorizontally,
@@ -129,6 +130,7 @@ private fun PlaceholderIcon(
 @Composable
 private fun StatusRow(
     isOn: Boolean,
+    onSettingsClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val statusColor =
@@ -161,13 +163,27 @@ private fun StatusRow(
         }
         Row(
             verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Spacing.Unit / 2),
+            horizontalArrangement = Arrangement.spacedBy(Spacing.Unit),
         ) {
-            PlaceholderIcon(size = 12.dp)
-            Text(
-                text = "100%",
-                style = MaterialTheme.typography.labelSmall,
-                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            Row(
+                verticalAlignment = Alignment.CenterVertically,
+                horizontalArrangement = Arrangement.spacedBy(Spacing.Unit / 2),
+            ) {
+                PlaceholderIcon(size = 12.dp)
+                Text(
+                    text = "100%",
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+            Icon(
+                painter = painterResource(R.drawable.ic_settings),
+                contentDescription = "Settings",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier =
+                    Modifier
+                        .size(20.dp)
+                        .clickable(onClick = onSettingsClicked),
             )
         }
     }
@@ -524,6 +540,7 @@ internal fun FlashlightScreenPreview() {
                         isHistoryExpanded = true,
                     ),
                 onAction = {},
+                onNavigateToSettings = {},
             )
         }
     }

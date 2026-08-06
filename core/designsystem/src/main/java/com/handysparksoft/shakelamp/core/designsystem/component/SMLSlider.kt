@@ -23,6 +23,7 @@ fun SMLSlider(
     modifier: Modifier = Modifier,
     valueRange: ClosedFloatingPointRange<Float> = 0f..1f,
     steps: Int = 0,
+    enabled: Boolean = true,
 ) {
     Slider(
         value = value,
@@ -30,11 +31,18 @@ fun SMLSlider(
         modifier = modifier,
         valueRange = valueRange,
         steps = steps,
+        enabled = enabled,
         colors =
             SliderDefaults.colors(
                 thumbColor = MaterialTheme.colorScheme.primaryContainer,
                 activeTrackColor = MaterialTheme.colorScheme.primaryContainer,
                 inactiveTrackColor = MaterialTheme.colorScheme.surfaceVariant,
+                disabledThumbColor =
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = DISABLED_THUMB_ALPHA),
+                disabledActiveTrackColor =
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = DISABLED_ACTIVE_TRACK_ALPHA),
+                disabledInactiveTrackColor =
+                    MaterialTheme.colorScheme.onSurfaceVariant.copy(alpha = DISABLED_INACTIVE_TRACK_ALPHA),
             ),
     )
 }
@@ -57,3 +65,6 @@ internal fun SMLSliderPreview() {
 }
 
 private const val PREVIEW_INITIAL_VALUE = 20f
+private const val DISABLED_THUMB_ALPHA = 0.4f
+private const val DISABLED_ACTIVE_TRACK_ALPHA = 0.3f
+private const val DISABLED_INACTIVE_TRACK_ALPHA = 0.15f
