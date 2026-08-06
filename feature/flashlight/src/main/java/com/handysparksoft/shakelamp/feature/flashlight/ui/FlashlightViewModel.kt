@@ -4,6 +4,7 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
 import com.handysparksoft.shakelamp.feature.flashlight.domain.FlashlightRepository
+import com.handysparksoft.shakelamp.feature.flashlight.domain.MorseHistoryRepository
 import com.handysparksoft.shakelamp.feature.flashlight.domain.ToggleFlashlightUseCase
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
@@ -23,6 +24,7 @@ class FlashlightViewModel(
     private val repository: FlashlightRepository,
     private val toggleFlashlight: ToggleFlashlightUseCase,
     private val sendMorseMessage: SendMorseMessageUseCase,
+    private val historyRepository: MorseHistoryRepository,
 ) : ViewModel() {
     private val _uiState =
         MutableStateFlow(
@@ -36,6 +38,14 @@ class FlashlightViewModel(
     private var autoOffJob: Job? = null
     private var transmitJob: Job? = null
 
+    init {
+        viewModelScope.launch {
+            historyRepository.observeHistory().collect { history ->
+                _uiState.update { it.copy(sentMessageHistory = history) }
+            }
+        }
+    }
+
     fun onAction(action: FlashlightUiAction) {
         when (action) {
             FlashlightUiAction.TogglePower -> togglePower()
@@ -47,6 +57,9 @@ class FlashlightViewModel(
                 _uiState.update { it.copy(isLoopEnabled = !it.isLoopEnabled) }
             }
             FlashlightUiAction.TransmitClicked -> toggleTransmission()
+            FlashlightUiAction.HistoryToggled -> {
+                _uiState.update { it.copy(isHistoryExpanded = !it.isHistoryExpanded) }
+            }
             FlashlightUiAction.ConfigureWidgetClicked -> Unit
         }
     }
@@ -107,6 +120,7 @@ class FlashlightViewModel(
         // auto-off would cut the message short.
         cancelAutoOff()
         _uiState.update { it.copy(isTransmitting = true, isOn = true) }
+        viewModelScope.launch { historyRepository.addMessage(state.morseMessage) }
 
         transmitJob =
             viewModelScope.launch {

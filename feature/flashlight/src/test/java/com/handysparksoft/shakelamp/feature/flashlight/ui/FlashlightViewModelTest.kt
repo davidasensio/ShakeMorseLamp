@@ -5,12 +5,17 @@ import com.handysparksoft.shakelamp.core.common.testing.MainDispatcherExtension
 import com.handysparksoft.shakelamp.core.morse.domain.PlaybackResult
 import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
 import com.handysparksoft.shakelamp.feature.flashlight.domain.FlashlightRepository
+import com.handysparksoft.shakelamp.feature.flashlight.domain.MorseHistoryRepository
 import com.handysparksoft.shakelamp.feature.flashlight.domain.ToggleFlashlightUseCase
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
 import kotlinx.coroutines.delay
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
+import kotlinx.coroutines.test.TestScope
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -25,6 +30,7 @@ class FlashlightViewModelTest {
     private val repository = mockk<FlashlightRepository>()
     private val toggleFlashlight = mockk<ToggleFlashlightUseCase>()
     private val sendMorseMessage = mockk<SendMorseMessageUseCase>()
+    private val historyRepository = FakeMorseHistoryRepository()
 
     @BeforeEach
     fun setUp() {
@@ -262,7 +268,75 @@ class FlashlightViewModelTest {
             assertTrue(viewModel.uiState.value.isTransmitting)
         }
 
-    private fun newViewModel() = FlashlightViewModel(repository, toggleFlashlight, sendMorseMessage)
+    @Test
+    fun `sending a message records it in history`() =
+        runTest {
+            val viewModel = newViewModel()
+            viewModel.onAction(FlashlightUiAction.MessageChanged("SOS"))
+
+            viewModel.onAction(FlashlightUiAction.TransmitClicked)
+            runCurrent()
+
+            assertEquals(listOf("SOS"), viewModel.uiState.value.sentMessageHistory)
+        }
+
+    @Test
+    fun `resending a message moves it to front, no dupe`() =
+        runTest {
+            val viewModel = newViewModel()
+            sendAndAwait(viewModel, "SOS")
+            sendAndAwait(viewModel, "OK")
+            sendAndAwait(viewModel, "SOS")
+
+            assertEquals(listOf("SOS", "OK"), viewModel.uiState.value.sentMessageHistory)
+        }
+
+    @Test
+    fun `history is capped at ten entries`() =
+        runTest {
+            val viewModel = newViewModel()
+            (1..HISTORY_OVERFLOW_COUNT).forEach { index -> sendAndAwait(viewModel, "MSG$index") }
+
+            assertEquals(MAX_HISTORY_SIZE, viewModel.uiState.value.sentMessageHistory.size)
+            assertEquals(
+                "MSG$HISTORY_OVERFLOW_COUNT",
+                viewModel.uiState.value.sentMessageHistory
+                    .first(),
+            )
+        }
+
+    @Test
+    fun `HistoryToggled flips the expansion state`() =
+        runTest {
+            val viewModel = newViewModel()
+
+            viewModel.onAction(FlashlightUiAction.HistoryToggled)
+
+            assertEquals(true, viewModel.uiState.value.isHistoryExpanded)
+        }
+
+    private suspend fun TestScope.sendAndAwait(
+        viewModel: FlashlightViewModel,
+        message: String,
+    ) {
+        viewModel.onAction(FlashlightUiAction.MessageChanged(message))
+        viewModel.onAction(FlashlightUiAction.TransmitClicked)
+        runCurrent()
+    }
+
+    private fun newViewModel() = FlashlightViewModel(repository, toggleFlashlight, sendMorseMessage, historyRepository)
+
+    private class FakeMorseHistoryRepository : MorseHistoryRepository {
+        private val history = MutableStateFlow<List<String>>(emptyList())
+
+        override fun observeHistory(): Flow<List<String>> = history
+
+        override suspend fun addMessage(text: String) {
+            history.update { current ->
+                (listOf(text) + current.filterNot { it.equals(text, ignoreCase = true) }).take(MAX_HISTORY_SIZE)
+            }
+        }
+    }
 
     companion object {
         @JvmField
@@ -274,5 +348,7 @@ class FlashlightViewModelTest {
         private const val TEN_MINUTES_MILLIS = TEN_MINUTES * 60_000L
         private const val LONG_TRANSMISSION_MILLIS = 60_000L
         private const val LOOP_ITERATIONS_TO_OBSERVE = 5L
+        private const val MAX_HISTORY_SIZE = 10
+        private const val HISTORY_OVERFLOW_COUNT = 11
     }
 }

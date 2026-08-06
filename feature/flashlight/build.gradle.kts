@@ -11,6 +11,8 @@ android {
 dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:morse"))
+    implementation(libs.androidx.datastore.preferences)
+    implementation(libs.kotlinx.serialization.json)
 
     testImplementation(testFixtures(project(":core:common")))
 }

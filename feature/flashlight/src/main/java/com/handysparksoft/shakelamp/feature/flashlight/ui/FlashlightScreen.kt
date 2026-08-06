@@ -6,6 +6,7 @@ import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.FlowRow
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
@@ -16,6 +17,7 @@ import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
@@ -25,13 +27,16 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
+import com.handysparksoft.shakelamp.core.designsystem.R
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLButton
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLButtonVariant
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLCard
+import com.handysparksoft.shakelamp.core.designsystem.component.SMLChip
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLSlider
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLSwitch
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLTextField
@@ -219,7 +224,11 @@ private fun AutoOffTimerCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(Spacing.Unit),
             ) {
-                PlaceholderIcon()
+                Icon(
+                    painter = painterResource(R.drawable.ic_timer),
+                    contentDescription = null,
+                    tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
                 Text(
                     text = "Auto-Off Timer",
                     style = MaterialTheme.typography.bodyMedium,
@@ -227,23 +236,79 @@ private fun AutoOffTimerCard(
                 )
             }
             Text(
-                text = if (timerMinutes == 0) "OFF" else "$timerMinutes MIN",
+                text = formatTimerDuration(timerMinutes),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.primaryContainer,
             )
         }
         Spacer(Modifier.height(Spacing.Unit))
+        val stopIndex = AUTO_OFF_TIMER_STOPS_MINUTES.indexOf(timerMinutes).coerceAtLeast(0)
         SMLSlider(
-            value = timerMinutes.toFloat(),
-            onValueChange = { onTimerChanged(it.roundToInt()) },
-            valueRange = 0f..60f,
-            steps = 11,
+            value = stopIndex.toFloat(),
+            onValueChange = { onTimerChanged(AUTO_OFF_TIMER_STOPS_MINUTES[it.roundToInt()]) },
+            valueRange = 0f..(AUTO_OFF_TIMER_STOPS_MINUTES.size - 1).toFloat(),
+            steps = AUTO_OFF_TIMER_STOPS_MINUTES.size - 2,
             modifier = Modifier.fillMaxWidth(),
         )
         Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
             Text("Off", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text("30m", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
-            Text("60m", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("1H", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+            Text("8H", style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+        }
+    }
+}
+
+private val AUTO_OFF_TIMER_STOPS_MINUTES = listOf(0, 1, 2, 3, 5, 10, 15, 20, 30, 60, 120, 240, 480)
+private const val MINUTES_PER_HOUR = 60
+
+private fun formatTimerDuration(minutes: Int): String =
+    when {
+        minutes <= 0 -> "OFF"
+        minutes < MINUTES_PER_HOUR -> "$minutes MIN"
+        else -> "${minutes / MINUTES_PER_HOUR}H"
+    }
+
+@Composable
+private fun MorseBroadcastHeader(
+    isLoopEnabled: Boolean,
+    isTransmitting: Boolean,
+    onLoopToggled: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.Unit),
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_dit_dash),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Text(
+                text = "Morse Broadcast",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+        }
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.Unit),
+        ) {
+            Text(
+                text = "LOOP",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            SMLSwitch(
+                checked = isLoopEnabled,
+                onCheckedChange = { onLoopToggled() },
+                enabled = !isTransmitting,
+            )
         }
     }
 }
@@ -256,38 +321,11 @@ private fun MorseBroadcastCard(
 ) {
     val isTransmitting = uiState.isTransmitting
     SMLCard(modifier = modifier.fillMaxWidth()) {
-        Row(
-            modifier = Modifier.fillMaxWidth(),
-            horizontalArrangement = Arrangement.SpaceBetween,
-            verticalAlignment = Alignment.CenterVertically,
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(Spacing.Unit),
-            ) {
-                PlaceholderIcon()
-                Text(
-                    text = "Morse Broadcast",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-            }
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(Spacing.Unit),
-            ) {
-                Text(
-                    text = "LOOP",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-                SMLSwitch(
-                    checked = uiState.isLoopEnabled,
-                    onCheckedChange = { onAction(FlashlightUiAction.LoopToggled) },
-                    enabled = !isTransmitting,
-                )
-            }
-        }
+        MorseBroadcastHeader(
+            isLoopEnabled = uiState.isLoopEnabled,
+            isTransmitting = isTransmitting,
+            onLoopToggled = { onAction(FlashlightUiAction.LoopToggled) },
+        )
         Spacer(Modifier.height(Spacing.Gutter))
         SMLTextField(
             value = uiState.morseMessage,
@@ -302,9 +340,88 @@ private fun MorseBroadcastCard(
             onClick = { onAction(FlashlightUiAction.TransmitClicked) },
             variant = SMLButtonVariant.Secondary,
             enabled = isTransmitting || uiState.morseMessage.isNotBlank(),
-            leadingIcon = { PlaceholderIcon(size = 16.dp) },
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(if (isTransmitting) R.drawable.ic_stop else R.drawable.ic_send),
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                )
+            },
             modifier = Modifier.fillMaxWidth(),
         )
+        Spacer(Modifier.height(Spacing.Gutter))
+        QuickSignalsRow(
+            isTransmitting = isTransmitting,
+            onSignalSelected = { onAction(FlashlightUiAction.MessageChanged(it)) },
+        )
+        HistorySection(
+            history = uiState.sentMessageHistory,
+            isExpanded = uiState.isHistoryExpanded,
+            isTransmitting = isTransmitting,
+            onToggleExpanded = { onAction(FlashlightUiAction.HistoryToggled) },
+            onMessageSelected = { onAction(FlashlightUiAction.MessageChanged(it)) },
+        )
+    }
+}
+
+private val QuickSignals = listOf("SOS", "HELP", "OK")
+
+@Composable
+private fun QuickSignalsRow(
+    isTransmitting: Boolean,
+    onSignalSelected: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = "Quick Signals",
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.onSurfaceVariant,
+        )
+        Spacer(Modifier.height(Spacing.Unit / 2))
+        FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.Unit)) {
+            QuickSignals.forEach { signal ->
+                SMLChip(label = signal, onClick = { onSignalSelected(signal) }, enabled = !isTransmitting)
+            }
+        }
+    }
+}
+
+@Composable
+private fun HistorySection(
+    history: List<String>,
+    isExpanded: Boolean,
+    isTransmitting: Boolean,
+    onToggleExpanded: () -> Unit,
+    onMessageSelected: (String) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    if (history.isEmpty()) return
+    Column(modifier = modifier.padding(top = Spacing.Gutter)) {
+        Row(
+            modifier = Modifier.fillMaxWidth().clickable(onClick = onToggleExpanded),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "History",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Icon(
+                painter = painterResource(if (isExpanded) R.drawable.ic_expand_less else R.drawable.ic_expand_more),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        if (isExpanded) {
+            Spacer(Modifier.height(Spacing.Unit / 2))
+            FlowRow(horizontalArrangement = Arrangement.spacedBy(Spacing.Unit)) {
+                history.forEach { message ->
+                    SMLChip(label = message, onClick = { onMessageSelected(message) }, enabled = !isTransmitting)
+                }
+            }
+        }
     }
 }
 
@@ -332,7 +449,11 @@ private fun QuickAccessWidgetCard(
                     .background(tint.copy(alpha = 0.2f)),
             contentAlignment = Alignment.Center,
         ) {
-            PlaceholderIcon(tint = tint)
+            Icon(
+                painter = painterResource(R.drawable.ic_home),
+                contentDescription = null,
+                tint = tint,
+            )
         }
         Spacer(Modifier.height(Spacing.Unit))
         Text(
@@ -351,6 +472,13 @@ private fun QuickAccessWidgetCard(
             text = "Configure Widget",
             onClick = onConfigureClicked,
             variant = SMLButtonVariant.Primary,
+            leadingIcon = {
+                Icon(
+                    painter = painterResource(R.drawable.ic_arrow_forward),
+                    contentDescription = null,
+                    modifier = Modifier.size(16.dp),
+                )
+            },
             modifier = Modifier.fillMaxWidth(),
         )
     }
@@ -369,6 +497,8 @@ internal fun FlashlightScreenPreview() {
                         timerMinutes = 30,
                         morseMessage = "SOS",
                         isLoopEnabled = true,
+                        sentMessageHistory = listOf("SOS", "MEET AT DAWN", "OK"),
+                        isHistoryExpanded = true,
                     ),
                 onAction = {},
             )

@@ -14,6 +14,8 @@ data class FlashlightUiState(
     val isTransmitting: Boolean = false,
     /** In-memory only for now; real persistence lands with the Settings screen. */
     val morseSpeedWpm: Int = MorseTimingDefaults.DEFAULT_WPM,
+    val sentMessageHistory: List<String> = emptyList(),
+    val isHistoryExpanded: Boolean = false,
 )
 
 sealed interface FlashlightUiAction {
@@ -30,6 +32,8 @@ sealed interface FlashlightUiAction {
     data object LoopToggled : FlashlightUiAction
 
     data object TransmitClicked : FlashlightUiAction
+
+    data object HistoryToggled : FlashlightUiAction
 
     // TODO: wire real widget configuration navigation once that screen exists.
     data object ConfigureWidgetClicked : FlashlightUiAction
