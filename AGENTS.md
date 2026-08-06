@@ -40,12 +40,13 @@ These take priority over everything else in this file:
 | UI Pattern | MVI: single `UiState` per screen, `StateFlow` for state, `SharedFlow` for one-off events |
 | Async | Kotlin Coroutines / Flow |
 | Logging | Timber |
-| Dependency Injection | Koin + Koin Annotations (`koin-ksp-compiler`) |
+| Dependency Injection | Koin + Koin Annotations (native Koin Compiler Plugin, not KSP) |
 | Design System | Dedicated `:core:designsystem` module |
 | Unit Testing | JUnit 5 (Jupiter) + Turbine (Flow testing) |
 | Mocking | MockK, used with JUnit 5 for collaborator mocks |
 | UI Testing | Jetpack Compose testing APIs (`createComposeRule`) + Page Object pattern |
 | Screenshot Testing | Roborazzi |
+| Local Persistence | Jetpack DataStore (Preferences) — structured values encoded as JSON via kotlinx.serialization |
 | Code Quality | ktlint + Detekt |
 | Coverage | JaCoCo (opt-in per module) |
 | Branching / Commits | Trunk-based, type-prefixed branches (see Git Workflow) |
@@ -60,6 +61,7 @@ These take priority over everything else in this file:
  ├── :feature:morse       ← morse encoder UI + ViewModel + domain + data
  ├── :core:ui             ← shared cross-feature Compose UI (composite/stateful pieces)
  ├── :core:designsystem   ← design system: theme, typography, color, reusable components
+ ├── :core:morse          ← pure-Kotlin Morse encoding/timing/playback engine (shakelamp.jvm.library)
  └── :core:common         ← shared utilities, extensions
 ```
 
@@ -67,6 +69,18 @@ Feature modules depend on core modules. **No module may depend on `:app`.**
 Core modules must not depend on feature modules. Feature modules must not depend on each other —
 share code by pushing it down into `:core:*`. `:core:ui` may depend on `:core:designsystem`
 (composite components are built on top of design system primitives).
+
+### Cross-module access to platform/hardware resources
+
+A `:core:*` module sometimes needs a capability that a feature module already owns access to
+(e.g. `:core:morse`'s playback engine needs to drive the torch, which `:feature:flashlight`
+already controls via `FlashlightRepository`). Since core modules can't depend on feature modules,
+the core module defines a small port interface (e.g. `TorchController`) and the feature module
+that owns the real resource implements the adapter, wrapping its existing repository — see
+`core/morse/domain/TorchController.kt` and `feature/flashlight/data/FlashlightTorchController.kt`.
+This keeps a single source of truth for that resource's state instead of two independent
+consumers of the same platform API. Reach for this pattern again for things like shake-detection
+sensor access.
 
 ### Packages-by-feature, inside each module
 
@@ -178,6 +192,11 @@ class MorseViewModel(private val sendMorseMessage: SendMorseMessageUseCase) : Vi
   `:core:designsystem` — keep the design system itself free of feature/business concerns.
 - `:core:designsystem` has no dependency on `:core:common` or any feature module; it only depends
   on Compose/Material3.
+- Icons are Material Symbols vector drawables under `core/designsystem/src/main/res/drawable/`,
+  rendered via Material3's `Icon(painter = painterResource(...))` — no dedicated `SMLIcon`
+  wrapper, since `Icon` already is the reusable primitive. When adding a new one, strip any
+  `android:tint="?attr/..."` attribute from the source XML (the app theme doesn't define legacy
+  AppCompat color attrs); tint is applied dynamically by the caller instead.
 
 ## Convention Plugins (build-logic)
 
@@ -197,11 +216,13 @@ compileSdk, minSdk, Java toolchain, or Compose directly in a module build file.
 | `shakelamp.android.roborazzi` | Opt-in: Roborazzi screenshot tests (Robolectric-based) |
 
 Koin wiring (Koin Compiler Plugin + `koin-core`/`koin-annotations`) lives in
-`shakelamp.android.library` (base, every module) and `shakelamp.android.feature`/
+`shakelamp.android.library` (base, every Android module) and `shakelamp.android.feature`/
 `shakelamp.android.application` add the Compose/Android-specific pieces on top
 (`koin-androidx-compose`, `koin-android`) — rather than repeating any of this in every module's
 `build.gradle.kts`. Likewise Navigation 3, Timber, JUnit5/Turbine/MockK are wired centrally in
-these convention plugins, not per module.
+these convention plugins, not per module. `shakelamp.jvm.library` (pure-Kotlin modules) wires the
+same Koin Compiler Plugin, coroutines, and JUnit5 baseline independently, since it doesn't apply
+`shakelamp.android.library` — see `:core:morse` for the first module using it.
 
 ### Adding a new feature module
 
@@ -229,6 +250,12 @@ these convention plugins, not per module.
   assertions in ViewModel tests — no manual `toList()` collection or `Dispatchers.setMain`
   boilerplate duplicated per test class; put shared test dispatcher rules in `:core:common`
   testFixtures.
+- **`runCurrent()` vs `advanceUntilIdle()`**: `advanceUntilIdle()` fast-forwards the virtual clock
+  through *all* pending delays, not just what's ready right now — a test asserting "on, but the
+  auto-off timer hasn't fired yet" will silently fail because `advanceUntilIdle()` runs the timer
+  to completion too. Use `runCurrent()` at those checkpoints (drains only what's already due) and
+  reserve `advanceTimeBy(...)` + a follow-up `runCurrent()` for actually triggering a delayed
+  effect.
 - **Mocking**: MockK for collaborator mocks in JUnit 5 unit tests (`mockk<T>()`, `every { }`,
   `coEvery { }` for suspend functions, `verify { }`). Prefer a fake from `testFixtures` over a
   mock when the collaborator's behavior is simple enough to fake — reach for MockK when a real
@@ -275,8 +302,7 @@ releasable; all work happens on short-lived branches cut directly from `main`.
 Write and apply commits with Conventional Commits, a 50–60 character subject, and a detailed
 body that lists changes in descending order of relevance. When requested, also push the branch
 and create a pull request using the repository PR template. Before creating a PR, ask whether it
-relates to any issue and include that linkage in the PR template content. Before creating a PR,
-also ask whether to run `scripts/update_readme_loc_breakdown.sh` and run it if the user says yes.
+relates to any issue and include that linkage in the PR template content.
 
 ### Commit Message Format
 
@@ -316,34 +342,8 @@ Emoji mapping:
 
 ## Build Commands
 
-```bash
-# Build
-./gradlew assembleDebug
-./gradlew assembleRelease
-
-# Tests
-./gradlew test                      # Unit tests
-./gradlew connectedAndroidTest      # Instrumented tests (needs a device/emulator)
-./gradlew recordRoborazziDebug      # Record screenshot baselines
-./gradlew verifyRoborazziDebug      # Verify screenshots against baselines
-
-# Coverage report (per module that opts in)
-./gradlew jacocoDebugTestReport
-
-# Static Analysis
-./gradlew detekt
-./gradlew ktlintCheck
-./gradlew ktlintFormat              # Auto-format
-./gradlew lint                      # Android lint (includes Compose lints)
-
-# Create Baselines
-./gradlew detektBaseline
-./gradlew ktlintGenerateBaseline
-./gradlew lint -Dlint.baselines.continue=true
-
-# Full check (lint + test + quality)
-./gradlew check
-```
+Full command reference lives in `README.md` (setup, build, test, lint, coverage, baselines) —
+per the Working Instructions above, that's where project-level/setup content belongs, not here.
 
 Only regenerate a baseline (`detektBaseline`, `ktlintGenerateBaseline`, lint baseline) to
 knowingly grandfather in existing issues while cleaning up a specific area — not as a way to
