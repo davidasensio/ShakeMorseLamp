@@ -6,6 +6,7 @@ import androidx.compose.ui.test.onRoot
 import com.github.takahirom.roborazzi.captureRoboImage
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLButtonPreview
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLCardPreview
+import com.handysparksoft.shakelamp.core.designsystem.component.SMLSliderPreview
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLSwitchPreview
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLTextFieldPreview
 import org.junit.Rule
@@ -57,6 +58,13 @@ class DesignSystemGalleryScreenshotTest {
     @Config(qualifiers = "+night")
     @Test
     fun switchDark() = captureComponent("SMLSwitch_dark") { SMLSwitchPreview() }
+
+    @Test
+    fun sliderLight() = captureComponent("SMLSlider_light") { SMLSliderPreview() }
+
+    @Config(qualifiers = "+night")
+    @Test
+    fun sliderDark() = captureComponent("SMLSlider_dark") { SMLSliderPreview() }
 
     private fun captureComponent(
         name: String,
