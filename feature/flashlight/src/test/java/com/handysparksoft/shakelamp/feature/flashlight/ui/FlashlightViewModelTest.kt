@@ -4,6 +4,7 @@ import app.cash.turbine.test
 import com.handysparksoft.shakelamp.core.common.testing.MainDispatcherExtension
 import com.handysparksoft.shakelamp.core.morse.domain.PlaybackResult
 import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
+import com.handysparksoft.shakelamp.feature.flashlight.domain.AutoOffServiceController
 import com.handysparksoft.shakelamp.feature.flashlight.domain.FlashlightRepository
 import com.handysparksoft.shakelamp.feature.flashlight.domain.MorseHistoryRepository
 import com.handysparksoft.shakelamp.feature.flashlight.domain.ToggleFlashlightUseCase
@@ -11,6 +12,7 @@ import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -31,6 +33,7 @@ class FlashlightViewModelTest {
     private val toggleFlashlight = mockk<ToggleFlashlightUseCase>()
     private val sendMorseMessage = mockk<SendMorseMessageUseCase>()
     private val historyRepository = FakeMorseHistoryRepository()
+    private val autoOffServiceController = mockk<AutoOffServiceController>(relaxUnitFun = true)
 
     @BeforeEach
     fun setUp() {
@@ -124,6 +127,47 @@ class FlashlightViewModelTest {
 
             assertEquals(false, viewModel.uiState.value.isOn)
             coVerify(exactly = 1) { toggleFlashlight(false) }
+        }
+
+    @Test
+    fun `starting the timer starts the keep-alive service`() =
+        runTest {
+            val viewModel = newViewModel()
+
+            viewModel.onAction(FlashlightUiAction.TimerChanged(5))
+            viewModel.onAction(FlashlightUiAction.TogglePower)
+            runCurrent()
+
+            verify(atLeast = 1) { autoOffServiceController.start() }
+        }
+
+    @Test
+    fun `the timer firing stops the keep-alive service`() =
+        runTest {
+            val viewModel = newViewModel()
+
+            viewModel.onAction(FlashlightUiAction.TimerChanged(5))
+            viewModel.onAction(FlashlightUiAction.TogglePower)
+            runCurrent()
+
+            advanceTimeBy(FIVE_MINUTES_MILLIS + 1)
+            runCurrent()
+
+            verify(atLeast = 1) { autoOffServiceController.stop() }
+        }
+
+    @Test
+    fun `cancelling the timer stops the keep-alive svc`() =
+        runTest {
+            val viewModel = newViewModel()
+
+            viewModel.onAction(FlashlightUiAction.TimerChanged(5))
+            viewModel.onAction(FlashlightUiAction.TogglePower)
+            runCurrent()
+            viewModel.onAction(FlashlightUiAction.TogglePower)
+            runCurrent()
+
+            verify(atLeast = 1) { autoOffServiceController.stop() }
         }
 
     @Test
@@ -410,7 +454,8 @@ class FlashlightViewModelTest {
         runCurrent()
     }
 
-    private fun newViewModel() = FlashlightViewModel(repository, toggleFlashlight, sendMorseMessage, historyRepository)
+    private fun newViewModel() =
+        FlashlightViewModel(repository, toggleFlashlight, sendMorseMessage, historyRepository, autoOffServiceController)
 
     private class FakeMorseHistoryRepository : MorseHistoryRepository {
         private val history = MutableStateFlow<List<String>>(emptyList())

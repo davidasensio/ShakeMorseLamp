@@ -37,6 +37,15 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Detects shake gestures while backgrounded to toggle the flashlight or trigger the configured emergency Morse message" />
         </service>
+
+        <service
+            android:name=".autooff.AutoOffKeepAliveService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Keeps the process alive so the flashlight auto-off countdown fires on schedule while backgrounded" />
+        </service>
     </application>
 
 </manifest>

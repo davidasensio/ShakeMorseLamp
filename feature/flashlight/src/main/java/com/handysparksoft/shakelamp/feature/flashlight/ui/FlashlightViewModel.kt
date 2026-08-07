@@ -3,6 +3,7 @@ package com.handysparksoft.shakelamp.feature.flashlight.ui
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
+import com.handysparksoft.shakelamp.feature.flashlight.domain.AutoOffServiceController
 import com.handysparksoft.shakelamp.feature.flashlight.domain.FlashlightRepository
 import com.handysparksoft.shakelamp.feature.flashlight.domain.MorseHistoryRepository
 import com.handysparksoft.shakelamp.feature.flashlight.domain.ToggleFlashlightUseCase
@@ -25,6 +26,7 @@ class FlashlightViewModel(
     private val toggleFlashlight: ToggleFlashlightUseCase,
     private val sendMorseMessage: SendMorseMessageUseCase,
     private val historyRepository: MorseHistoryRepository,
+    private val autoOffServiceController: AutoOffServiceController,
 ) : ViewModel() {
     private val _uiState =
         MutableStateFlow(
@@ -93,6 +95,7 @@ class FlashlightViewModel(
     private fun scheduleAutoOff(minutes: Int) {
         cancelAutoOff()
         if (minutes <= 0) return
+        autoOffServiceController.start()
         autoOffJob =
             viewModelScope.launch {
                 var remainingMillis = minutes * MILLIS_PER_MINUTE
@@ -104,6 +107,7 @@ class FlashlightViewModel(
                     _uiState.update { it.copy(autoOffRemainingMillis = remainingMillis) }
                 }
                 _uiState.update { it.copy(autoOffRemainingMillis = null) }
+                autoOffServiceController.stop()
                 if (_uiState.value.isTransmitting) {
                     // Stop the transmission directly rather than via stopTransmission(),
                     // which would cancel this very job (self-cancellation) — harmless, but
@@ -127,6 +131,7 @@ class FlashlightViewModel(
     private fun cancelAutoOff() {
         autoOffJob?.cancel()
         autoOffJob = null
+        autoOffServiceController.stop()
         _uiState.update { it.copy(autoOffRemainingMillis = null) }
     }
 
