@@ -59,6 +59,7 @@ These take priority over everything else in this file:
 :app
  ├── :feature:flashlight  ← flashlight control UI + ViewModel + domain + data
  ├── :feature:morse       ← morse encoder UI + ViewModel + domain + data
+ ├── :feature:settings    ← settings/about UI + ViewModel + domain + data
  ├── :core:ui             ← shared cross-feature Compose UI (composite/stateful pieces)
  ├── :core:designsystem   ← design system: theme, typography, color, reusable components
  ├── :core:morse          ← pure-Kotlin Morse encoding/timing/playback engine (shakelamp.jvm.library)

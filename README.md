@@ -1,19 +1,26 @@
 # ShakeMorseLamp
 
 An Android app that turns your phone into a Morse code flashlight: control the torch directly,
-type a message and transmit it as Morse code blinks, and (coming soon) turn the light on with a
-shake. Designs are sourced from Google Stitch and Claude, then implemented as Jetpack Compose UI.
+type a message and transmit it as Morse code blinks, turn the light on with a shake, and trigger
+an emergency SOS from the notification shade. Designs are sourced from Google Stitch and Claude,
+then implemented as Jetpack Compose UI.
 
 ## Status
 
-- ✅ Flashlight control (on/off, auto-off timer with realistic non-linear durations up to 8 hours)
-- ✅ Morse transmission: type a message, send it via the torch, loop mode, quick signals
-  (SOS/HELP/OK), and a persisted send history
+- ✅ Flashlight control (on/off, dimmable torch strength, auto-off timer with realistic
+  non-linear durations up to 8 hours, reliably backed by a foreground service)
+- ✅ Morse transmission: type a message, send it via the torch, loop mode with a configurable
+  pause between repeats, configurable transmission speed, quick signals (SOS/HELP/OK), and a
+  persisted send history
+- ✅ Shake-to-activate background service, with a configurable sensitivity and an Emergency mode
+  that loops the saved message instead of a plain toggle
+- ✅ Settings screen: gestures, hardware, transmission tuning, haptic feedback, appearance
+  (light/dark/auto theme), and an About screen
+- ✅ Emergency/SOS shortcut via a Quick Settings Tile — loops the saved emergency message,
+  one-tap "Test It" from Settings, and (Android 13+) a one-tap "Add to Quick Settings" action
+  instead of the manual Edit Tiles flow
 - ✅ Design system (`:core:designsystem`) with light/dark theming, sourced from the Stitch designs
-- 🚧 Settings screen (playback speed, theme, notification/permission toggles)
-- 🚧 Shake-to-activate background service
-- 🚧 Dimmable flashlight (torch strength)
-- 🚧 Emergency/SOS shortcut, Quick Settings Tile, home screen widget
+- 🚧 Home screen widget (Glance)
 - 🚧 Morse receiver via camera
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for the full feature list and build order.
@@ -77,6 +84,7 @@ to expected UI, not a way to make a failing screenshot test pass.
 :app
  ├── :feature:flashlight  ← flashlight control UI + ViewModel + domain + data
  ├── :feature:morse       ← morse encoder UI + ViewModel + domain + data
+ ├── :feature:settings    ← settings/about UI + ViewModel + domain + data
  ├── :core:ui             ← shared cross-feature Compose UI (composite/stateful pieces)
  ├── :core:designsystem   ← design system: theme, typography, color, reusable components
  ├── :core:morse          ← pure-Kotlin Morse encoding/timing/playback engine
