@@ -52,6 +52,9 @@ kotlinxSerialization = "1.11.0"
 # Local persistence
 datastorePreferences = "1.2.1"
 
+# Home screen widgets
+glance = "1.1.1"
+
 # Build-logic internal (for compileOnly deps in convention module)
 androidTools = "32.3.1"
 
@@ -110,6 +113,9 @@ kotlinx-serialization-json = { group = "org.jetbrains.kotlinx", name = "kotlinx-
 
 # ── Local persistence ────────────────────────────────────────────────────────────
 androidx-datastore-preferences = { group = "androidx.datastore", name = "datastore-preferences", version.ref = "datastorePreferences" }
+
+# ── Home screen widgets ──────────────────────────────────────────────────────────
+androidx-glance-appwidget = { group = "androidx.glance", name = "glance-appwidget", version.ref = "glance" }
 
 # ── Quality ────────────────────────────────────────────────────────────────────
 detekt-formatting = { group = "io.gitlab.arturbosch.detekt", name = "detekt-formatting", version.ref = "detekt" }
