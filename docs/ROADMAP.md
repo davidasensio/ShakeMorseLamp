@@ -43,9 +43,13 @@ Instructions as something to consult under `docs/`.
   instant the process was unfrozen by reopening the app. Only a foreground service (with its
   required persistent notification) keeps a component alive through a screen lock. Applies to:
   - **Auto-off timer** (item 3 below) — needs a foreground service to guarantee the torch turns
-    off on schedule even while locked.
+    off on schedule even while locked. **Done** — `AutoOffKeepAliveService`
+    (`app/.../autooff/`) holds no timer logic of its own, it just keeps the process out of the
+    freezer while `FlashlightViewModel`'s existing countdown runs; verified on-device (1-minute
+    timer + screen lock, torch turns off on schedule).
   - **Shake detection** (items 2/5 below) — needs a foreground service to keep the accelerometer
-    listener alive continuously in the background.
+    listener alive continuously in the background. **Done** — `ShakeDetectionService`
+    (`app/.../shake/`), verified on-device surviving a screen lock.
 
 ## Feature List
 
