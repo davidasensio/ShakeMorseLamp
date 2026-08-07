@@ -184,7 +184,7 @@ private fun GesturesCard(
         SMLCard(modifier = Modifier.fillMaxWidth()) {
             SettingToggleRow(
                 title = "Shake to Turn On",
-                subtitle = "Activate flashlight with a double shake",
+                subtitle = "Double-shake to toggle the flashlight on or off",
                 checked = state.isShakeEnabled,
                 onCheckedChange = { onShakeEnabledToggled() },
             )

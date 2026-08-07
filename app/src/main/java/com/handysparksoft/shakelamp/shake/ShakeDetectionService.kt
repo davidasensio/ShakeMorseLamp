@@ -99,16 +99,22 @@ class ShakeDetectionService : Service() {
         scope.launch {
             settings.map { it.sensitivityLevel }.distinctUntilChanged()
                 .flatMapLatest { level -> shakeDetector.observeShakes(level) }
-                .collect { activate(settings.value.mode, message.value) }
+                .collect { onShakeDetected(settings.value.mode, message.value) }
         }
     }
 
-    /** Shake only activates — never toggles off. A repeat shake while already active is a no-op. */
+    /** Shake toggles: activates if idle, deactivates (and stops any emergency loop) if already active. */
+    private fun onShakeDetected(
+        mode: ShakeMode,
+        message: String,
+    ) {
+        if (isActiveState) deactivate() else activate(mode, message)
+    }
+
     private fun activate(
         mode: ShakeMode,
         message: String,
     ) {
-        if (isActiveState) return
         isActiveState = true
         if (mode == ShakeMode.NORMAL || message.isBlank()) {
             scope.launch { toggleFlashlight(true) }
@@ -160,9 +166,9 @@ class ShakeDetectionService : Service() {
             )
         val text =
             if (mode == ShakeMode.EMERGENCY) {
-                "Double-shake to send your emergency message"
+                "Double-shake to start or stop your emergency message"
             } else {
-                "Double-shake to turn on the flashlight"
+                "Double-shake to toggle the flashlight"
             }
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notifications)
