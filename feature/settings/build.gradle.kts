@@ -13,6 +13,8 @@ dependencies {
     implementation(project(":core:designsystem"))
     implementation(project(":core:morse"))
     implementation(libs.androidx.datastore.preferences)
+    implementation(libs.androidx.core.ktx)
+    implementation(libs.androidx.activity.compose)
 
     testImplementation(testFixtures(project(":core:common")))
 }

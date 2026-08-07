@@ -7,6 +7,7 @@ import com.handysparksoft.shakelamp.core.morse.domain.PlaybackResult
 import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
 import com.handysparksoft.shakelamp.feature.settings.domain.EmergencyMessageRepository
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeMode
+import com.handysparksoft.shakelamp.feature.settings.domain.ShakeServiceController
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeSettings
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeSettingsRepository
 import com.handysparksoft.shakelamp.feature.settings.domain.ThemeMode
@@ -14,6 +15,7 @@ import com.handysparksoft.shakelamp.feature.settings.domain.ThemePreferenceRepos
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.mockk
+import io.mockk.verify
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
@@ -34,6 +36,7 @@ class SettingsViewModelTest {
     private val torchBrightnessRepository = FakeTorchBrightnessRepository()
     private val emergencyMessageRepository = FakeEmergencyMessageRepository()
     private val shakeSettingsRepository = FakeShakeSettingsRepository()
+    private val shakeServiceController = mockk<ShakeServiceController>(relaxUnitFun = true)
 
     @BeforeEach
     fun setUp() {
@@ -206,6 +209,27 @@ class SettingsViewModelTest {
             }
         }
 
+    @Test
+    fun `ShakeEnabledToggled starts service and persists`() =
+        runTest {
+            val viewModel = newViewModel()
+            runCurrent()
+
+            viewModel.onAction(SettingsUiAction.ShakeEnabledToggled)
+            runCurrent()
+
+            assertTrue(viewModel.uiState.value.isShakeEnabled)
+            assertTrue(shakeSettingsRepository.current().enabled)
+            verify { shakeServiceController.start() }
+
+            viewModel.onAction(SettingsUiAction.ShakeEnabledToggled)
+            runCurrent()
+
+            assertFalse(viewModel.uiState.value.isShakeEnabled)
+            assertFalse(shakeSettingsRepository.current().enabled)
+            verify { shakeServiceController.stop() }
+        }
+
     private fun newViewModel() =
         SettingsViewModel(
             themePreferenceRepository,
@@ -213,6 +237,7 @@ class SettingsViewModelTest {
             torchBrightnessRepository,
             emergencyMessageRepository,
             shakeSettingsRepository,
+            shakeServiceController,
         )
 
     private class FakeThemePreferenceRepository : ThemePreferenceRepository {

@@ -7,6 +7,7 @@ import com.handysparksoft.shakelamp.core.morse.domain.MorseTimingDefaults
 import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
 import com.handysparksoft.shakelamp.feature.settings.domain.EmergencyMessageRepository
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeMode
+import com.handysparksoft.shakelamp.feature.settings.domain.ShakeServiceController
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeSettingsRepository
 import com.handysparksoft.shakelamp.feature.settings.domain.ThemeMode
 import com.handysparksoft.shakelamp.feature.settings.domain.ThemePreferenceRepository
@@ -29,6 +30,7 @@ class SettingsViewModel(
     private val torchBrightnessRepository: TorchBrightnessRepository,
     private val emergencyMessageRepository: EmergencyMessageRepository,
     private val shakeSettingsRepository: ShakeSettingsRepository,
+    private val shakeServiceController: ShakeServiceController,
 ) : ViewModel() {
     private val _uiState =
         MutableStateFlow(SettingsUiState(dimmerMaxLevel = torchBrightnessRepository.maxStrengthLevel()))
@@ -74,7 +76,7 @@ class SettingsViewModel(
             is SettingsUiAction.EmergencyMessageChanged -> changeEmergencyMessage(action.text)
             SettingsUiAction.StrobeToggled -> toggleStrobe()
             is SettingsUiAction.DimmerLevelChanged -> changeDimmerLevel(action.level)
-            SettingsUiAction.ShakeEnabledToggled -> Unit
+            SettingsUiAction.ShakeEnabledToggled -> toggleShakeEnabled()
             is SettingsUiAction.ShakeSensitivityChanged -> changeShakeSensitivity(action.level)
             is SettingsUiAction.ShakeModeChanged -> changeShakeMode(action.mode)
         }
@@ -95,6 +97,12 @@ class SettingsViewModel(
 
     private fun changeShakeSensitivity(level: Int) {
         viewModelScope.launch { shakeSettingsRepository.setSensitivity(level) }
+    }
+
+    private fun toggleShakeEnabled() {
+        val enabling = !_uiState.value.isShakeEnabled
+        viewModelScope.launch { shakeSettingsRepository.setEnabled(enabling) }
+        if (enabling) shakeServiceController.start() else shakeServiceController.stop()
     }
 
     private fun changeShakeMode(mode: ShakeMode) {

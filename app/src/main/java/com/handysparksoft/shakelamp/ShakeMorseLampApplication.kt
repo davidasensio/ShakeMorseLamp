@@ -26,6 +26,7 @@ class ShakeMorseLampApplication : Application() {
                 MorseModule().module(),
                 FlashlightModule().module(),
                 SettingsModule().module(),
+                AppModule().module(),
             )
         }
     }

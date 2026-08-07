@@ -73,8 +73,13 @@ fun SettingsScreen(
         ) {
             ScreenHeader(title = "Settings", onNavigateBack = onNavigateBack)
             GesturesCard(
-                shakeSensitivity = uiState.shakeSensitivity,
-                shakeMode = uiState.shakeMode,
+                state =
+                    GesturesUiState(
+                        isShakeEnabled = uiState.isShakeEnabled,
+                        shakeSensitivity = uiState.shakeSensitivity,
+                        shakeMode = uiState.shakeMode,
+                    ),
+                onShakeEnabledToggled = { onAction(SettingsUiAction.ShakeEnabledToggled) },
                 onSensitivityChanged = { onAction(SettingsUiAction.ShakeSensitivityChanged(it)) },
                 onShakeModeChanged = { onAction(SettingsUiAction.ShakeModeChanged(it)) },
             )
@@ -159,10 +164,16 @@ private fun Badge(
     }
 }
 
+private data class GesturesUiState(
+    val isShakeEnabled: Boolean,
+    val shakeSensitivity: Int,
+    val shakeMode: ShakeMode,
+)
+
 @Composable
 private fun GesturesCard(
-    shakeSensitivity: Int,
-    shakeMode: ShakeMode,
+    state: GesturesUiState,
+    onShakeEnabledToggled: () -> Unit,
     onSensitivityChanged: (Int) -> Unit,
     onShakeModeChanged: (ShakeMode) -> Unit,
     modifier: Modifier = Modifier,
@@ -174,18 +185,17 @@ private fun GesturesCard(
             SettingToggleRow(
                 title = "Shake to Turn On",
                 subtitle = "Activate flashlight with a double shake",
-                checked = false,
-                onCheckedChange = {},
-                enabled = false,
+                checked = state.isShakeEnabled,
+                onCheckedChange = { onShakeEnabledToggled() },
             )
             Spacer(Modifier.height(Spacing.Gutter))
             SectionDivider()
             Spacer(Modifier.height(Spacing.Gutter))
-            SensitivitySelector(sensitivity = shakeSensitivity, onSensitivityChanged = onSensitivityChanged)
+            SensitivitySelector(sensitivity = state.shakeSensitivity, onSensitivityChanged = onSensitivityChanged)
             Spacer(Modifier.height(Spacing.Gutter))
             SectionDivider()
             Spacer(Modifier.height(Spacing.Gutter))
-            ShakeModeSelector(mode = shakeMode, onModeChanged = onShakeModeChanged)
+            ShakeModeSelector(mode = state.shakeMode, onModeChanged = onShakeModeChanged)
         }
     }
 }
