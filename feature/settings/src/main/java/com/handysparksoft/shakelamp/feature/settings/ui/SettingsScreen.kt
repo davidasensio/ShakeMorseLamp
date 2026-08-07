@@ -12,18 +12,20 @@ import androidx.compose.foundation.layout.Spacer
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
+import androidx.compose.material3.Scaffold
+import androidx.compose.material3.SnackbarHost
+import androidx.compose.material3.SnackbarHostState
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
@@ -34,11 +36,14 @@ import androidx.compose.ui.unit.dp
 import com.handysparksoft.shakelamp.core.designsystem.R
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLCard
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLOptionCard
+import com.handysparksoft.shakelamp.core.designsystem.component.SMLSegmentedButtonRow
+import com.handysparksoft.shakelamp.core.designsystem.component.SMLSegmentedOption
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLSlider
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLSwitch
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLTextField
 import com.handysparksoft.shakelamp.core.designsystem.theme.ShakeMorseLampTheme
 import com.handysparksoft.shakelamp.core.designsystem.theme.Spacing
+import com.handysparksoft.shakelamp.feature.settings.domain.ShakeMode
 import com.handysparksoft.shakelamp.feature.settings.domain.ThemeMode
 import kotlin.math.roundToInt
 
@@ -49,36 +54,47 @@ fun SettingsScreen(
     onNavigateBack: () -> Unit,
     onNavigateToAbout: () -> Unit,
     modifier: Modifier = Modifier,
+    snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
 ) {
-    Column(
-        modifier =
-            modifier
-                .fillMaxSize()
-                .background(MaterialTheme.colorScheme.background)
-                .verticalScroll(rememberScrollState())
-                .statusBarsPadding()
-                .navigationBarsPadding()
-                .padding(Spacing.Margin),
-        verticalArrangement = Arrangement.spacedBy(Spacing.Gutter),
-    ) {
-        ScreenHeader(title = "Settings", onNavigateBack = onNavigateBack)
-        GesturesCard()
-        HardwareCard(
-            dimmerLevel = uiState.dimmerLevel,
-            dimmerMaxLevel = uiState.dimmerMaxLevel,
-            onDimmerLevelChanged = { onAction(SettingsUiAction.DimmerLevelChanged(it)) },
-        )
-        EmergencyModeCard(
-            message = uiState.emergencyMessage,
-            isStrobeActive = uiState.isStrobeActive,
-            onMessageChanged = { onAction(SettingsUiAction.EmergencyMessageChanged(it)) },
-            onStrobeToggled = { onAction(SettingsUiAction.StrobeToggled) },
-        )
-        AppearanceCard(
-            themeMode = uiState.themeMode,
-            onThemeModeChanged = { onAction(SettingsUiAction.ThemeModeChanged(it)) },
-        )
-        AboutCard(onAboutClicked = onNavigateToAbout)
+    Scaffold(
+        modifier = modifier,
+        containerColor = MaterialTheme.colorScheme.background,
+        snackbarHost = { SnackbarHost(snackbarHostState) },
+    ) { innerPadding ->
+        Column(
+            modifier =
+                Modifier
+                    .fillMaxSize()
+                    .background(MaterialTheme.colorScheme.background)
+                    .verticalScroll(rememberScrollState())
+                    .padding(innerPadding)
+                    .padding(Spacing.Margin),
+            verticalArrangement = Arrangement.spacedBy(Spacing.Gutter),
+        ) {
+            ScreenHeader(title = "Settings", onNavigateBack = onNavigateBack)
+            GesturesCard(
+                shakeSensitivity = uiState.shakeSensitivity,
+                shakeMode = uiState.shakeMode,
+                onSensitivityChanged = { onAction(SettingsUiAction.ShakeSensitivityChanged(it)) },
+                onShakeModeChanged = { onAction(SettingsUiAction.ShakeModeChanged(it)) },
+            )
+            HardwareCard(
+                dimmerLevel = uiState.dimmerLevel,
+                dimmerMaxLevel = uiState.dimmerMaxLevel,
+                onDimmerLevelChanged = { onAction(SettingsUiAction.DimmerLevelChanged(it)) },
+            )
+            EmergencyModeCard(
+                message = uiState.emergencyMessage,
+                isStrobeActive = uiState.isStrobeActive,
+                onMessageChanged = { onAction(SettingsUiAction.EmergencyMessageChanged(it)) },
+                onStrobeToggled = { onAction(SettingsUiAction.StrobeToggled) },
+            )
+            AppearanceCard(
+                themeMode = uiState.themeMode,
+                onThemeModeChanged = { onAction(SettingsUiAction.ThemeModeChanged(it)) },
+            )
+            AboutCard(onAboutClicked = onNavigateToAbout)
+        }
     }
 }
 
@@ -144,7 +160,13 @@ private fun Badge(
 }
 
 @Composable
-private fun GesturesCard(modifier: Modifier = Modifier) {
+private fun GesturesCard(
+    shakeSensitivity: Int,
+    shakeMode: ShakeMode,
+    onSensitivityChanged: (Int) -> Unit,
+    onShakeModeChanged: (ShakeMode) -> Unit,
+    modifier: Modifier = Modifier,
+) {
     Column(modifier = modifier) {
         SectionLabel(text = "GESTURES", color = MaterialTheme.colorScheme.primaryContainer)
         Spacer(Modifier.height(Spacing.Unit))
@@ -159,35 +181,84 @@ private fun GesturesCard(modifier: Modifier = Modifier) {
             Spacer(Modifier.height(Spacing.Gutter))
             SectionDivider()
             Spacer(Modifier.height(Spacing.Gutter))
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically,
-            ) {
-                Text(
-                    text = "Sensor Sensitivity",
-                    style = MaterialTheme.typography.bodyMedium,
-                    color = MaterialTheme.colorScheme.onSurface,
-                )
-                Badge(text = "Medium")
-            }
-            Spacer(Modifier.height(Spacing.Unit))
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(Spacing.Unit),
-            ) {
-                SliderEndIcon(R.drawable.ic_mobile_vibrate)
-                SMLSlider(
-                    value = SENSITIVITY_PLACEHOLDER,
-                    onValueChange = {},
-                    enabled = false,
-                    modifier = Modifier.weight(1f),
-                )
-                SliderEndIcon(R.drawable.ic_mobile_vibrate)
-            }
+            SensitivitySelector(sensitivity = shakeSensitivity, onSensitivityChanged = onSensitivityChanged)
+            Spacer(Modifier.height(Spacing.Gutter))
+            SectionDivider()
+            Spacer(Modifier.height(Spacing.Gutter))
+            ShakeModeSelector(mode = shakeMode, onModeChanged = onShakeModeChanged)
         }
     }
 }
+
+@Composable
+private fun SensitivitySelector(
+    sensitivity: Int,
+    onSensitivityChanged: (Int) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            horizontalArrangement = Arrangement.SpaceBetween,
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(
+                text = "Sensor Sensitivity",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Badge(text = sensitivityLabel(sensitivity))
+        }
+        Spacer(Modifier.height(Spacing.Unit))
+        Row(
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(Spacing.Unit),
+        ) {
+            SliderEndIcon(R.drawable.ic_mobile_vibrate)
+            SMLSlider(
+                value = sensitivity.toFloat(),
+                onValueChange = { onSensitivityChanged(it.roundToInt()) },
+                valueRange = MIN_SENSITIVITY..MAX_SENSITIVITY,
+                steps = 1,
+                modifier = Modifier.weight(1f),
+            )
+            SliderEndIcon(R.drawable.ic_mobile_vibrate)
+        }
+    }
+}
+
+@Composable
+private fun ShakeModeSelector(
+    mode: ShakeMode,
+    onModeChanged: (ShakeMode) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        Text(
+            text = "When shaken",
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Spacer(Modifier.height(Spacing.Unit))
+        SMLSegmentedButtonRow(
+            options =
+                listOf(
+                    SMLSegmentedOption(ShakeMode.NORMAL, "Normal", painterResource(R.drawable.ic_flashlight_on)),
+                    SMLSegmentedOption(ShakeMode.EMERGENCY, "Emergency", painterResource(R.drawable.ic_warning)),
+                ),
+            selected = mode,
+            onOptionSelected = onModeChanged,
+            modifier = Modifier.fillMaxWidth(),
+        )
+    }
+}
+
+private fun sensitivityLabel(level: Int): String =
+    when (level) {
+        SENSITIVITY_LOW -> "Low"
+        SENSITIVITY_HIGH -> "High"
+        else -> "Medium"
+    }
 
 @Composable
 private fun HardwareCard(
@@ -378,7 +449,10 @@ private fun AboutCard(
 private const val DIVIDER_ALPHA = 0.08f
 private const val BADGE_BACKGROUND_ALPHA = 0.2f
 private const val EMERGENCY_BORDER_ALPHA = 0.3f
-private const val SENSITIVITY_PLACEHOLDER = 0.5f
+private const val MIN_SENSITIVITY = 1f
+private const val MAX_SENSITIVITY = 3f
+private const val SENSITIVITY_LOW = 1
+private const val SENSITIVITY_HIGH = 3
 
 @PreviewLightDark
 @Composable

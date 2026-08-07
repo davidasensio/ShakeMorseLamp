@@ -5,11 +5,17 @@ import androidx.lifecycle.viewModelScope
 import com.handysparksoft.shakelamp.core.common.domain.TorchBrightnessRepository
 import com.handysparksoft.shakelamp.core.morse.domain.MorseTimingDefaults
 import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
+import com.handysparksoft.shakelamp.feature.settings.domain.EmergencyMessageRepository
+import com.handysparksoft.shakelamp.feature.settings.domain.ShakeMode
+import com.handysparksoft.shakelamp.feature.settings.domain.ShakeSettingsRepository
 import com.handysparksoft.shakelamp.feature.settings.domain.ThemeMode
 import com.handysparksoft.shakelamp.feature.settings.domain.ThemePreferenceRepository
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
@@ -21,10 +27,15 @@ class SettingsViewModel(
     private val themePreferenceRepository: ThemePreferenceRepository,
     private val sendMorseMessage: SendMorseMessageUseCase,
     private val torchBrightnessRepository: TorchBrightnessRepository,
+    private val emergencyMessageRepository: EmergencyMessageRepository,
+    private val shakeSettingsRepository: ShakeSettingsRepository,
 ) : ViewModel() {
     private val _uiState =
         MutableStateFlow(SettingsUiState(dimmerMaxLevel = torchBrightnessRepository.maxStrengthLevel()))
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
+
+    private val _uiEvent = MutableSharedFlow<SettingsUiEvent>()
+    val uiEvent: SharedFlow<SettingsUiEvent> = _uiEvent.asSharedFlow()
 
     private var strobeJob: Job? = null
 
@@ -39,16 +50,33 @@ class SettingsViewModel(
                 _uiState.update { it.copy(dimmerLevel = level) }
             }
         }
+        viewModelScope.launch {
+            emergencyMessageRepository.observeMessage().collect { message ->
+                _uiState.update { it.copy(emergencyMessage = message) }
+            }
+        }
+        viewModelScope.launch {
+            shakeSettingsRepository.observeSettings().collect { settings ->
+                _uiState.update {
+                    it.copy(
+                        isShakeEnabled = settings.enabled,
+                        shakeSensitivity = settings.sensitivityLevel,
+                        shakeMode = settings.mode,
+                    )
+                }
+            }
+        }
     }
 
     fun onAction(action: SettingsUiAction) {
         when (action) {
             is SettingsUiAction.ThemeModeChanged -> changeThemeMode(action.mode)
-            is SettingsUiAction.EmergencyMessageChanged -> {
-                _uiState.update { it.copy(emergencyMessage = action.text) }
-            }
+            is SettingsUiAction.EmergencyMessageChanged -> changeEmergencyMessage(action.text)
             SettingsUiAction.StrobeToggled -> toggleStrobe()
             is SettingsUiAction.DimmerLevelChanged -> changeDimmerLevel(action.level)
+            SettingsUiAction.ShakeEnabledToggled -> Unit
+            is SettingsUiAction.ShakeSensitivityChanged -> changeShakeSensitivity(action.level)
+            is SettingsUiAction.ShakeModeChanged -> changeShakeMode(action.mode)
         }
     }
 
@@ -58,6 +86,22 @@ class SettingsViewModel(
 
     private fun changeDimmerLevel(level: Int) {
         viewModelScope.launch { torchBrightnessRepository.setStrengthLevel(level) }
+    }
+
+    private fun changeEmergencyMessage(text: String) {
+        _uiState.update { it.copy(emergencyMessage = text) }
+        viewModelScope.launch { emergencyMessageRepository.setMessage(text) }
+    }
+
+    private fun changeShakeSensitivity(level: Int) {
+        viewModelScope.launch { shakeSettingsRepository.setSensitivity(level) }
+    }
+
+    private fun changeShakeMode(mode: ShakeMode) {
+        if (mode == ShakeMode.EMERGENCY && _uiState.value.emergencyMessage.isBlank()) {
+            viewModelScope.launch { _uiEvent.emit(SettingsUiEvent.ShowMissingEmergencyMessageSnackbar) }
+        }
+        viewModelScope.launch { shakeSettingsRepository.setMode(mode) }
     }
 
     private fun toggleStrobe() {

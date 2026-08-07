@@ -1,9 +1,14 @@
 package com.handysparksoft.shakelamp.feature.settings.ui
 
+import app.cash.turbine.test
 import com.handysparksoft.shakelamp.core.common.domain.TorchBrightnessRepository
 import com.handysparksoft.shakelamp.core.common.testing.MainDispatcherExtension
 import com.handysparksoft.shakelamp.core.morse.domain.PlaybackResult
 import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
+import com.handysparksoft.shakelamp.feature.settings.domain.EmergencyMessageRepository
+import com.handysparksoft.shakelamp.feature.settings.domain.ShakeMode
+import com.handysparksoft.shakelamp.feature.settings.domain.ShakeSettings
+import com.handysparksoft.shakelamp.feature.settings.domain.ShakeSettingsRepository
 import com.handysparksoft.shakelamp.feature.settings.domain.ThemeMode
 import com.handysparksoft.shakelamp.feature.settings.domain.ThemePreferenceRepository
 import io.mockk.coEvery
@@ -12,6 +17,7 @@ import io.mockk.mockk
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
 import kotlinx.coroutines.test.runTest
@@ -26,6 +32,8 @@ class SettingsViewModelTest {
     private val themePreferenceRepository = FakeThemePreferenceRepository()
     private val sendMorseMessage = mockk<SendMorseMessageUseCase>()
     private val torchBrightnessRepository = FakeTorchBrightnessRepository()
+    private val emergencyMessageRepository = FakeEmergencyMessageRepository()
+    private val shakeSettingsRepository = FakeShakeSettingsRepository()
 
     @BeforeEach
     fun setUp() {
@@ -56,13 +64,25 @@ class SettingsViewModelTest {
         }
 
     @Test
-    fun `EmergencyMessageChanged updates state`() =
+    fun `EmergencyMessageChanged persists on change`() =
         runTest {
             val viewModel = newViewModel()
 
             viewModel.onAction(SettingsUiAction.EmergencyMessageChanged("HELP"))
+            runCurrent()
 
             assertEquals("HELP", viewModel.uiState.value.emergencyMessage)
+            assertEquals("HELP", emergencyMessageRepository.current())
+        }
+
+    @Test
+    fun `reflects persisted emergency message`() =
+        runTest {
+            emergencyMessageRepository.seed("MAYDAY")
+            val viewModel = newViewModel()
+            runCurrent()
+
+            assertEquals("MAYDAY", viewModel.uiState.value.emergencyMessage)
         }
 
     @Test
@@ -125,8 +145,75 @@ class SettingsViewModelTest {
             assertEquals(4, torchBrightnessRepository.current())
         }
 
+    @Test
+    fun `initial state reflects persisted shake settings`() =
+        runTest {
+            shakeSettingsRepository.seed(
+                ShakeSettings(enabled = true, sensitivityLevel = 3, mode = ShakeMode.EMERGENCY),
+            )
+            val viewModel = newViewModel()
+            runCurrent()
+
+            assertTrue(viewModel.uiState.value.isShakeEnabled)
+            assertEquals(3, viewModel.uiState.value.shakeSensitivity)
+            assertEquals(ShakeMode.EMERGENCY, viewModel.uiState.value.shakeMode)
+        }
+
+    @Test
+    fun `ShakeSensitivityChanged updates and persists`() =
+        runTest {
+            val viewModel = newViewModel()
+            runCurrent()
+
+            viewModel.onAction(SettingsUiAction.ShakeSensitivityChanged(1))
+            runCurrent()
+
+            assertEquals(1, viewModel.uiState.value.shakeSensitivity)
+            assertEquals(1, shakeSettingsRepository.current().sensitivityLevel)
+        }
+
+    @Test
+    fun `EMERGENCY mode with message emits no snackbar`() =
+        runTest {
+            val viewModel = newViewModel()
+            viewModel.onAction(SettingsUiAction.EmergencyMessageChanged("SOS"))
+            runCurrent()
+
+            viewModel.uiEvent.test {
+                viewModel.onAction(SettingsUiAction.ShakeModeChanged(ShakeMode.EMERGENCY))
+                runCurrent()
+
+                assertEquals(ShakeMode.EMERGENCY, viewModel.uiState.value.shakeMode)
+                assertEquals(ShakeMode.EMERGENCY, shakeSettingsRepository.current().mode)
+                expectNoEvents()
+            }
+        }
+
+    @Test
+    fun `blank message in EMERGENCY mode emits snackbar`() =
+        runTest {
+            val viewModel = newViewModel()
+            viewModel.onAction(SettingsUiAction.EmergencyMessageChanged(""))
+            runCurrent()
+
+            viewModel.uiEvent.test {
+                viewModel.onAction(SettingsUiAction.ShakeModeChanged(ShakeMode.EMERGENCY))
+                runCurrent()
+
+                assertEquals(SettingsUiEvent.ShowMissingEmergencyMessageSnackbar, awaitItem())
+                assertEquals(ShakeMode.EMERGENCY, viewModel.uiState.value.shakeMode)
+                assertEquals(ShakeMode.EMERGENCY, shakeSettingsRepository.current().mode)
+            }
+        }
+
     private fun newViewModel() =
-        SettingsViewModel(themePreferenceRepository, sendMorseMessage, torchBrightnessRepository)
+        SettingsViewModel(
+            themePreferenceRepository,
+            sendMorseMessage,
+            torchBrightnessRepository,
+            emergencyMessageRepository,
+            shakeSettingsRepository,
+        )
 
     private class FakeThemePreferenceRepository : ThemePreferenceRepository {
         private val mode = MutableStateFlow(ThemeMode.AUTO)
@@ -164,6 +251,46 @@ class SettingsViewModelTest {
 
         override suspend fun setStrengthLevel(level: Int) {
             this.level.value = level
+        }
+    }
+
+    private class FakeEmergencyMessageRepository : EmergencyMessageRepository {
+        private val message = MutableStateFlow("SOS")
+
+        fun seed(initial: String) {
+            message.value = initial
+        }
+
+        fun current(): String = message.value
+
+        override fun observeMessage(): Flow<String> = message
+
+        override suspend fun setMessage(message: String) {
+            this.message.value = message
+        }
+    }
+
+    private class FakeShakeSettingsRepository : ShakeSettingsRepository {
+        private val settings = MutableStateFlow(ShakeSettings())
+
+        fun seed(initial: ShakeSettings) {
+            settings.value = initial
+        }
+
+        fun current(): ShakeSettings = settings.value
+
+        override fun observeSettings(): Flow<ShakeSettings> = settings
+
+        override suspend fun setEnabled(enabled: Boolean) {
+            settings.update { it.copy(enabled = enabled) }
+        }
+
+        override suspend fun setSensitivity(level: Int) {
+            settings.update { it.copy(sensitivityLevel = level) }
+        }
+
+        override suspend fun setMode(mode: ShakeMode) {
+            settings.update { it.copy(mode = mode) }
         }
     }
 

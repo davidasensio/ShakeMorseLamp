@@ -8,6 +8,7 @@ import com.handysparksoft.shakelamp.core.designsystem.component.SMLButtonPreview
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLCardPreview
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLChipPreview
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLOptionCardPreview
+import com.handysparksoft.shakelamp.core.designsystem.component.SMLSegmentedButtonRowPreview
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLSliderPreview
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLSwitchPreview
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLTextFieldPreview
@@ -81,6 +82,13 @@ class DesignSystemGalleryScreenshotTest {
     @Config(qualifiers = "+night")
     @Test
     fun optionCardDark() = captureComponent("SMLOptionCard_dark") { SMLOptionCardPreview() }
+
+    @Test
+    fun segmentedButtonRowLight() = captureComponent("SMLSegmentedButtonRow_light") { SMLSegmentedButtonRowPreview() }
+
+    @Config(qualifiers = "+night")
+    @Test
+    fun segmentedButtonRowDark() = captureComponent("SMLSegmentedButtonRow_dark") { SMLSegmentedButtonRowPreview() }
 
     private fun captureComponent(
         name: String,
