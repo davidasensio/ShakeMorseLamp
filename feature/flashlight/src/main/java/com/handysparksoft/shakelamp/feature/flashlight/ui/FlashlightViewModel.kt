@@ -43,7 +43,6 @@ class FlashlightViewModel(
     private val _uiEvent = MutableSharedFlow<FlashlightUiEvent>()
     val uiEvent: SharedFlow<FlashlightUiEvent> = _uiEvent.asSharedFlow()
 
-    private var autoOffJob: Job? = null
     private var transmitJob: Job? = null
 
     init {
@@ -65,6 +64,22 @@ class FlashlightViewModel(
         viewModelScope.launch {
             transmissionSpeedRepository.observeSpeedWpm().collect { wpm ->
                 _uiState.update { it.copy(morseSpeedWpm = wpm) }
+            }
+        }
+        viewModelScope.launch {
+            repository.observeTorchState().collect { isOn ->
+                _uiState.update { it.copy(isOn = isOn) }
+            }
+        }
+        viewModelScope.launch {
+            autoOffServiceController.observeRemainingMillis().collect { remaining ->
+                _uiState.update { it.copy(autoOffRemainingMillis = remaining) }
+                // The service already turned the torch off directly; a still-alive transmit
+                // loop would otherwise flip it back on at its next dot/dash.
+                if (remaining == 0L && _uiState.value.isTransmitting) {
+                    transmitJob?.cancel()
+                    transmitJob = null
+                }
             }
         }
     }
@@ -114,46 +129,15 @@ class FlashlightViewModel(
     }
 
     private fun scheduleAutoOff(minutes: Int) {
-        cancelAutoOff()
-        if (minutes <= 0) return
-        autoOffServiceController.start()
-        autoOffJob =
-            viewModelScope.launch {
-                var remainingMillis = minutes * MILLIS_PER_MINUTE
-                _uiState.update { it.copy(autoOffRemainingMillis = remainingMillis) }
-                while (remainingMillis > 0) {
-                    val step = minOf(AUTO_OFF_TICK_MILLIS, remainingMillis)
-                    delay(step)
-                    remainingMillis -= step
-                    _uiState.update { it.copy(autoOffRemainingMillis = remainingMillis) }
-                }
-                _uiState.update { it.copy(autoOffRemainingMillis = null) }
-                autoOffServiceController.stop()
-                if (_uiState.value.isTransmitting) {
-                    // Stop the transmission directly rather than via stopTransmission(),
-                    // which would cancel this very job (self-cancellation) — harmless, but
-                    // needless since this coroutine is already about to finish anyway.
-                    transmitJob?.cancel()
-                    transmitJob = null
-                } else {
-                    turnOffFlashlight()
-                }
-            }
-    }
-
-    private suspend fun turnOffFlashlight() {
-        if (toggleFlashlight(false)) {
-            _uiState.update { it.copy(isOn = false) }
-        } else {
-            _uiEvent.emit(FlashlightUiEvent.ShowError("Couldn't turn off the flashlight"))
+        if (minutes <= 0) {
+            cancelAutoOff()
+            return
         }
+        autoOffServiceController.start(minutes)
     }
 
     private fun cancelAutoOff() {
-        autoOffJob?.cancel()
-        autoOffJob = null
         autoOffServiceController.stop()
-        _uiState.update { it.copy(autoOffRemainingMillis = null) }
     }
 
     private fun toggleTransmission() {
@@ -197,10 +181,5 @@ class FlashlightViewModel(
         cancelAutoOff()
         transmitJob?.cancel()
         transmitJob = null
-    }
-
-    private companion object {
-        const val MILLIS_PER_MINUTE = 60_000L
-        const val AUTO_OFF_TICK_MILLIS = 1_000L
     }
 }

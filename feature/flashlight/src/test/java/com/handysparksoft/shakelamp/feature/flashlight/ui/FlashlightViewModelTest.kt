@@ -52,6 +52,8 @@ class FlashlightViewModelTest {
         every { loopPauseRepository.observePauseMillis() } returns MutableStateFlow(2_000L)
         every { transmissionSpeedRepository.observeSpeedWpm() } returns
             MutableStateFlow(MorseTimingDefaults.DEFAULT_WPM)
+        every { repository.observeTorchState() } returns MutableStateFlow(false)
+        every { autoOffServiceController.observeRemainingMillis() } returns MutableStateFlow(null)
     }
 
     @Test
@@ -124,23 +126,6 @@ class FlashlightViewModelTest {
         }
 
     @Test
-    fun `flashlight auto-offs after the timer duration`() =
-        runTest {
-            val viewModel = newViewModel()
-
-            viewModel.onAction(FlashlightUiAction.TimerChanged(5))
-            viewModel.onAction(FlashlightUiAction.TogglePower)
-            runCurrent()
-            assertEquals(true, viewModel.uiState.value.isOn)
-
-            advanceTimeBy(FIVE_MINUTES_MILLIS + 1)
-            runCurrent()
-
-            assertEquals(false, viewModel.uiState.value.isOn)
-            coVerify(exactly = 1) { toggleFlashlight(false) }
-        }
-
-    @Test
     fun `starting the timer starts the keep-alive service`() =
         runTest {
             val viewModel = newViewModel()
@@ -149,22 +134,7 @@ class FlashlightViewModelTest {
             viewModel.onAction(FlashlightUiAction.TogglePower)
             runCurrent()
 
-            verify(atLeast = 1) { autoOffServiceController.start() }
-        }
-
-    @Test
-    fun `the timer firing stops the keep-alive service`() =
-        runTest {
-            val viewModel = newViewModel()
-
-            viewModel.onAction(FlashlightUiAction.TimerChanged(5))
-            viewModel.onAction(FlashlightUiAction.TogglePower)
-            runCurrent()
-
-            advanceTimeBy(FIVE_MINUTES_MILLIS + 1)
-            runCurrent()
-
-            verify(atLeast = 1) { autoOffServiceController.stop() }
+            verify(atLeast = 1) { autoOffServiceController.start(5) }
         }
 
     @Test
@@ -191,11 +161,9 @@ class FlashlightViewModelTest {
             runCurrent()
 
             viewModel.onAction(FlashlightUiAction.TimerChanged(2))
-            advanceTimeBy(TEN_MINUTES_MILLIS + 1)
             runCurrent()
 
-            assertEquals(false, viewModel.uiState.value.isOn)
-            coVerify(exactly = 1) { toggleFlashlight(false) }
+            verify { autoOffServiceController.start(2) }
         }
 
     @Test
@@ -209,10 +177,22 @@ class FlashlightViewModelTest {
             viewModel.onAction(FlashlightUiAction.TogglePower)
             runCurrent()
 
-            advanceTimeBy(FIVE_MINUTES_MILLIS + 1)
+            coVerify(exactly = 1) { toggleFlashlight(false) }
+            verify(atLeast = 1) { autoOffServiceController.stop() }
+        }
+
+    @Test
+    fun `auto-off remaining mirrors the service state`() =
+        runTest {
+            val remaining = MutableStateFlow<Long?>(null)
+            every { autoOffServiceController.observeRemainingMillis() } returns remaining
+            val viewModel = newViewModel()
             runCurrent()
 
-            coVerify(exactly = 1) { toggleFlashlight(false) }
+            remaining.value = FIVE_MINUTES_MILLIS
+            runCurrent()
+
+            assertEquals(FIVE_MINUTES_MILLIS, viewModel.uiState.value.autoOffRemainingMillis)
         }
 
     @Test
@@ -338,10 +318,7 @@ class FlashlightViewModelTest {
             viewModel.onAction(FlashlightUiAction.TransmitClicked)
             runCurrent()
 
-            advanceTimeBy(FIVE_MINUTES_MILLIS + 1)
-            runCurrent()
-
-            coVerify(exactly = 0) { toggleFlashlight(false) }
+            verify(atLeast = 1) { autoOffServiceController.stop() }
         }
 
     @Test
@@ -423,24 +400,6 @@ class FlashlightViewModelTest {
         }
 
     @Test
-    fun `looping transmission exposes auto-off progress`() =
-        runTest {
-            coEvery { sendMorseMessage(any(), any(), any()) } coAnswers {
-                delay(TRANSMISSION_STEP_MILLIS)
-                PlaybackResult.Completed
-            }
-            val viewModel = newViewModel()
-            viewModel.onAction(FlashlightUiAction.MessageChanged("SOS"))
-            viewModel.onAction(FlashlightUiAction.LoopToggled)
-            viewModel.onAction(FlashlightUiAction.TimerChanged(5))
-
-            viewModel.onAction(FlashlightUiAction.TransmitClicked)
-            runCurrent()
-
-            assertEquals(FIVE_MINUTES_MILLIS, viewModel.uiState.value.autoOffRemainingMillis)
-        }
-
-    @Test
     fun `single-shot transmission ignores the auto-off`() =
         runTest {
             val viewModel = newViewModel()
@@ -460,6 +419,8 @@ class FlashlightViewModelTest {
                 delay(TRANSMISSION_STEP_MILLIS)
                 PlaybackResult.Completed
             }
+            val remaining = MutableStateFlow<Long?>(null)
+            every { autoOffServiceController.observeRemainingMillis() } returns remaining
             val viewModel = newViewModel()
             viewModel.onAction(FlashlightUiAction.MessageChanged("SOS"))
             viewModel.onAction(FlashlightUiAction.LoopToggled)
@@ -469,7 +430,7 @@ class FlashlightViewModelTest {
             runCurrent()
             assertEquals(true, viewModel.uiState.value.isTransmitting)
 
-            advanceTimeBy(FIVE_MINUTES_MILLIS + 1)
+            remaining.value = 0L
             runCurrent()
 
             assertEquals(false, viewModel.uiState.value.isTransmitting)
@@ -493,7 +454,7 @@ class FlashlightViewModelTest {
             viewModel.onAction(FlashlightUiAction.TransmitClicked)
             runCurrent()
 
-            assertEquals(null, viewModel.uiState.value.autoOffRemainingMillis)
+            verify(atLeast = 1) { autoOffServiceController.stop() }
         }
 
     private suspend fun TestScope.sendAndAwait(
@@ -538,7 +499,6 @@ class FlashlightViewModelTest {
 
         private const val TEN_MINUTES = 10
         private const val FIVE_MINUTES_MILLIS = 5 * 60_000L
-        private const val TEN_MINUTES_MILLIS = TEN_MINUTES * 60_000L
         private const val LONG_TRANSMISSION_MILLIS = 60_000L
         private const val LOOP_ITERATIONS_TO_OBSERVE = 5L
         private const val MAX_HISTORY_SIZE = 10
