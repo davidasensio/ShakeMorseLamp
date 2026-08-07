@@ -20,6 +20,7 @@ import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation3.runtime.NavKey
+import com.handysparksoft.shakelamp.feature.settings.domain.SosTileRequestResult
 import kotlinx.serialization.Serializable
 import org.koin.androidx.compose.koinViewModel
 
@@ -54,6 +55,9 @@ fun SettingsEntry(
                     SettingsUiEvent.ShowMissingEmergencyMessageSnackbar -> {
                         snackbarHostState.showSnackbar("Set an emergency message first")
                     }
+                    is SettingsUiEvent.ShowSosTileResult -> {
+                        snackbarHostState.showSnackbar(sosTileResultMessage(event.result))
+                    }
                 }
             }
         }
@@ -73,6 +77,14 @@ fun SettingsEntry(
         snackbarHostState = snackbarHostState,
     )
 }
+
+private fun sosTileResultMessage(result: SosTileRequestResult): String =
+    when (result) {
+        SosTileRequestResult.ADDED -> "SOS tile added to Quick Settings"
+        SosTileRequestResult.ALREADY_ADDED -> "SOS tile is already in Quick Settings"
+        SosTileRequestResult.DECLINED -> "Not added — you can still add it from Quick Settings > Edit tiles"
+        SosTileRequestResult.UNSUPPORTED -> "Add it manually from Quick Settings > Edit tiles"
+    }
 
 private fun requestNotificationPermissionIfNeeded(
     context: Context,

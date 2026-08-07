@@ -14,10 +14,13 @@ import com.handysparksoft.shakelamp.feature.settings.domain.ShakeMode
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeServiceController
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeSettings
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeSettingsRepository
+import com.handysparksoft.shakelamp.feature.settings.domain.SosTileRequestResult
+import com.handysparksoft.shakelamp.feature.settings.domain.SosTileRequester
 import com.handysparksoft.shakelamp.feature.settings.domain.ThemeMode
 import com.handysparksoft.shakelamp.feature.settings.domain.ThemePreferenceRepository
 import io.mockk.coEvery
 import io.mockk.coVerify
+import io.mockk.every
 import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.delay
@@ -44,10 +47,12 @@ class SettingsViewModelTest {
     private val hapticFeedbackRepository = FakeHapticFeedbackRepository()
     private val loopPauseRepository = FakeLoopPauseRepository()
     private val transmissionSpeedRepository = FakeTransmissionSpeedRepository()
+    private val sosTileRequester = mockk<SosTileRequester>()
 
     @BeforeEach
     fun setUp() {
         coEvery { sendMorseMessage(any(), any(), any()) } returns PlaybackResult.Completed
+        every { sosTileRequester.isSupported() } returns true
     }
 
     @Test
@@ -324,6 +329,31 @@ class SettingsViewModelTest {
             runCurrent()
         }
 
+    @Test
+    fun `initial state reflects tile support`() =
+        runTest {
+            every { sosTileRequester.isSupported() } returns false
+            val viewModel = newViewModel()
+
+            assertFalse(viewModel.uiState.value.isAddSosTileSupported)
+        }
+
+    @Test
+    fun `AddSosTileRequested emits the result`() =
+        runTest {
+            every { sosTileRequester.requestAddTile(any()) } answers {
+                firstArg<(SosTileRequestResult) -> Unit>().invoke(SosTileRequestResult.ADDED)
+            }
+            val viewModel = newViewModel()
+
+            viewModel.uiEvent.test {
+                viewModel.onAction(SettingsUiAction.AddSosTileRequested)
+                runCurrent()
+
+                assertEquals(SettingsUiEvent.ShowSosTileResult(SosTileRequestResult.ADDED), awaitItem())
+            }
+        }
+
     private fun newViewModel() =
         SettingsViewModel(
             themePreferenceRepository,
@@ -335,6 +365,7 @@ class SettingsViewModelTest {
             hapticFeedbackRepository,
             loopPauseRepository,
             transmissionSpeedRepository,
+            sosTileRequester,
         )
 
     private class FakeThemePreferenceRepository : ThemePreferenceRepository {

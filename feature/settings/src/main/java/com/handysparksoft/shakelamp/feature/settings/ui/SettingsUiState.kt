@@ -4,6 +4,7 @@ import androidx.compose.runtime.Immutable
 import com.handysparksoft.shakelamp.core.morse.domain.MorseTimingDefaults
 import com.handysparksoft.shakelamp.feature.settings.domain.DEFAULT_SENSITIVITY_LEVEL
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeMode
+import com.handysparksoft.shakelamp.feature.settings.domain.SosTileRequestResult
 import com.handysparksoft.shakelamp.feature.settings.domain.ThemeMode
 
 @Immutable
@@ -19,6 +20,7 @@ data class SettingsUiState(
     val isHapticFeedbackEnabled: Boolean = true,
     val loopPauseMillis: Long = 2_000L,
     val transmissionSpeedWpm: Int = MorseTimingDefaults.DEFAULT_WPM,
+    val isAddSosTileSupported: Boolean = false,
 )
 
 sealed interface SettingsUiAction {
@@ -55,8 +57,14 @@ sealed interface SettingsUiAction {
     data class TransmissionSpeedChanged(
         val wpm: Int,
     ) : SettingsUiAction
+
+    data object AddSosTileRequested : SettingsUiAction
 }
 
 sealed interface SettingsUiEvent {
     data object ShowMissingEmergencyMessageSnackbar : SettingsUiEvent
+
+    data class ShowSosTileResult(
+        val result: SosTileRequestResult,
+    ) : SettingsUiEvent
 }

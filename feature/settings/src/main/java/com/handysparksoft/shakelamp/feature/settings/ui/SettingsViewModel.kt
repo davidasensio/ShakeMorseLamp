@@ -11,6 +11,7 @@ import com.handysparksoft.shakelamp.feature.settings.domain.EmergencyMessageRepo
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeMode
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeServiceController
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeSettingsRepository
+import com.handysparksoft.shakelamp.feature.settings.domain.SosTileRequester
 import com.handysparksoft.shakelamp.feature.settings.domain.ThemeMode
 import com.handysparksoft.shakelamp.feature.settings.domain.ThemePreferenceRepository
 import kotlinx.coroutines.Job
@@ -37,12 +38,14 @@ class SettingsViewModel(
     private val hapticFeedbackRepository: HapticFeedbackRepository,
     private val loopPauseRepository: LoopPauseRepository,
     private val transmissionSpeedRepository: TransmissionSpeedRepository,
+    private val sosTileRequester: SosTileRequester,
 ) : ViewModel() {
     private val _uiState =
         MutableStateFlow(
             SettingsUiState(
                 dimmerLevel = torchBrightnessRepository.maxStrengthLevel(),
                 dimmerMaxLevel = torchBrightnessRepository.maxStrengthLevel(),
+                isAddSosTileSupported = sosTileRequester.isSupported(),
             ),
         )
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
@@ -108,6 +111,7 @@ class SettingsViewModel(
             SettingsUiAction.HapticFeedbackToggled -> toggleHapticFeedback()
             is SettingsUiAction.LoopPauseChanged -> changeLoopPause(action.millis)
             is SettingsUiAction.TransmissionSpeedChanged -> changeTransmissionSpeed(action.wpm)
+            SettingsUiAction.AddSosTileRequested -> requestAddSosTile()
         }
     }
 
@@ -176,5 +180,11 @@ class SettingsViewModel(
 
     private fun changeTransmissionSpeed(wpm: Int) {
         viewModelScope.launch { transmissionSpeedRepository.setSpeedWpm(wpm) }
+    }
+
+    private fun requestAddSosTile() {
+        sosTileRequester.requestAddTile { result ->
+            viewModelScope.launch { _uiEvent.emit(SettingsUiEvent.ShowSosTileResult(result)) }
+        }
     }
 }

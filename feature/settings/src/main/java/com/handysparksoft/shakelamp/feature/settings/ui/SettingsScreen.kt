@@ -105,12 +105,7 @@ private fun SettingsContent(
             )
         }
         GesturesSection(uiState = uiState, onAction = onAction, performHaptic = performHaptic)
-        EmergencyModeCard(
-            message = uiState.emergencyMessage,
-            isStrobeActive = uiState.isStrobeActive,
-            onMessageChanged = { onAction(SettingsUiAction.EmergencyMessageChanged(it)) },
-            onStrobeToggled = { onAction(SettingsUiAction.StrobeToggled) },
-        )
+        EmergencyModeSection(uiState = uiState, onAction = onAction)
         TransmissionCard(
             speedWpm = uiState.transmissionSpeedWpm,
             onSpeedChanged = {
@@ -171,6 +166,24 @@ private fun GesturesSection(
             performHaptic(HapticFeedbackType.SegmentTick)
             onAction(SettingsUiAction.ShakeModeChanged(it))
         },
+    )
+}
+
+@Composable
+private fun EmergencyModeSection(
+    uiState: SettingsUiState,
+    onAction: (SettingsUiAction) -> Unit,
+) {
+    EmergencyModeCard(
+        state =
+            EmergencyModeUiState(
+                message = uiState.emergencyMessage,
+                isStrobeActive = uiState.isStrobeActive,
+                isAddSosTileSupported = uiState.isAddSosTileSupported,
+            ),
+        onMessageChanged = { onAction(SettingsUiAction.EmergencyMessageChanged(it)) },
+        onStrobeToggled = { onAction(SettingsUiAction.StrobeToggled) },
+        onAddSosTileClicked = { onAction(SettingsUiAction.AddSosTileRequested) },
     )
 }
 
@@ -501,12 +514,18 @@ private fun SliderEndIcon(iconRes: Int) {
     )
 }
 
+private data class EmergencyModeUiState(
+    val message: String,
+    val isStrobeActive: Boolean,
+    val isAddSosTileSupported: Boolean,
+)
+
 @Composable
 private fun EmergencyModeCard(
-    message: String,
-    isStrobeActive: Boolean,
+    state: EmergencyModeUiState,
     onMessageChanged: (String) -> Unit,
     onStrobeToggled: () -> Unit,
+    onAddSosTileClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
@@ -529,21 +548,59 @@ private fun EmergencyModeCard(
             )
             Spacer(Modifier.height(Spacing.Unit / 2))
             SMLTextField(
-                value = message,
+                value = state.message,
                 onValueChange = onMessageChanged,
                 placeholder = "Enter emergency message...",
-                enabled = !isStrobeActive,
+                enabled = !state.isStrobeActive,
                 modifier = Modifier.fillMaxWidth(),
             )
             Spacer(Modifier.height(Spacing.Gutter))
             SectionDivider()
             Spacer(Modifier.height(Spacing.Gutter))
             EmergencyTestRow(
-                isActive = isStrobeActive,
-                enabled = isStrobeActive || message.isNotBlank(),
+                isActive = state.isStrobeActive,
+                enabled = state.isStrobeActive || state.message.isNotBlank(),
                 onClick = onStrobeToggled,
             )
+            if (state.isAddSosTileSupported) {
+                Spacer(Modifier.height(Spacing.Gutter))
+                SectionDivider()
+                Spacer(Modifier.height(Spacing.Gutter))
+                AddSosTileRow(onClick = onAddSosTileClicked)
+            }
         }
+    }
+}
+
+@Composable
+private fun AddSosTileRow(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth().clickable(onClick = onClick),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = "Add to Quick Settings",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.onSurface,
+            )
+            Spacer(Modifier.height(Spacing.S))
+            Text(
+                text = "One-tap SOS access from the notification shade",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        Icon(
+            painter = painterResource(R.drawable.ic_arrow_forward),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(16.dp),
+        )
     }
 }
 
