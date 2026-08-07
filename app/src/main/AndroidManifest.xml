@@ -46,6 +46,26 @@
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
                 android:value="Keeps the process alive so the flashlight auto-off countdown fires on schedule while backgrounded" />
         </service>
+
+        <service
+            android:name=".sos.SosTransmissionService"
+            android:exported="false"
+            android:foregroundServiceType="specialUse">
+            <property
+                android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
+                android:value="Keeps the process alive to loop the emergency Morse message via the flashlight, started from the SOS Quick Settings tile" />
+        </service>
+
+        <service
+            android:name=".tile.SosTileService"
+            android:exported="true"
+            android:icon="@drawable/ic_sos"
+            android:label="SOS"
+            android:permission="android.permission.BIND_QUICK_SETTINGS_TILE">
+            <intent-filter>
+                <action android:name="android.service.quicksettings.action.QS_TILE" />
+            </intent-filter>
+        </service>
     </application>
 
 </manifest>

@@ -10,6 +10,9 @@ import com.handysparksoft.shakelamp.feature.flashlight.domain.FlashlightReposito
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.SupervisorJob
+import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.launch
@@ -35,18 +38,19 @@ class CameraFlashlightRepository(
 
     private val supportsStrengthControl: Boolean by lazy { torchBrightnessRepository.maxStrengthLevel() > 1 }
 
-    @Volatile
-    private var isTorchOn = false
+    private val torchState = MutableStateFlow(false)
 
     init {
         repositoryScope.launch {
             torchBrightnessRepository.observeStrengthLevel().collect { level ->
-                if (isTorchOn) applyStrength(level)
+                if (torchState.value) applyStrength(level)
             }
         }
     }
 
     override fun isFlashAvailable(): Boolean = cameraId != null
+
+    override fun observeTorchState(): Flow<Boolean> = torchState.asStateFlow()
 
     override suspend fun setTorchEnabled(enabled: Boolean): Boolean {
         val id = cameraId ?: return false
@@ -57,7 +61,7 @@ class CameraFlashlightRepository(
                 } else {
                     cameraManager.setTorchMode(id, false)
                 }
-                isTorchOn = enabled
+                torchState.value = enabled
                 true
             } catch (e: CameraAccessException) {
                 Timber.e(e, "Failed to set torch mode")
