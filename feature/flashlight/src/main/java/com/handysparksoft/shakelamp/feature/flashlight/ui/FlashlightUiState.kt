@@ -14,10 +14,11 @@ data class FlashlightUiState(
     val morseMessage: String = "",
     val isLoopEnabled: Boolean = false,
     val isTransmitting: Boolean = false,
-    /** In-memory only for now; real persistence lands with the Settings screen. */
     val morseSpeedWpm: Int = MorseTimingDefaults.DEFAULT_WPM,
     val sentMessageHistory: List<String> = emptyList(),
     val isHistoryExpanded: Boolean = false,
+    val isHapticFeedbackEnabled: Boolean = true,
+    val loopPauseMillis: Long = 2_000L,
 )
 
 sealed interface FlashlightUiAction {

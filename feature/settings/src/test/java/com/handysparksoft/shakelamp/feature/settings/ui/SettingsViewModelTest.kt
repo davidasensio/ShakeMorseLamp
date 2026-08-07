@@ -1,8 +1,12 @@
 package com.handysparksoft.shakelamp.feature.settings.ui
 
 import app.cash.turbine.test
+import com.handysparksoft.shakelamp.core.common.domain.HapticFeedbackRepository
+import com.handysparksoft.shakelamp.core.common.domain.LoopPauseRepository
 import com.handysparksoft.shakelamp.core.common.domain.TorchBrightnessRepository
+import com.handysparksoft.shakelamp.core.common.domain.TransmissionSpeedRepository
 import com.handysparksoft.shakelamp.core.common.testing.MainDispatcherExtension
+import com.handysparksoft.shakelamp.core.morse.domain.MorseTimingDefaults
 import com.handysparksoft.shakelamp.core.morse.domain.PlaybackResult
 import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
 import com.handysparksoft.shakelamp.feature.settings.domain.EmergencyMessageRepository
@@ -37,6 +41,9 @@ class SettingsViewModelTest {
     private val emergencyMessageRepository = FakeEmergencyMessageRepository()
     private val shakeSettingsRepository = FakeShakeSettingsRepository()
     private val shakeServiceController = mockk<ShakeServiceController>(relaxUnitFun = true)
+    private val hapticFeedbackRepository = FakeHapticFeedbackRepository()
+    private val loopPauseRepository = FakeLoopPauseRepository()
+    private val transmissionSpeedRepository = FakeTransmissionSpeedRepository()
 
     @BeforeEach
     fun setUp() {
@@ -95,6 +102,7 @@ class SettingsViewModelTest {
                 delay(1)
                 PlaybackResult.Completed
             }
+            loopPauseRepository.seed(0L)
             val viewModel = newViewModel()
 
             viewModel.onAction(SettingsUiAction.StrobeToggled)
@@ -230,6 +238,92 @@ class SettingsViewModelTest {
             verify { shakeServiceController.stop() }
         }
 
+    @Test
+    fun `HapticFeedbackToggled flips and persists`() =
+        runTest {
+            val viewModel = newViewModel()
+            runCurrent()
+
+            viewModel.onAction(SettingsUiAction.HapticFeedbackToggled)
+            runCurrent()
+
+            assertFalse(viewModel.uiState.value.isHapticFeedbackEnabled)
+            assertFalse(hapticFeedbackRepository.current())
+
+            viewModel.onAction(SettingsUiAction.HapticFeedbackToggled)
+            runCurrent()
+
+            assertTrue(viewModel.uiState.value.isHapticFeedbackEnabled)
+            assertTrue(hapticFeedbackRepository.current())
+        }
+
+    @Test
+    fun `TransmissionSpeedChanged persists and updates`() =
+        runTest {
+            val viewModel = newViewModel()
+            runCurrent()
+
+            viewModel.onAction(SettingsUiAction.TransmissionSpeedChanged(TRANSMISSION_SPEED_WPM))
+            runCurrent()
+
+            assertEquals(TRANSMISSION_SPEED_WPM, viewModel.uiState.value.transmissionSpeedWpm)
+            assertEquals(TRANSMISSION_SPEED_WPM, transmissionSpeedRepository.current())
+        }
+
+    @Test
+    fun `StrobeToggled uses the configured speed`() =
+        runTest {
+            transmissionSpeedRepository.seed(TRANSMISSION_SPEED_WPM)
+            loopPauseRepository.seed(LOOP_PAUSE_MILLIS)
+            val viewModel = newViewModel()
+            viewModel.onAction(SettingsUiAction.EmergencyMessageChanged("SOS"))
+            runCurrent()
+
+            viewModel.onAction(SettingsUiAction.StrobeToggled)
+            runCurrent()
+
+            coVerify { sendMorseMessage("SOS", TRANSMISSION_SPEED_WPM, any()) }
+
+            viewModel.onAction(SettingsUiAction.StrobeToggled)
+            runCurrent()
+        }
+
+    @Test
+    fun `LoopPauseChanged persists and updates state`() =
+        runTest {
+            val viewModel = newViewModel()
+            runCurrent()
+
+            viewModel.onAction(SettingsUiAction.LoopPauseChanged(LOOP_PAUSE_MILLIS))
+            runCurrent()
+
+            assertEquals(LOOP_PAUSE_MILLIS, viewModel.uiState.value.loopPauseMillis)
+            assertEquals(LOOP_PAUSE_MILLIS, loopPauseRepository.current())
+        }
+
+    @Test
+    fun `StrobeToggled waits the configured pause`() =
+        runTest {
+            loopPauseRepository.seed(LOOP_PAUSE_MILLIS)
+            val viewModel = newViewModel()
+            runCurrent()
+
+            viewModel.onAction(SettingsUiAction.StrobeToggled)
+            runCurrent()
+            coVerify(exactly = 1) { sendMorseMessage(any(), any(), any()) }
+
+            advanceTimeBy(LOOP_PAUSE_MILLIS - 1)
+            runCurrent()
+            coVerify(exactly = 1) { sendMorseMessage(any(), any(), any()) }
+
+            advanceTimeBy(2)
+            runCurrent()
+            coVerify(exactly = 2) { sendMorseMessage(any(), any(), any()) }
+
+            viewModel.onAction(SettingsUiAction.StrobeToggled)
+            runCurrent()
+        }
+
     private fun newViewModel() =
         SettingsViewModel(
             themePreferenceRepository,
@@ -238,6 +332,9 @@ class SettingsViewModelTest {
             emergencyMessageRepository,
             shakeSettingsRepository,
             shakeServiceController,
+            hapticFeedbackRepository,
+            loopPauseRepository,
+            transmissionSpeedRepository,
         )
 
     private class FakeThemePreferenceRepository : ThemePreferenceRepository {
@@ -319,11 +416,57 @@ class SettingsViewModelTest {
         }
     }
 
+    private class FakeHapticFeedbackRepository : HapticFeedbackRepository {
+        private val enabled = MutableStateFlow(true)
+
+        fun current(): Boolean = enabled.value
+
+        override fun observeEnabled(): Flow<Boolean> = enabled
+
+        override suspend fun setEnabled(enabled: Boolean) {
+            this.enabled.value = enabled
+        }
+    }
+
+    private class FakeLoopPauseRepository : LoopPauseRepository {
+        private val pauseMillis = MutableStateFlow(2_000L)
+
+        fun seed(initial: Long) {
+            pauseMillis.value = initial
+        }
+
+        fun current(): Long = pauseMillis.value
+
+        override fun observePauseMillis(): Flow<Long> = pauseMillis
+
+        override suspend fun setPauseMillis(millis: Long) {
+            pauseMillis.value = millis
+        }
+    }
+
+    private class FakeTransmissionSpeedRepository : TransmissionSpeedRepository {
+        private val speedWpm = MutableStateFlow(MorseTimingDefaults.DEFAULT_WPM)
+
+        fun seed(initial: Int) {
+            speedWpm.value = initial
+        }
+
+        fun current(): Int = speedWpm.value
+
+        override fun observeSpeedWpm(): Flow<Int> = speedWpm
+
+        override suspend fun setSpeedWpm(wpm: Int) {
+            speedWpm.value = wpm
+        }
+    }
+
     companion object {
         @JvmField
         @RegisterExtension
         val mainDispatcherExtension = MainDispatcherExtension()
 
         private const val LOOP_ITERATIONS_TO_OBSERVE = 5L
+        private const val LOOP_PAUSE_MILLIS = 5_000L
+        private const val TRANSMISSION_SPEED_WPM = 8
     }
 }

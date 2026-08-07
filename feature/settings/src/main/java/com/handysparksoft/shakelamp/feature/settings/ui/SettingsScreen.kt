@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -30,6 +31,8 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -61,7 +64,11 @@ fun SettingsScreen(
         containerColor = MaterialTheme.colorScheme.background,
         snackbarHost = { SnackbarHost(snackbarHostState) },
     ) { innerPadding ->
-        Column(
+        SettingsContent(
+            uiState = uiState,
+            onAction = onAction,
+            onNavigateBack = onNavigateBack,
+            onNavigateToAbout = onNavigateToAbout,
             modifier =
                 Modifier
                     .fillMaxSize()
@@ -69,38 +76,102 @@ fun SettingsScreen(
                     .verticalScroll(rememberScrollState())
                     .padding(innerPadding)
                     .padding(Spacing.Margin),
-            verticalArrangement = Arrangement.spacedBy(Spacing.Gutter),
-        ) {
-            ScreenHeader(title = "Settings", onNavigateBack = onNavigateBack)
-            GesturesCard(
-                state =
-                    GesturesUiState(
-                        isShakeEnabled = uiState.isShakeEnabled,
-                        shakeSensitivity = uiState.shakeSensitivity,
-                        shakeMode = uiState.shakeMode,
-                    ),
-                onShakeEnabledToggled = { onAction(SettingsUiAction.ShakeEnabledToggled) },
-                onSensitivityChanged = { onAction(SettingsUiAction.ShakeSensitivityChanged(it)) },
-                onShakeModeChanged = { onAction(SettingsUiAction.ShakeModeChanged(it)) },
-            )
-            HardwareCard(
-                dimmerLevel = uiState.dimmerLevel,
-                dimmerMaxLevel = uiState.dimmerMaxLevel,
-                onDimmerLevelChanged = { onAction(SettingsUiAction.DimmerLevelChanged(it)) },
-            )
-            EmergencyModeCard(
-                message = uiState.emergencyMessage,
-                isStrobeActive = uiState.isStrobeActive,
-                onMessageChanged = { onAction(SettingsUiAction.EmergencyMessageChanged(it)) },
-                onStrobeToggled = { onAction(SettingsUiAction.StrobeToggled) },
-            )
-            AppearanceCard(
-                themeMode = uiState.themeMode,
-                onThemeModeChanged = { onAction(SettingsUiAction.ThemeModeChanged(it)) },
-            )
-            AboutCard(onAboutClicked = onNavigateToAbout)
-        }
+        )
     }
+}
+
+@Composable
+private fun SettingsContent(
+    uiState: SettingsUiState,
+    onAction: (SettingsUiAction) -> Unit,
+    onNavigateBack: () -> Unit,
+    onNavigateToAbout: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    val haptic = LocalHapticFeedback.current
+    val performHaptic: (HapticFeedbackType) -> Unit = {
+        if (uiState.isHapticFeedbackEnabled) haptic.performHapticFeedback(it)
+    }
+    Column(
+        modifier = modifier,
+        verticalArrangement = Arrangement.spacedBy(Spacing.Gutter),
+    ) {
+        ScreenHeader(title = "Settings", onNavigateBack = onNavigateBack) {
+            Icon(
+                painter = painterResource(R.drawable.ic_info),
+                contentDescription = "About",
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+                modifier = Modifier.clickable(onClick = onNavigateToAbout),
+            )
+        }
+        GesturesSection(uiState = uiState, onAction = onAction, performHaptic = performHaptic)
+        EmergencyModeCard(
+            message = uiState.emergencyMessage,
+            isStrobeActive = uiState.isStrobeActive,
+            onMessageChanged = { onAction(SettingsUiAction.EmergencyMessageChanged(it)) },
+            onStrobeToggled = { onAction(SettingsUiAction.StrobeToggled) },
+        )
+        TransmissionCard(
+            speedWpm = uiState.transmissionSpeedWpm,
+            onSpeedChanged = {
+                performHaptic(HapticFeedbackType.SegmentFrequentTick)
+                onAction(SettingsUiAction.TransmissionSpeedChanged(it))
+            },
+            pauseMillis = uiState.loopPauseMillis,
+            onPauseChanged = {
+                performHaptic(HapticFeedbackType.SegmentFrequentTick)
+                onAction(SettingsUiAction.LoopPauseChanged(it))
+            },
+        )
+        HardwareCard(
+            dimmerLevel = uiState.dimmerLevel,
+            dimmerMaxLevel = uiState.dimmerMaxLevel,
+            onDimmerLevelChanged = {
+                performHaptic(HapticFeedbackType.SegmentFrequentTick)
+                onAction(SettingsUiAction.DimmerLevelChanged(it))
+            },
+        )
+        HapticsCard(
+            isEnabled = uiState.isHapticFeedbackEnabled,
+            onToggled = { onAction(SettingsUiAction.HapticFeedbackToggled) },
+        )
+        AppearanceCard(
+            themeMode = uiState.themeMode,
+            onThemeModeChanged = {
+                performHaptic(HapticFeedbackType.SegmentTick)
+                onAction(SettingsUiAction.ThemeModeChanged(it))
+            },
+        )
+        AboutCard(onAboutClicked = onNavigateToAbout)
+    }
+}
+
+@Composable
+private fun GesturesSection(
+    uiState: SettingsUiState,
+    onAction: (SettingsUiAction) -> Unit,
+    performHaptic: (HapticFeedbackType) -> Unit,
+) {
+    GesturesCard(
+        state =
+            GesturesUiState(
+                isShakeEnabled = uiState.isShakeEnabled,
+                shakeSensitivity = uiState.shakeSensitivity,
+                shakeMode = uiState.shakeMode,
+            ),
+        onShakeEnabledToggled = {
+            performHaptic(if (uiState.isShakeEnabled) HapticFeedbackType.ToggleOff else HapticFeedbackType.ToggleOn)
+            onAction(SettingsUiAction.ShakeEnabledToggled)
+        },
+        onSensitivityChanged = {
+            performHaptic(HapticFeedbackType.SegmentFrequentTick)
+            onAction(SettingsUiAction.ShakeSensitivityChanged(it))
+        },
+        onShakeModeChanged = {
+            performHaptic(HapticFeedbackType.SegmentTick)
+            onAction(SettingsUiAction.ShakeModeChanged(it))
+        },
+    )
 }
 
 @Composable
@@ -129,6 +200,7 @@ private fun SettingToggleRow(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(text = title, style = MaterialTheme.typography.bodyMedium, color = titleColor)
+            Spacer(Modifier.height(Spacing.S))
             Text(
                 text = subtitle,
                 style = MaterialTheme.typography.labelSmall,
@@ -287,6 +359,7 @@ private fun HardwareCard(
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
+            Spacer(Modifier.height(Spacing.S))
             Text(
                 text = if (isSupported) "Adjust flashlight brightness" else "Requires supported hardware",
                 style = MaterialTheme.typography.labelSmall,
@@ -297,17 +370,124 @@ private fun HardwareCard(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(Spacing.Unit),
             ) {
-                SliderEndIcon(R.drawable.ic_brightness_low)
                 SMLSlider(
                     value = dimmerLevel.toFloat(),
                     onValueChange = { onDimmerLevelChanged(it.roundToInt()) },
                     valueRange = 1f..dimmerMaxLevel.coerceAtLeast(1).toFloat(),
+                    steps = DIMMER_SLIDER_STEPS,
                     enabled = isSupported,
                     modifier = Modifier.weight(1f),
                 )
-                SliderEndIcon(R.drawable.ic_brightness_high)
+            }
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                SliderStopLabel("Min")
+                SliderStopLabel("Max")
             }
         }
+    }
+}
+
+@Composable
+private fun TransmissionCard(
+    speedWpm: Int,
+    onSpeedChanged: (Int) -> Unit,
+    pauseMillis: Long,
+    onPauseChanged: (Long) -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        SectionLabel(text = "TRANSMISSION", color = MaterialTheme.colorScheme.primaryContainer)
+        Spacer(Modifier.height(Spacing.Unit))
+        SMLCard(modifier = Modifier.fillMaxWidth()) {
+            TransmissionStat(
+                title = "Transmission Speed",
+                value = "$speedWpm WPM",
+                subtitle = "Speed of the flashlight blink pattern",
+            )
+            Spacer(Modifier.height(Spacing.Gutter))
+            SMLSlider(
+                value = speedWpm.toFloat(),
+                onValueChange = { onSpeedChanged(it.roundToInt()) },
+                valueRange = MIN_TRANSMISSION_WPM.toFloat()..MAX_TRANSMISSION_WPM.toFloat(),
+                steps = MAX_TRANSMISSION_WPM - MIN_TRANSMISSION_WPM - 1,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                SliderStopLabel("$MIN_TRANSMISSION_WPM WPM")
+                SliderStopLabel("$MAX_TRANSMISSION_WPM WPM")
+            }
+            Spacer(Modifier.height(Spacing.Gutter))
+            SectionDivider()
+            Spacer(Modifier.height(Spacing.Gutter))
+            TransmissionStat(
+                title = "Pause Between Loops",
+                value = formatLoopPause(pauseMillis),
+                subtitle = "Delay before repeating a looped or emergency message",
+            )
+            Spacer(Modifier.height(Spacing.Gutter))
+            val stopIndex = LOOP_PAUSE_STOPS_MILLIS.indexOf(pauseMillis).coerceAtLeast(0)
+            SMLSlider(
+                value = stopIndex.toFloat(),
+                onValueChange = { onPauseChanged(LOOP_PAUSE_STOPS_MILLIS[it.roundToInt()]) },
+                valueRange = 0f..(LOOP_PAUSE_STOPS_MILLIS.size - 1).toFloat(),
+                steps = LOOP_PAUSE_STOPS_MILLIS.size - 2,
+                modifier = Modifier.fillMaxWidth(),
+            )
+            Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
+                SliderStopLabel("Off")
+                SliderStopLabel("1 Min")
+                SliderStopLabel("10 Min")
+            }
+        }
+    }
+}
+
+@Composable
+private fun TransmissionStat(
+    title: String,
+    value: String,
+    subtitle: String,
+) {
+    Row(
+        modifier = Modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(text = title, style = MaterialTheme.typography.bodyMedium, color = MaterialTheme.colorScheme.onSurface)
+        Text(
+            text = value,
+            style = MaterialTheme.typography.labelSmall,
+            color = MaterialTheme.colorScheme.primaryContainer,
+        )
+    }
+    Spacer(Modifier.height(Spacing.S))
+    Text(
+        text = subtitle,
+        style = MaterialTheme.typography.labelSmall,
+        color = MaterialTheme.colorScheme.onSurfaceVariant,
+    )
+}
+
+@Composable
+private fun SliderStopLabel(text: String) {
+    Text(text = text, style = MaterialTheme.typography.labelSmall, color = MaterialTheme.colorScheme.onSurfaceVariant)
+}
+
+private const val MIN_TRANSMISSION_WPM = 5
+private const val MAX_TRANSMISSION_WPM = 15
+
+private val LOOP_PAUSE_STOPS_MILLIS =
+    listOf(0L, 2_000L, 5_000L, 10_000L, 20_000L, 30_000L, 60_000L, 120_000L, 300_000L, 600_000L)
+private const val MILLIS_PER_SECOND = 1_000L
+private const val SECONDS_PER_MINUTE = 60
+
+private fun formatLoopPause(millis: Long): String {
+    if (millis <= 0) return "OFF"
+    val totalSeconds = millis / MILLIS_PER_SECOND
+    return if (totalSeconds < SECONDS_PER_MINUTE) {
+        "${totalSeconds}S"
+    } else {
+        "${totalSeconds / SECONDS_PER_MINUTE}MIN"
     }
 }
 
@@ -358,13 +538,85 @@ private fun EmergencyModeCard(
             Spacer(Modifier.height(Spacing.Gutter))
             SectionDivider()
             Spacer(Modifier.height(Spacing.Gutter))
-            SettingToggleRow(
-                title = "Strobe Active",
-                subtitle = "Loops message continuously",
-                checked = isStrobeActive,
-                onCheckedChange = { onStrobeToggled() },
+            EmergencyTestRow(
+                isActive = isStrobeActive,
                 enabled = isStrobeActive || message.isNotBlank(),
-                titleColor = MaterialTheme.colorScheme.error,
+                onClick = onStrobeToggled,
+            )
+        }
+    }
+}
+
+@Composable
+private fun EmergencyTestRow(
+    isActive: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth(),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Column(modifier = Modifier.weight(1f)) {
+            Text(
+                text = if (isActive) "Testing…" else "Test It",
+                style = MaterialTheme.typography.bodyMedium,
+                color = MaterialTheme.colorScheme.error,
+            )
+            Spacer(Modifier.height(Spacing.S))
+            Text(
+                text = "Plays the saved message when shaken in Emergency mode or from the SOS tile",
+                style = MaterialTheme.typography.labelSmall,
+                color = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+        }
+        EmergencyTestButton(isActive = isActive, enabled = enabled, onClick = onClick)
+    }
+}
+
+@Composable
+private fun EmergencyTestButton(
+    isActive: Boolean,
+    enabled: Boolean,
+    onClick: () -> Unit,
+) {
+    val tint = MaterialTheme.colorScheme.error
+    val backgroundAlpha = if (enabled) EMERGENCY_TEST_BUTTON_ALPHA else EMERGENCY_TEST_BUTTON_ALPHA / 2
+    Box(
+        modifier =
+            Modifier
+                .size(EmergencyTestButtonSize)
+                .clip(CircleShape)
+                .background(tint.copy(alpha = backgroundAlpha))
+                .clickable(enabled = enabled, onClick = onClick),
+        contentAlignment = Alignment.Center,
+    ) {
+        Icon(
+            painter = painterResource(if (isActive) R.drawable.ic_stop else R.drawable.ic_send),
+            contentDescription = if (isActive) "Stop test" else "Test emergency message",
+            tint = tint,
+            modifier = Modifier.size(20.dp),
+        )
+    }
+}
+
+@Composable
+private fun HapticsCard(
+    isEnabled: Boolean,
+    onToggled: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Column(modifier = modifier) {
+        SectionLabel(text = "HAPTICS", color = MaterialTheme.colorScheme.primaryContainer)
+        Spacer(Modifier.height(Spacing.Unit))
+        SMLCard(modifier = Modifier.fillMaxWidth()) {
+            SettingToggleRow(
+                title = "Haptic Feedback",
+                subtitle = "Vibrate on slider drags, power taps, and selections",
+                checked = isEnabled,
+                onCheckedChange = { onToggled() },
             )
         }
     }
@@ -459,10 +711,13 @@ private fun AboutCard(
 private const val DIVIDER_ALPHA = 0.08f
 private const val BADGE_BACKGROUND_ALPHA = 0.2f
 private const val EMERGENCY_BORDER_ALPHA = 0.3f
+private val EmergencyTestButtonSize = 40.dp
+private const val EMERGENCY_TEST_BUTTON_ALPHA = 0.15f
 private const val MIN_SENSITIVITY = 1f
 private const val MAX_SENSITIVITY = 3f
 private const val SENSITIVITY_LOW = 1
 private const val SENSITIVITY_HIGH = 3
+private const val DIMMER_SLIDER_STEPS = 8
 
 @PreviewLightDark
 @Composable

@@ -20,6 +20,7 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
+import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.Icon
@@ -31,6 +32,8 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
+import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
@@ -68,6 +71,7 @@ fun AboutScreen(
         ) {
             ScreenHeader(title = "About", onNavigateBack = onNavigateBack)
             AboutAppBadge(appVersion = appVersion)
+            Spacer(Modifier.height(Spacing.Margin))
             AboutActionsCard(context = context)
             AboutLegalCard()
         }
@@ -164,22 +168,32 @@ private fun AboutAppBadge(
         modifier = modifier.fillMaxWidth(),
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
+        val glowColor = MaterialTheme.colorScheme.primaryContainer
         Box(
             modifier =
                 Modifier
                     .size(BADGE_SIZE)
-                    .clip(MaterialTheme.shapes.medium)
-                    .background(MaterialTheme.colorScheme.primaryContainer.copy(alpha = BADGE_BACKGROUND_ALPHA)),
+                    .clip(CircleShape)
+                    .background(MaterialTheme.colorScheme.surfaceContainerHighest),
             contentAlignment = Alignment.Center,
         ) {
+            Box(
+                modifier =
+                    Modifier
+                        .size(BADGE_GLOW_SIZE)
+                        .background(
+                            brush = Brush.radialGradient(listOf(glowColor.copy(alpha = 0.5f), Color.Transparent)),
+                            shape = CircleShape,
+                        ),
+            )
             Icon(
                 painter = painterResource(R.drawable.ic_info),
                 contentDescription = null,
-                tint = MaterialTheme.colorScheme.primaryContainer,
+                tint = glowColor,
                 modifier = Modifier.size(BADGE_ICON_SIZE),
             )
         }
-        Spacer(Modifier.height(Spacing.Unit))
+        Spacer(Modifier.height(Spacing.Margin))
         Text(
             text = "ShakeMorseLamp",
             style = MaterialTheme.typography.titleLarge,
@@ -265,12 +279,7 @@ private fun AboutFooter(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = "© $year ShakeMorseLamp",
-            style = MaterialTheme.typography.labelSmall,
-            color = MaterialTheme.colorScheme.onSurfaceVariant,
-        )
-        Text(
-            text = "Made with ❤️",
+            text = "© $year ShakeMorseLamp\nMade with ❤️ in Spain",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -278,8 +287,8 @@ private fun AboutFooter(modifier: Modifier = Modifier) {
 }
 
 private val BADGE_SIZE = 88.dp
+private val BADGE_GLOW_SIZE = 56.dp
 private val BADGE_ICON_SIZE = 40.dp
-private const val BADGE_BACKGROUND_ALPHA = 0.2f
 private const val DIVIDER_ALPHA = 0.08f
 private const val PACKAGE_ID = "com.handysparksoft.shakelamp"
 private const val PLAY_STORE_WEB_URL = "https://play.google.com/store/apps/details?id="

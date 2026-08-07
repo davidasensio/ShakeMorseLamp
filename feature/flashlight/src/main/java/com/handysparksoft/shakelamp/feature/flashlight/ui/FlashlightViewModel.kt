@@ -2,6 +2,9 @@ package com.handysparksoft.shakelamp.feature.flashlight.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.handysparksoft.shakelamp.core.common.domain.HapticFeedbackRepository
+import com.handysparksoft.shakelamp.core.common.domain.LoopPauseRepository
+import com.handysparksoft.shakelamp.core.common.domain.TransmissionSpeedRepository
 import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
 import com.handysparksoft.shakelamp.feature.flashlight.domain.AutoOffServiceController
 import com.handysparksoft.shakelamp.feature.flashlight.domain.FlashlightRepository
@@ -27,6 +30,9 @@ class FlashlightViewModel(
     private val sendMorseMessage: SendMorseMessageUseCase,
     private val historyRepository: MorseHistoryRepository,
     private val autoOffServiceController: AutoOffServiceController,
+    private val hapticFeedbackRepository: HapticFeedbackRepository,
+    private val loopPauseRepository: LoopPauseRepository,
+    private val transmissionSpeedRepository: TransmissionSpeedRepository,
 ) : ViewModel() {
     private val _uiState =
         MutableStateFlow(
@@ -44,6 +50,21 @@ class FlashlightViewModel(
         viewModelScope.launch {
             historyRepository.observeHistory().collect { history ->
                 _uiState.update { it.copy(sentMessageHistory = history) }
+            }
+        }
+        viewModelScope.launch {
+            hapticFeedbackRepository.observeEnabled().collect { enabled ->
+                _uiState.update { it.copy(isHapticFeedbackEnabled = enabled) }
+            }
+        }
+        viewModelScope.launch {
+            loopPauseRepository.observePauseMillis().collect { millis ->
+                _uiState.update { it.copy(loopPauseMillis = millis) }
+            }
+        }
+        viewModelScope.launch {
+            transmissionSpeedRepository.observeSpeedWpm().collect { wpm ->
+                _uiState.update { it.copy(morseSpeedWpm = wpm) }
             }
         }
     }
@@ -163,6 +184,8 @@ class FlashlightViewModel(
                 try {
                     do {
                         sendMorseMessage(state.morseMessage, state.morseSpeedWpm)
+                        val loopingAgain = _uiState.value.isLoopEnabled && isActive
+                        if (loopingAgain) delay(_uiState.value.loopPauseMillis)
                     } while (_uiState.value.isLoopEnabled && isActive)
                 } finally {
                     _uiState.update { it.copy(isTransmitting = false, isOn = false) }

@@ -14,7 +14,7 @@ import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
-import androidx.compose.foundation.layout.statusBarsPadding
+import androidx.compose.foundation.layout.systemBarsPadding
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -30,10 +30,11 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.hapticfeedback.HapticFeedbackType
+import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
-import androidx.compose.ui.unit.Dp
 import androidx.compose.ui.unit.dp
 import com.handysparksoft.shakelamp.core.designsystem.R
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLButton
@@ -54,13 +55,17 @@ fun FlashlightScreen(
     onNavigateToSettings: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
+    val haptic = LocalHapticFeedback.current
+    val performHaptic: (HapticFeedbackType) -> Unit = {
+        if (uiState.isHapticFeedbackEnabled) haptic.performHapticFeedback(it)
+    }
     Column(
         modifier =
             modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
                 .verticalScroll(rememberScrollState())
-                .statusBarsPadding()
+                .systemBarsPadding()
                 .padding(Spacing.Margin),
         verticalArrangement = Arrangement.spacedBy(Spacing.Gutter),
     ) {
@@ -73,7 +78,10 @@ fun FlashlightScreen(
                 isOn = uiState.isOn,
                 enabled = uiState.isAvailable,
                 autoOffProgress = autoOffProgress(uiState),
-                onClick = { onAction(FlashlightUiAction.TogglePower) },
+                onClick = {
+                    performHaptic(HapticFeedbackType.Confirm)
+                    onAction(FlashlightUiAction.TogglePower)
+                },
                 modifier = Modifier.padding(vertical = Spacing.Margin),
             )
             Text(
@@ -84,7 +92,10 @@ fun FlashlightScreen(
         }
         AutoOffTimerCard(
             timerMinutes = uiState.timerMinutes,
-            onTimerChanged = { onAction(FlashlightUiAction.TimerChanged(it)) },
+            onTimerChanged = {
+                performHaptic(HapticFeedbackType.SegmentFrequentTick)
+                onAction(FlashlightUiAction.TimerChanged(it))
+            },
         )
         MorseBroadcastCard(uiState = uiState, onAction = onAction)
         QuickAccessWidgetCard(
@@ -96,6 +107,8 @@ fun FlashlightScreen(
 private fun statusLabel(uiState: FlashlightUiState): String =
     when {
         !uiState.isAvailable -> "Flashlight unavailable"
+        uiState.isTransmitting -> "Active - Transmitting message"
+        uiState.isOn && uiState.autoOffRemainingMillis != null -> "Active - Auto-Off"
         uiState.isOn -> "Active - Emitting Light"
         else -> "Ready to ignite"
     }
@@ -109,23 +122,6 @@ private fun autoOffProgress(uiState: FlashlightUiState): Float? {
 }
 
 private const val MILLIS_PER_MINUTE = 60_000L
-
-/** A generic dummy icon placeholder — swap for real Material Symbols glyphs once provided. */
-@Composable
-private fun PlaceholderIcon(
-    modifier: Modifier = Modifier,
-    size: Dp = 20.dp,
-    tint: Color = MaterialTheme.colorScheme.onSurfaceVariant,
-) {
-    Box(
-        modifier =
-            modifier
-                .size(size)
-                .clip(MaterialTheme.shapes.extraSmall)
-                .background(tint.copy(alpha = 0.15f))
-                .border(1.dp, tint.copy(alpha = 0.4f), MaterialTheme.shapes.extraSmall),
-    )
-}
 
 @Composable
 private fun StatusRow(
@@ -161,31 +157,12 @@ private fun StatusRow(
                 color = statusColor,
             )
         }
-        Row(
-            verticalAlignment = Alignment.CenterVertically,
-            horizontalArrangement = Arrangement.spacedBy(Spacing.Unit),
-        ) {
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.spacedBy(Spacing.Unit / 2),
-            ) {
-                PlaceholderIcon(size = 12.dp)
-                Text(
-                    text = "100%",
-                    style = MaterialTheme.typography.labelSmall,
-                    color = MaterialTheme.colorScheme.onSurfaceVariant,
-                )
-            }
-            Icon(
-                painter = painterResource(R.drawable.ic_settings),
-                contentDescription = "Settings",
-                tint = MaterialTheme.colorScheme.onSurfaceVariant,
-                modifier =
-                    Modifier
-                        .size(20.dp)
-                        .clickable(onClick = onSettingsClicked),
-            )
-        }
+        Icon(
+            painter = painterResource(R.drawable.ic_tune),
+            contentDescription = "Settings",
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.clickable(onClick = onSettingsClicked),
+        )
     }
 }
 
@@ -234,10 +211,33 @@ private fun PowerButton(
                         .size(148.dp)
                         .clip(CircleShape)
                         .background(MaterialTheme.colorScheme.surfaceContainerLow),
-            )
+                contentAlignment = Alignment.Center,
+            ) {
+                PowerIcon(isOn = isOn, glowColor = glowColor)
+            }
         }
     }
 }
+
+@Composable
+private fun PowerIcon(
+    isOn: Boolean,
+    glowColor: Color,
+) {
+    if (isOn) {
+        val glowBrush = Brush.radialGradient(listOf(glowColor.copy(alpha = 0.5f), Color.Transparent))
+        Box(modifier = Modifier.size(PowerIconGlowSize).background(brush = glowBrush, shape = CircleShape))
+    }
+    Icon(
+        painter = painterResource(R.drawable.ic_power),
+        contentDescription = null,
+        tint = if (isOn) glowColor else MaterialTheme.colorScheme.onSurfaceVariant,
+        modifier = Modifier.size(PowerIconSize),
+    )
+}
+
+private val PowerIconSize = 64.dp
+private val PowerIconGlowSize = 96.dp
 
 @Composable
 private fun AutoOffTimerCard(
@@ -316,7 +316,7 @@ private fun MorseBroadcastHeader(
             horizontalArrangement = Arrangement.spacedBy(Spacing.Unit),
         ) {
             Icon(
-                painter = painterResource(R.drawable.ic_dit_dash),
+                painter = painterResource(R.drawable.ic_satellite),
                 contentDescription = null,
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -499,6 +499,7 @@ private fun QuickAccessWidgetCard(
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
+        Spacer(Modifier.height(Spacing.S))
         Text(
             text = "Control your array directly from the home screen.",
             style = MaterialTheme.typography.labelSmall,

@@ -2,8 +2,10 @@ package com.handysparksoft.shakelamp.feature.settings.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.handysparksoft.shakelamp.core.common.domain.HapticFeedbackRepository
+import com.handysparksoft.shakelamp.core.common.domain.LoopPauseRepository
 import com.handysparksoft.shakelamp.core.common.domain.TorchBrightnessRepository
-import com.handysparksoft.shakelamp.core.morse.domain.MorseTimingDefaults
+import com.handysparksoft.shakelamp.core.common.domain.TransmissionSpeedRepository
 import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
 import com.handysparksoft.shakelamp.feature.settings.domain.EmergencyMessageRepository
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeMode
@@ -12,6 +14,7 @@ import com.handysparksoft.shakelamp.feature.settings.domain.ShakeSettingsReposit
 import com.handysparksoft.shakelamp.feature.settings.domain.ThemeMode
 import com.handysparksoft.shakelamp.feature.settings.domain.ThemePreferenceRepository
 import kotlinx.coroutines.Job
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharedFlow
@@ -31,9 +34,17 @@ class SettingsViewModel(
     private val emergencyMessageRepository: EmergencyMessageRepository,
     private val shakeSettingsRepository: ShakeSettingsRepository,
     private val shakeServiceController: ShakeServiceController,
+    private val hapticFeedbackRepository: HapticFeedbackRepository,
+    private val loopPauseRepository: LoopPauseRepository,
+    private val transmissionSpeedRepository: TransmissionSpeedRepository,
 ) : ViewModel() {
     private val _uiState =
-        MutableStateFlow(SettingsUiState(dimmerMaxLevel = torchBrightnessRepository.maxStrengthLevel()))
+        MutableStateFlow(
+            SettingsUiState(
+                dimmerLevel = torchBrightnessRepository.maxStrengthLevel(),
+                dimmerMaxLevel = torchBrightnessRepository.maxStrengthLevel(),
+            ),
+        )
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
 
     private val _uiEvent = MutableSharedFlow<SettingsUiEvent>()
@@ -68,6 +79,21 @@ class SettingsViewModel(
                 }
             }
         }
+        viewModelScope.launch {
+            hapticFeedbackRepository.observeEnabled().collect { enabled ->
+                _uiState.update { it.copy(isHapticFeedbackEnabled = enabled) }
+            }
+        }
+        viewModelScope.launch {
+            loopPauseRepository.observePauseMillis().collect { millis ->
+                _uiState.update { it.copy(loopPauseMillis = millis) }
+            }
+        }
+        viewModelScope.launch {
+            transmissionSpeedRepository.observeSpeedWpm().collect { wpm ->
+                _uiState.update { it.copy(transmissionSpeedWpm = wpm) }
+            }
+        }
     }
 
     fun onAction(action: SettingsUiAction) {
@@ -79,6 +105,9 @@ class SettingsViewModel(
             SettingsUiAction.ShakeEnabledToggled -> toggleShakeEnabled()
             is SettingsUiAction.ShakeSensitivityChanged -> changeShakeSensitivity(action.level)
             is SettingsUiAction.ShakeModeChanged -> changeShakeMode(action.mode)
+            SettingsUiAction.HapticFeedbackToggled -> toggleHapticFeedback()
+            is SettingsUiAction.LoopPauseChanged -> changeLoopPause(action.millis)
+            is SettingsUiAction.TransmissionSpeedChanged -> changeTransmissionSpeed(action.wpm)
         }
     }
 
@@ -123,7 +152,9 @@ class SettingsViewModel(
         strobeJob =
             viewModelScope.launch {
                 do {
-                    sendMorseMessage(message, MorseTimingDefaults.DEFAULT_WPM)
+                    sendMorseMessage(message, _uiState.value.transmissionSpeedWpm)
+                    val loopingAgain = _uiState.value.isStrobeActive && isActive
+                    if (loopingAgain) delay(_uiState.value.loopPauseMillis)
                 } while (_uiState.value.isStrobeActive && isActive)
             }
     }
@@ -132,5 +163,18 @@ class SettingsViewModel(
         strobeJob?.cancel()
         strobeJob = null
         _uiState.update { it.copy(isStrobeActive = false) }
+    }
+
+    private fun toggleHapticFeedback() {
+        val enabling = !_uiState.value.isHapticFeedbackEnabled
+        viewModelScope.launch { hapticFeedbackRepository.setEnabled(enabling) }
+    }
+
+    private fun changeLoopPause(millis: Long) {
+        viewModelScope.launch { loopPauseRepository.setPauseMillis(millis) }
+    }
+
+    private fun changeTransmissionSpeed(wpm: Int) {
+        viewModelScope.launch { transmissionSpeedRepository.setSpeedWpm(wpm) }
     }
 }

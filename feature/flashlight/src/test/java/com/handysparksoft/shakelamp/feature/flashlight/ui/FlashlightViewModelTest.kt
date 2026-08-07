@@ -1,7 +1,11 @@
 package com.handysparksoft.shakelamp.feature.flashlight.ui
 
 import app.cash.turbine.test
+import com.handysparksoft.shakelamp.core.common.domain.HapticFeedbackRepository
+import com.handysparksoft.shakelamp.core.common.domain.LoopPauseRepository
+import com.handysparksoft.shakelamp.core.common.domain.TransmissionSpeedRepository
 import com.handysparksoft.shakelamp.core.common.testing.MainDispatcherExtension
+import com.handysparksoft.shakelamp.core.morse.domain.MorseTimingDefaults
 import com.handysparksoft.shakelamp.core.morse.domain.PlaybackResult
 import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
 import com.handysparksoft.shakelamp.feature.flashlight.domain.AutoOffServiceController
@@ -34,6 +38,9 @@ class FlashlightViewModelTest {
     private val sendMorseMessage = mockk<SendMorseMessageUseCase>()
     private val historyRepository = FakeMorseHistoryRepository()
     private val autoOffServiceController = mockk<AutoOffServiceController>(relaxUnitFun = true)
+    private val hapticFeedbackRepository = mockk<HapticFeedbackRepository>()
+    private val loopPauseRepository = mockk<LoopPauseRepository>()
+    private val transmissionSpeedRepository = mockk<TransmissionSpeedRepository>()
 
     @BeforeEach
     fun setUp() {
@@ -41,6 +48,10 @@ class FlashlightViewModelTest {
         coEvery { toggleFlashlight(true) } returns true
         coEvery { toggleFlashlight(false) } returns true
         coEvery { sendMorseMessage(any(), any(), any()) } returns PlaybackResult.Completed
+        every { hapticFeedbackRepository.observeEnabled() } returns MutableStateFlow(true)
+        every { loopPauseRepository.observePauseMillis() } returns MutableStateFlow(2_000L)
+        every { transmissionSpeedRepository.observeSpeedWpm() } returns
+            MutableStateFlow(MorseTimingDefaults.DEFAULT_WPM)
     }
 
     @Test
@@ -258,6 +269,7 @@ class FlashlightViewModelTest {
                 delay(1)
                 PlaybackResult.Completed
             }
+            every { loopPauseRepository.observePauseMillis() } returns MutableStateFlow(0L)
             val viewModel = newViewModel()
             viewModel.onAction(FlashlightUiAction.MessageChanged("SOS"))
             viewModel.onAction(FlashlightUiAction.LoopToggled)
@@ -273,6 +285,45 @@ class FlashlightViewModelTest {
             runCurrent()
 
             assertEquals(false, viewModel.uiState.value.isTransmitting)
+        }
+
+    @Test
+    fun `transmission uses the configured speed`() =
+        runTest {
+            every { transmissionSpeedRepository.observeSpeedWpm() } returns MutableStateFlow(TRANSMISSION_SPEED_WPM)
+            val viewModel = newViewModel()
+            runCurrent()
+            viewModel.onAction(FlashlightUiAction.MessageChanged("SOS"))
+
+            viewModel.onAction(FlashlightUiAction.TransmitClicked)
+            runCurrent()
+
+            coVerify { sendMorseMessage("SOS", TRANSMISSION_SPEED_WPM, any()) }
+        }
+
+    @Test
+    fun `loop mode waits the configured pause`() =
+        runTest {
+            every { loopPauseRepository.observePauseMillis() } returns MutableStateFlow(LOOP_PAUSE_MILLIS)
+            val viewModel = newViewModel()
+            runCurrent()
+            viewModel.onAction(FlashlightUiAction.MessageChanged("SOS"))
+            viewModel.onAction(FlashlightUiAction.LoopToggled)
+
+            viewModel.onAction(FlashlightUiAction.TransmitClicked)
+            runCurrent()
+            coVerify(exactly = 1) { sendMorseMessage(any(), any(), any()) }
+
+            advanceTimeBy(LOOP_PAUSE_MILLIS - 1)
+            runCurrent()
+            coVerify(exactly = 1) { sendMorseMessage(any(), any(), any()) }
+
+            advanceTimeBy(2)
+            runCurrent()
+            coVerify(exactly = 2) { sendMorseMessage(any(), any(), any()) }
+
+            viewModel.onAction(FlashlightUiAction.TransmitClicked)
+            runCurrent()
         }
 
     @Test
@@ -455,7 +506,16 @@ class FlashlightViewModelTest {
     }
 
     private fun newViewModel() =
-        FlashlightViewModel(repository, toggleFlashlight, sendMorseMessage, historyRepository, autoOffServiceController)
+        FlashlightViewModel(
+            repository,
+            toggleFlashlight,
+            sendMorseMessage,
+            historyRepository,
+            autoOffServiceController,
+            hapticFeedbackRepository,
+            loopPauseRepository,
+            transmissionSpeedRepository,
+        )
 
     private class FakeMorseHistoryRepository : MorseHistoryRepository {
         private val history = MutableStateFlow<List<String>>(emptyList())
@@ -484,5 +544,7 @@ class FlashlightViewModelTest {
         private const val MAX_HISTORY_SIZE = 10
         private const val HISTORY_OVERFLOW_COUNT = 11
         private const val TRANSMISSION_STEP_MILLIS = 30_000L
+        private const val LOOP_PAUSE_MILLIS = 5_000L
+        private const val TRANSMISSION_SPEED_WPM = 8
     }
 }
