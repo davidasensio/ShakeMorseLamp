@@ -42,6 +42,7 @@ These take priority over everything else in this file:
 | Logging | Timber |
 | Dependency Injection | Koin + Koin Annotations (native Koin Compiler Plugin, not KSP) |
 | Design System | Dedicated `:core:designsystem` module |
+| Localization | 7 locales (en, ca, de, es, fr, it, pt) + in-app language picker (see Localization) |
 | Unit Testing | JUnit 5 (Jupiter) + Turbine (Flow testing) |
 | Mocking | MockK, used with JUnit 5 for collaborator mocks |
 | UI Testing | Jetpack Compose testing APIs (`createComposeRule`) + Page Object pattern |
@@ -198,6 +199,56 @@ class MorseViewModel(private val sendMorseMessage: SendMorseMessageUseCase) : Vi
   wrapper, since `Icon` already is the reusable primitive. When adding a new one, strip any
   `android:tint="?attr/..."` attribute from the source XML (the app theme doesn't define legacy
   AppCompat color attrs); tint is applied dynamically by the caller instead.
+
+## Localization
+
+**The app is fully localized and must stay that way.** It ships in 7 languages — `en`, `ca`,
+`de`, `es`, `fr`, `it`, `pt` — declared in `app/src/main/res/xml/locales_config.xml` and
+selectable in-app from the Language screen in `:feature:settings`.
+
+- **Never hardcode user-facing text.** Every string a user can read is a `strings.xml` resource
+  read via `stringResource(...)` — screen copy, `contentDescription`s, snackbars, dialog
+  labels, notification channel names/titles/texts, and manifest `android:label`s. A new feature
+  is not done until its copy is extracted.
+- **Every module owns its own `strings.xml`**: `:app` (widget, notifications, tiles),
+  `:feature:flashlight`, `:feature:settings` (which also holds the About/Language copy), and
+  `:core:designsystem` (component `contentDescription`s). Add the key to that module's
+  `values/strings.xml`, then to all 6 `values-<lang>/strings.xml` in the same module.
+- Key naming: `feature_context_element` snake_case for feature-owned strings; `about_*` /
+  `widget_*` / `notification_*` for cross-cutting `:app` strings.
+- Use Android format placeholders (`%1$s`, `%1$d`), never Kotlin string interpolation, for any
+  string with dynamic content. Where word order or a suffix would differ per language, add two
+  separate keys instead of concatenating (see `notification_widget_text` vs
+  `notification_widget_text_looping`).
+- **Deliberately never translated**, and therefore never resources: the Morse quick phrases
+  (`SOS`, `HELP`, `OK`) and unit abbreviations (`WPM`, `MIN`, `H`). These stay plain Kotlin
+  constants.
+- Translations added by an agent should be flagged to the user as needing a native-speaker pass
+  before release.
+
+### Per-app language mechanism
+
+- The write path is the **platform `LocaleManager`** (`context.getSystemService(LocaleManager
+  ::class.java).applicationLocales = ...`), in `SystemLocalePreferenceRepository`.
+- **Do not "simplify" this to `AppCompatDelegate.setApplicationLocales()`.** It resolves its
+  `LocaleManager` by walking AppCompat's registry of live delegates, which only
+  `AppCompatActivity` populates. Every activity here is a plain `ComponentActivity`, so that
+  registry is always empty, the lookup returns `null`, and the call **silently does nothing** —
+  no crash, no log, the locale just never applies. This cost a full debugging session once.
+- `LocaleManager` is API 33+ but minSdk is 30, so the picker is gated behind
+  `LocalePreferenceRepository.isPerAppLanguageSupported()` and the Settings Language row is
+  hidden below 33, where the app simply follows the system language.
+- **To display "what language is the app in", never use `Locale.getDefault()`** — it lags behind
+  a per-app switch and will render the *previous* language. `context.resources.configuration` is
+  worse: on the application context it keeps the base config and never sees the override at all.
+  Use `LocalePreferenceRepository.currentDisplayLocaleTag()`, which resolves the override first,
+  then the system locale.
+- Verify a locale change actually reached the OS with
+  `adb shell cmd locale get-app-locales com.handysparksoft.shakelamp` — visually checking the UI
+  is not enough, since untranslated text silently falls back to English either way.
+- **Known limitation**: the Glance home screen widget does not follow the in-app override. Its
+  `provideGlance()` render pipeline runs outside any Activity lifecycle, so it keeps following
+  the system locale.
 
 ## Convention Plugins (build-logic)
 
@@ -370,6 +421,8 @@ to expected UI, not a way to make a failing screenshot test pass.
 - All logging goes through `Timber` — no `android.util.Log` calls in app code.
 - Reach for a `:core:designsystem` component before writing a new one; build feature UI out of
   design system primitives rather than raw Material3.
+- **No hardcoded user-facing strings** — every one is a `strings.xml` resource in its own
+  module, added to `values/` and all 6 `values-<lang>/` files. See [Localization](#localization).
 
 ## Anti-Patterns to Avoid
 
@@ -389,3 +442,9 @@ to expected UI, not a way to make a failing screenshot test pass.
   with real, testable behavior; reserve mocks for verifying interactions or stubbing edge cases.
 - Don't build a new button/card/input/etc. inside a feature module — add it to
   `:core:designsystem` so every feature can reuse it.
+- Don't ship a user-facing string as a Kotlin literal, and don't add a key to `values/` while
+  leaving the 6 translated files behind — a missing key silently falls back to English.
+- Don't route the per-app language through `AppCompatDelegate` — it is a silent no-op here; use
+  the platform `LocaleManager`. See [Localization](#localization).
+- Don't read `Locale.getDefault()` to decide what language the app is showing — it lags a
+  per-app locale switch.
