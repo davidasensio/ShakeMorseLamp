@@ -1,0 +1,33 @@
+{
+  "hosting": {
+    "public": "public",
+    "ignore": [
+      "firebase.json",
+      "**/.*",
+      "**/node_modules/**"
+    ],
+    "cleanUrls": true,
+    "redirects": [
+      {
+        "source": "/privacy-policy",
+        "destination": "/legal/privacy-policy/",
+        "type": 301
+      },
+      {
+        "source": "/privacy-policy/",
+        "destination": "/legal/privacy-policy/",
+        "type": 301
+      },
+      {
+        "source": "/terms",
+        "destination": "/legal/terms/",
+        "type": 301
+      },
+      {
+        "source": "/terms/",
+        "destination": "/legal/terms/",
+        "type": 301
+      }
+    ]
+  }
+}

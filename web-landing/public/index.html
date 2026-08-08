@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+
+<html class="scroll-smooth" lang="en">
+<head>
+    <meta charset="utf-8"/>
+    <meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+    <meta
+        content="ShakeMorseLamp turns your Android flashlight into a signal: shake to switch on, send Morse messages, and fire an SOS from a Quick Settings tile. Works fully offline."
+        name="description"/>
+    <link href="https://morseshakelamp.web.app/" rel="canonical"/>
+    <link href="https://morseshakelamp.web.app/" hreflang="en" rel="alternate"/>
+    <link href="https://morseshakelamp.web.app/es/" hreflang="es" rel="alternate"/>
+    <link href="https://morseshakelamp.web.app/" hreflang="x-default" rel="alternate"/>
+    <title>ShakeMorseLamp | Shake to light, blink to signal</title>
+    <script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@400;500;600;700&amp;family=Manrope:wght@400;500;600;700;800&amp;display=swap"
+        rel="stylesheet"/>
+    <link
+        href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap"
+        rel="stylesheet"/>
+    <script id="tailwind-config">
+        tailwind.config = {
+          theme: {
+            extend: {
+              colors: {
+                primary: "#536500",
+                "primary-strong": "#3E4C00",
+                "primary-soft": "#B9D15F",
+                lumen: "#CBF200",
+                background: "#F9F9FF",
+                surface: "#F0F3FF",
+                "surface-strong": "#DCE2F3",
+                ink: "#151C27",
+                muted: "#454838",
+                night: "#121508",
+                "night-soft": "#1E2113",
+                border: "#C4C8C1"
+              },
+              fontFamily: {
+                headline: ["Space Grotesk"],
+                body: ["Manrope"]
+              },
+              boxShadow: {
+                signal: "0 20px 50px rgba(21, 28, 39, 0.12)",
+                float: "0 16px 32px rgba(21, 28, 39, 0.1)"
+              }
+            }
+          }
+        }
+    </script>
+    <style>
+        :root {
+            color-scheme: light;
+        }
+
+        body {
+            background:
+                radial-gradient(circle at top left, rgba(203, 242, 0, 0.18), transparent 28%),
+                radial-gradient(circle at top right, rgba(185, 209, 95, 0.18), transparent 26%),
+                linear-gradient(180deg, #fbfcf6 0%, #f4f6ee 52%, #f0f3ff 100%);
+        }
+
+        .material-symbols-outlined {
+            font-variation-settings: "FILL" 0, "wght" 450, "GRAD" 0, "opsz" 24;
+        }
+
+        .signal-gradient {
+            background: linear-gradient(135deg, #2A3400 0%, #3E4C00 45%, #536500 100%);
+        }
+
+        .glass-card {
+            background: rgba(255, 255, 255, 0.62);
+            backdrop-filter: blur(18px);
+            -webkit-backdrop-filter: blur(18px);
+            border: 1px solid rgba(196, 200, 193, 0.28);
+        }
+
+        .signal-grid {
+            background-image:
+                linear-gradient(rgba(196, 200, 193, 0.16) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(196, 200, 193, 0.16) 1px, transparent 1px);
+            background-size: 42px 42px;
+        }
+
+        .float-card {
+            animation: drift 7s ease-in-out infinite;
+        }
+
+        .morse-row {
+            display: inline-flex;
+            align-items: center;
+            gap: 0.4rem;
+        }
+
+        .morse-row span {
+            display: inline-block;
+            height: 0.5rem;
+            border-radius: 999px;
+            background: currentColor;
+        }
+
+        .morse-row span:nth-child(1),
+        .morse-row span:nth-child(2),
+        .morse-row span:nth-child(4) {
+            width: 0.5rem;
+        }
+
+        .morse-row span:nth-child(3) {
+            width: 1.8rem;
+        }
+
+        .section-divider {
+            background: linear-gradient(90deg, rgba(83, 101, 0, 0), rgba(83, 101, 0, 0.3), rgba(203, 242, 0, 0.55), rgba(83, 101, 0, 0));
+            height: 1px;
+        }
+
+        @keyframes drift {
+            0%, 100% {
+                transform: translateY(0px);
+            }
+
+            50% {
+                transform: translateY(-10px);
+            }
+        }
+
+        @media (prefers-reduced-motion: reduce) {
+            .float-card {
+                animation: none;
+            }
+        }
+    </style>
+</head>
+<body class="font-body text-ink antialiased">
+
+<header class="sticky top-0 z-40 border-b border-white/40 bg-white/70 backdrop-blur-lg">
+    <div class="mx-auto flex max-w-6xl items-center justify-between px-6 py-4 md:px-8">
+        <a class="flex items-center gap-3" href="#top">
+            <span class="flex h-10 w-10 items-center justify-center rounded-2xl signal-gradient text-white">
+                <span class="material-symbols-outlined text-[20px]">flashlight_on</span>
+            </span>
+            <span class="font-headline text-lg font-bold tracking-tight">ShakeMorseLamp</span>
+        </a>
+        <nav class="hidden items-center gap-8 text-sm font-semibold text-muted md:flex">
+            <a class="transition hover:text-primary" href="#features">Features</a>
+            <a class="transition hover:text-primary" href="#signal">Morse &amp; SOS</a>
+            <a class="transition hover:text-primary" href="#anywhere">Anywhere</a>
+        </nav>
+        <a class="rounded-full signal-gradient px-5 py-2.5 text-sm font-bold text-white shadow-float transition hover:opacity-90"
+           href="#download">Get the app</a>
+    </div>
+</header>
+
+<main id="top">
+
+    <!-- Hero -->
+    <section class="relative overflow-hidden px-6 pb-24 pt-16 md:px-8 md:pb-28 md:pt-20">
+        <div class="pointer-events-none absolute inset-0 signal-grid opacity-60"></div>
+        <div class="relative mx-auto grid max-w-6xl items-center gap-14 md:grid-cols-2 md:gap-10">
+            <div>
+                <span class="inline-flex items-center gap-2 rounded-full bg-white/70 px-4 py-1.5 text-xs font-bold uppercase tracking-[0.18em] text-primary shadow-float">
+                    <span class="morse-row text-primary"><span></span><span></span><span></span><span></span></span>
+                    Flashlight &amp; Morse
+                </span>
+                <h1 class="mt-6 font-headline text-5xl font-bold leading-[1.05] tracking-tight md:text-6xl">
+                    Shake to light.<br/>
+                    <span class="bg-gradient-to-r from-primary-strong via-primary to-[#6F8A00] bg-clip-text text-transparent">Blink to signal.</span>
+                </h1>
+                <p class="mt-6 max-w-lg text-lg leading-relaxed text-muted">
+                    A flashlight that does more than switch on. Double-shake your phone to light the way,
+                    type a message and send it in Morse, or fire a looping SOS straight from your
+                    Quick Settings tile.
+                </p>
+                <div class="mt-9 flex flex-wrap items-center gap-4">
+                    <a class="transition hover:opacity-85" href="#download">
+                        <img alt="Get it on Google Play" class="h-14"
+                             src="./images/assets/get_it_on_google_play_dark.svg"/>
+                    </a>
+                    <div class="text-sm font-semibold text-muted">
+                        <p class="text-ink">Free &amp; offline</p>
+                        <p>No account. No ads. No tracking.</p>
+                    </div>
+                </div>
+                <div class="mt-10 flex flex-wrap gap-3 text-xs font-bold uppercase tracking-[0.14em] text-muted">
+                    <span class="rounded-full bg-white/70 px-4 py-2 shadow-float">Android 11+</span>
+                    <span class="rounded-full bg-white/70 px-4 py-2 shadow-float">7 languages</span>
+                    <span class="rounded-full bg-white/70 px-4 py-2 shadow-float">Works offline</span>
+                </div>
+            </div>
+            <div class="relative flex justify-center">
+                <div class="absolute -top-8 right-4 hidden rounded-3xl glass-card px-5 py-4 shadow-signal float-card md:block">
+                    <p class="text-xs font-bold uppercase tracking-[0.16em] text-muted">Auto-off</p>
+                    <p class="font-headline text-2xl font-bold text-primary">05:00</p>
+                </div>
+                <img alt="ShakeMorseLamp flashlight screen with Morse broadcast controls"
+                     class="w-[280px] rounded-[2.2rem] shadow-signal md:w-[320px]"
+                     src="./images/screenshots/flashlight_dark.jpg"/>
+            </div>
+        </div>
+    </section>
+
+    <div class="mx-auto max-w-6xl px-6 md:px-8">
+        <div class="section-divider"></div>
+    </div>
+
+    <!-- Features -->
+    <section class="px-6 py-24 md:px-8" id="features">
+        <div class="mx-auto max-w-6xl">
+            <div class="max-w-2xl">
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-primary">What it does</p>
+                <h2 class="mt-4 font-headline text-4xl font-bold tracking-tight md:text-5xl">
+                    A torch you can actually control
+                </h2>
+                <p class="mt-5 text-lg leading-relaxed text-muted">
+                    Every control is one tap away, and everything you set stays on your device.
+                </p>
+            </div>
+            <div class="mt-14 grid gap-6 md:grid-cols-2 lg:grid-cols-4">
+                <article class="rounded-3xl glass-card p-7 shadow-float">
+                    <span class="flex h-12 w-12 items-center justify-center rounded-2xl signal-gradient text-white">
+                        <span class="material-symbols-outlined">flashlight_on</span>
+                    </span>
+                    <h3 class="mt-5 font-headline text-xl font-bold">Dimmable light</h3>
+                    <p class="mt-3 text-sm leading-relaxed text-muted">
+                        Slide the brightness on phones whose hardware supports it, instead of an
+                        all-or-nothing beam.
+                    </p>
+                </article>
+                <article class="rounded-3xl glass-card p-7 shadow-float">
+                    <span class="flex h-12 w-12 items-center justify-center rounded-2xl signal-gradient text-white">
+                        <span class="material-symbols-outlined">timer</span>
+                    </span>
+                    <h3 class="mt-5 font-headline text-xl font-bold">Auto-off timer</h3>
+                    <p class="mt-3 text-sm leading-relaxed text-muted">
+                        Set it and forget it. The torch shuts itself off so a pocketed phone doesn't
+                        drain overnight.
+                    </p>
+                </article>
+                <article class="rounded-3xl glass-card p-7 shadow-float">
+                    <span class="flex h-12 w-12 items-center justify-center rounded-2xl signal-gradient text-white">
+                        <span class="material-symbols-outlined">vibration</span>
+                    </span>
+                    <h3 class="mt-5 font-headline text-xl font-bold">Shake to switch on</h3>
+                    <p class="mt-3 text-sm leading-relaxed text-muted">
+                        Double-shake to toggle the light without unlocking. Tune the sensor
+                        sensitivity to your pocket.
+                    </p>
+                </article>
+                <article class="rounded-3xl glass-card p-7 shadow-float">
+                    <span class="flex h-12 w-12 items-center justify-center rounded-2xl signal-gradient text-white">
+                        <span class="material-symbols-outlined">widgets</span>
+                    </span>
+                    <h3 class="mt-5 font-headline text-xl font-bold">Home screen widget</h3>
+                    <p class="mt-3 text-sm leading-relaxed text-muted">
+                        Pin a quick phrase to your home screen and transmit it with a single tap.
+                    </p>
+                </article>
+            </div>
+        </div>
+    </section>
+
+    <!-- Morse & SOS (dark band) -->
+    <section class="relative overflow-hidden bg-night px-6 py-24 text-white md:px-8" id="signal">
+        <div class="pointer-events-none absolute inset-0 signal-grid opacity-20"></div>
+        <div class="relative mx-auto grid max-w-6xl items-center gap-14 md:grid-cols-2">
+            <div>
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-lumen">Morse &amp; emergency</p>
+                <h2 class="mt-4 font-headline text-4xl font-bold tracking-tight md:text-5xl">
+                    Say it in light
+                </h2>
+                <p class="mt-5 text-lg leading-relaxed text-white/70">
+                    Type any message and the torch blinks it out in Morse code. Loop it, save it to
+                    history, or keep a set of quick signals within reach.
+                </p>
+                <ul class="mt-9 space-y-5">
+                    <li class="flex gap-4">
+                        <span class="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-lumen text-night">
+                            <span class="material-symbols-outlined text-[20px]">speed</span>
+                        </span>
+                        <div>
+                            <p class="font-headline text-lg font-bold">Tune the speed</p>
+                            <p class="mt-1 text-sm leading-relaxed text-white/60">
+                                Set words-per-minute and the pause between repeats until the rhythm
+                                reads clearly.
+                            </p>
+                        </div>
+                    </li>
+                    <li class="flex gap-4">
+                        <span class="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-lumen text-night">
+                            <span class="material-symbols-outlined text-[20px]">sos</span>
+                        </span>
+                        <div>
+                            <p class="font-headline text-lg font-bold">SOS from Quick Settings</p>
+                            <p class="mt-1 text-sm leading-relaxed text-white/60">
+                                Add the tile once, then loop your emergency message from the
+                                notification shade — no unlocking, no hunting for the app.
+                            </p>
+                        </div>
+                    </li>
+                    <li class="flex gap-4">
+                        <span class="mt-1 flex h-9 w-9 shrink-0 items-center justify-center rounded-xl bg-lumen text-night">
+                            <span class="material-symbols-outlined text-[20px]">bolt</span>
+                        </span>
+                        <div>
+                            <p class="font-headline text-lg font-bold">Emergency shake mode</p>
+                            <p class="mt-1 text-sm leading-relaxed text-white/60">
+                                Switch shaking from "light on" to "send my emergency message" when
+                                it matters.
+                            </p>
+                        </div>
+                    </li>
+                </ul>
+            </div>
+            <div class="flex justify-center gap-5">
+                <img alt="Settings screen showing transmission and emergency options"
+                     class="w-[220px] rounded-[2rem] shadow-signal md:w-[250px]"
+                     src="./images/screenshots/settings_dark.jpg"/>
+                <img alt="Settings screen showing appearance and language options"
+                     class="mt-10 w-[220px] rounded-[2rem] shadow-signal md:w-[250px]"
+                     src="./images/screenshots/settings_scrolled_dark.jpg"/>
+            </div>
+        </div>
+    </section>
+
+    <!-- Anywhere -->
+    <section class="px-6 py-24 md:px-8" id="anywhere">
+        <div class="mx-auto grid max-w-6xl items-center gap-14 md:grid-cols-2">
+            <div class="order-2 flex justify-center md:order-1">
+                <img alt="Widget configuration screen with live preview"
+                     class="w-[280px] rounded-[2.2rem] shadow-signal md:w-[300px]"
+                     src="./images/screenshots/widget_config_dark.jpg"/>
+            </div>
+            <div class="order-1 md:order-2">
+                <p class="text-xs font-bold uppercase tracking-[0.2em] text-primary">Yours, everywhere</p>
+                <h2 class="mt-4 font-headline text-4xl font-bold tracking-tight md:text-5xl">
+                    Reach it however you like
+                </h2>
+                <p class="mt-5 text-lg leading-relaxed text-muted">
+                    A widget on the home screen, a tile in Quick Settings, a shake in your pocket,
+                    or the app itself — whichever is fastest in the moment.
+                </p>
+                <div class="mt-9 grid gap-4 sm:grid-cols-2">
+                    <div class="rounded-2xl bg-white/70 p-5 shadow-float">
+                        <p class="font-headline text-lg font-bold">Light &amp; dark</p>
+                        <p class="mt-2 text-sm leading-relaxed text-muted">
+                            Follows your system theme, or pin it to whichever you prefer.
+                        </p>
+                    </div>
+                    <div class="rounded-2xl bg-white/70 p-5 shadow-float">
+                        <p class="font-headline text-lg font-bold">Seven languages</p>
+                        <p class="mt-2 text-sm leading-relaxed text-muted">
+                            English, Spanish, Catalan, German, French, Italian and Portuguese —
+                            switchable inside the app.
+                        </p>
+                    </div>
+                    <div class="rounded-2xl bg-white/70 p-5 shadow-float">
+                        <p class="font-headline text-lg font-bold">Truly offline</p>
+                        <p class="mt-2 text-sm leading-relaxed text-muted">
+                            No internet permission at all. Nothing leaves your phone, because
+                            nothing can.
+                        </p>
+                    </div>
+                    <div class="rounded-2xl bg-white/70 p-5 shadow-float">
+                        <p class="font-headline text-lg font-bold">No account</p>
+                        <p class="mt-2 text-sm leading-relaxed text-muted">
+                            Install and use it. There is nothing to sign up for.
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Download -->
+    <section class="px-6 pb-28 md:px-8" id="download">
+        <div class="mx-auto max-w-4xl overflow-hidden rounded-[2.5rem] signal-gradient px-8 py-16 text-center text-white shadow-signal md:px-16">
+            <span class="morse-row text-white/80"><span></span><span></span><span></span><span></span></span>
+            <h2 class="mt-6 font-headline text-4xl font-bold tracking-tight md:text-5xl">
+                Put a signal in your pocket
+            </h2>
+            <p class="mx-auto mt-5 max-w-xl text-lg leading-relaxed text-white/80">
+                Free, offline, and quiet about it. ShakeMorseLamp asks for nothing and keeps
+                everything on your device.
+            </p>
+            <div class="mt-10 flex justify-center">
+                <a class="transition hover:opacity-85"
+                   href="https://play.google.com/store/apps/details?id=com.handysparksoft.shakelamp"
+                   rel="noopener" target="_blank">
+                    <img alt="Get it on Google Play" class="h-16"
+                         src="./images/assets/get_it_on_google_play_light.svg"/>
+                </a>
+            </div>
+        </div>
+    </section>
+
+</main>
+
+<footer class="border-t border-border/40 bg-white/60 px-6 py-12 md:px-8">
+    <div class="mx-auto flex max-w-6xl flex-col items-center justify-between gap-8 md:flex-row">
+        <div class="flex items-center gap-3">
+            <span class="flex h-9 w-9 items-center justify-center rounded-xl signal-gradient text-white">
+                <span class="material-symbols-outlined text-[18px]">flashlight_on</span>
+            </span>
+            <div>
+                <p class="font-headline text-base font-bold">ShakeMorseLamp</p>
+                <p class="text-xs text-muted">Made with care in Spain</p>
+            </div>
+        </div>
+        <nav class="flex flex-wrap items-center justify-center gap-x-7 gap-y-3 text-sm font-semibold text-muted">
+            <a class="transition hover:text-primary" href="./legal/privacy-policy/">Privacy Policy</a>
+            <a class="transition hover:text-primary" href="./legal/terms/">Terms of Use</a>
+            <a class="transition hover:text-primary" href="mailto:handysparksoft@gmail.com">Contact</a>
+            <a class="transition hover:text-primary" href="./es/">Español</a>
+        </nav>
+    </div>
+    <p class="mx-auto mt-8 max-w-6xl text-center text-xs text-muted md:text-left">
+        © <span id="year">2026</span> ShakeMorseLamp. Google Play and the Google Play logo are
+        trademarks of Google LLC.
+    </p>
+    <script>
+        document.getElementById("year").textContent = new Date().getFullYear();
+    </script>
+</footer>
+
+</body>
+</html>

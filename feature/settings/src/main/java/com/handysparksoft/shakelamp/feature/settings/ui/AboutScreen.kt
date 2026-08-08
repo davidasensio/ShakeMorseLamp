@@ -78,7 +78,7 @@ fun AboutScreen(
             AboutAppBadge(appVersion = appVersion)
             Spacer(Modifier.height(Spacing.Margin))
             AboutActionsCard(context = context)
-            AboutLegalCard()
+            AboutLegalCard(context = context)
         }
         AboutFooter(modifier = Modifier.padding(top = Spacing.Gutter))
     }
@@ -117,21 +117,39 @@ private fun AboutActionsCard(
 }
 
 @Composable
-private fun AboutLegalCard(modifier: Modifier = Modifier) {
+private fun AboutLegalCard(
+    context: Context,
+    modifier: Modifier = Modifier,
+) {
     SMLCard(modifier = modifier.fillMaxWidth(), contentPadding = PaddingValues(0.dp)) {
         AboutRow(
             icon = painterResource(R.drawable.ic_privacy_policy),
             title = stringResource(SettingsR.string.about_privacy_policy_title),
             trailingIcon = painterResource(R.drawable.ic_open_in_new),
-            onClick = {},
+            onClick = { openUrl(context, PRIVACY_POLICY_URL) },
         )
         AboutDivider()
         AboutRow(
             icon = painterResource(R.drawable.ic_contract),
             title = stringResource(SettingsR.string.about_terms_of_use_title),
             trailingIcon = painterResource(R.drawable.ic_open_in_new),
-            onClick = {},
+            onClick = { openUrl(context, TERMS_OF_USE_URL) },
         )
+    }
+}
+
+/**
+ * Hands the URL to whatever browser the device has. No `INTERNET` permission is needed - the
+ * browser does the networking - which is what keeps the app fully offline.
+ */
+private fun openUrl(
+    context: Context,
+    url: String,
+) {
+    try {
+        context.startActivity(Intent(Intent.ACTION_VIEW, Uri.parse(url)))
+    } catch (e: ActivityNotFoundException) {
+        Timber.w(e, "No browser available to open %s", url)
     }
 }
 
@@ -313,6 +331,9 @@ private const val DIVIDER_ALPHA = 0.08f
 private const val PACKAGE_ID = "com.handysparksoft.shakelamp"
 private const val PLAY_STORE_WEB_URL = "https://play.google.com/store/apps/details?id="
 private const val FEEDBACK_EMAIL = "handysparksoft@gmail.com"
+private const val SITE_URL = "https://morseshakelamp.web.app"
+private const val PRIVACY_POLICY_URL = "$SITE_URL/privacy-policy"
+private const val TERMS_OF_USE_URL = "$SITE_URL/terms"
 
 @PreviewLightDark
 @Composable
