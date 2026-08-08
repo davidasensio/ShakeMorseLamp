@@ -331,7 +331,7 @@ private fun ShakeModeSelector(
 ) {
     Column(modifier = modifier) {
         Text(
-            text = "When shaken",
+            text = "When shake gesture detected, run as:",
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
@@ -600,7 +600,7 @@ private fun AddSosTileRow(
             painter = painterResource(R.drawable.ic_arrow_forward),
             contentDescription = null,
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
-            modifier = Modifier.size(16.dp),
+            modifier = Modifier.size(20.dp),
         )
     }
 }
@@ -672,7 +672,7 @@ private fun HapticsCard(
         SMLCard(modifier = Modifier.fillMaxWidth()) {
             SettingToggleRow(
                 title = "Haptic Feedback",
-                subtitle = "Vibrate on slider drags, power taps, and selections",
+                subtitle = "Vibrate on configuration changes",
                 checked = isEnabled,
                 onCheckedChange = { onToggled() },
             )

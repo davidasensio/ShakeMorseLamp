@@ -152,7 +152,7 @@ private fun StatusRow(
                         .background(statusColor),
             )
             Text(
-                text = if (isOn) "ARRAY ACTIVE" else "SYSTEM STANDBY",
+                text = if (isOn) "FLASHLIGHT ACTIVE" else "SYSTEM STANDBY",
                 style = MaterialTheme.typography.labelSmall,
                 color = statusColor,
             )
@@ -502,7 +502,7 @@ private fun QuickAccessWidgetCard(
         )
         Spacer(Modifier.height(Spacing.S))
         Text(
-            text = "Control your array directly from the home screen.",
+            text = "Control your flashlight directly from the home screen.",
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
