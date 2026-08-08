@@ -38,3 +38,13 @@ config/detekt/baseline.xml
 
 # Firebase Hosting deploy cache
 .firebase/
+
+# ── Signing material — NEVER commit ───────────────────────────────────────────
+# Whole directory, not just extensions: .properties files hold passwords and
+# .pepk is the Play App Signing private key export.
+keystore/
+*.pepk
+*.p12
+*.pfx
+keystore*.properties
+signing*.properties
