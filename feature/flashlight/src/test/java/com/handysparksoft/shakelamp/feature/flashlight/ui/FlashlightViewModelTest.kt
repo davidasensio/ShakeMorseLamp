@@ -12,6 +12,7 @@ import com.handysparksoft.shakelamp.feature.flashlight.domain.AutoOffServiceCont
 import com.handysparksoft.shakelamp.feature.flashlight.domain.FlashlightRepository
 import com.handysparksoft.shakelamp.feature.flashlight.domain.MorseHistoryRepository
 import com.handysparksoft.shakelamp.feature.flashlight.domain.ToggleFlashlightUseCase
+import com.handysparksoft.shakelamp.feature.flashlight.domain.WidgetPinRequester
 import io.mockk.coEvery
 import io.mockk.coVerify
 import io.mockk.every
@@ -41,6 +42,7 @@ class FlashlightViewModelTest {
     private val hapticFeedbackRepository = mockk<HapticFeedbackRepository>()
     private val loopPauseRepository = mockk<LoopPauseRepository>()
     private val transmissionSpeedRepository = mockk<TransmissionSpeedRepository>()
+    private val widgetPinRequester = mockk<WidgetPinRequester>(relaxUnitFun = true)
 
     @BeforeEach
     fun setUp() {
@@ -54,6 +56,7 @@ class FlashlightViewModelTest {
             MutableStateFlow(MorseTimingDefaults.DEFAULT_WPM)
         every { repository.observeTorchState() } returns MutableStateFlow(false)
         every { autoOffServiceController.observeRemainingMillis() } returns MutableStateFlow(null)
+        every { widgetPinRequester.isSupported() } returns true
     }
 
     @Test
@@ -457,6 +460,35 @@ class FlashlightViewModelTest {
             verify(atLeast = 1) { autoOffServiceController.stop() }
         }
 
+    @Test
+    fun `ConfigureWidgetClicked calls requestPin`() =
+        runTest {
+            val viewModel = newViewModel()
+
+            viewModel.uiEvent.test {
+                viewModel.onAction(FlashlightUiAction.ConfigureWidgetClicked)
+                runCurrent()
+
+                expectNoEvents()
+            }
+            verify { widgetPinRequester.requestPin() }
+        }
+
+    @Test
+    fun `ConfigureWidgetClicked emits instructions`() =
+        runTest {
+            every { widgetPinRequester.isSupported() } returns false
+            val viewModel = newViewModel()
+
+            viewModel.uiEvent.test {
+                viewModel.onAction(FlashlightUiAction.ConfigureWidgetClicked)
+                runCurrent()
+
+                assertEquals(FlashlightUiEvent.ShowWidgetPinInstructions, awaitItem())
+            }
+            verify(exactly = 0) { widgetPinRequester.requestPin() }
+        }
+
     private suspend fun TestScope.sendAndAwait(
         viewModel: FlashlightViewModel,
         message: String,
@@ -476,6 +508,7 @@ class FlashlightViewModelTest {
             hapticFeedbackRepository,
             loopPauseRepository,
             transmissionSpeedRepository,
+            widgetPinRequester,
         )
 
     private class FakeMorseHistoryRepository : MorseHistoryRepository {

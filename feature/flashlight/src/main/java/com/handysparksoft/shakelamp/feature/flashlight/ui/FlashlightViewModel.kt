@@ -10,6 +10,7 @@ import com.handysparksoft.shakelamp.feature.flashlight.domain.AutoOffServiceCont
 import com.handysparksoft.shakelamp.feature.flashlight.domain.FlashlightRepository
 import com.handysparksoft.shakelamp.feature.flashlight.domain.MorseHistoryRepository
 import com.handysparksoft.shakelamp.feature.flashlight.domain.ToggleFlashlightUseCase
+import com.handysparksoft.shakelamp.feature.flashlight.domain.WidgetPinRequester
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.MutableSharedFlow
@@ -33,6 +34,7 @@ class FlashlightViewModel(
     private val hapticFeedbackRepository: HapticFeedbackRepository,
     private val loopPauseRepository: LoopPauseRepository,
     private val transmissionSpeedRepository: TransmissionSpeedRepository,
+    private val widgetPinRequester: WidgetPinRequester,
 ) : ViewModel() {
     private val _uiState =
         MutableStateFlow(
@@ -98,7 +100,7 @@ class FlashlightViewModel(
             FlashlightUiAction.HistoryToggled -> {
                 _uiState.update { it.copy(isHistoryExpanded = !it.isHistoryExpanded) }
             }
-            FlashlightUiAction.ConfigureWidgetClicked -> Unit
+            FlashlightUiAction.ConfigureWidgetClicked -> requestConfigureWidget()
         }
     }
 
@@ -181,5 +183,13 @@ class FlashlightViewModel(
         cancelAutoOff()
         transmitJob?.cancel()
         transmitJob = null
+    }
+
+    private fun requestConfigureWidget() {
+        if (widgetPinRequester.isSupported()) {
+            widgetPinRequester.requestPin()
+        } else {
+            viewModelScope.launch { _uiEvent.emit(FlashlightUiEvent.ShowWidgetPinInstructions) }
+        }
     }
 }

@@ -363,6 +363,7 @@ private fun MorseBroadcastCard(
             onValueChange = { onAction(FlashlightUiAction.MessageChanged(it)) },
             placeholder = "Enter message to broadcast...",
             enabled = !isTransmitting,
+            onClear = { onAction(FlashlightUiAction.MessageChanged("")) },
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(Spacing.Unit))

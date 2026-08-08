@@ -38,7 +38,6 @@ sealed interface FlashlightUiAction {
 
     data object HistoryToggled : FlashlightUiAction
 
-    // TODO: wire real widget configuration navigation once that screen exists.
     data object ConfigureWidgetClicked : FlashlightUiAction
 }
 
@@ -46,4 +45,7 @@ sealed interface FlashlightUiEvent {
     data class ShowError(
         val message: String,
     ) : FlashlightUiEvent
+
+    /** The launcher doesn't support one-tap widget placement - show manual instructions instead. */
+    data object ShowWidgetPinInstructions : FlashlightUiEvent
 }

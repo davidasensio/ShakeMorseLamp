@@ -145,6 +145,7 @@ private fun WidgetConfigScreen(onAddToHomeScreen: (WidgetConfig) -> Unit) {
                         value = message,
                         onValueChange = { message = it.uppercase().take(WidgetConfig.MAX_MESSAGE_LENGTH) },
                         placeholder = "Message",
+                        onClear = { message = "" },
                         modifier = Modifier.fillMaxWidth(),
                     )
                     Row(horizontalArrangement = Arrangement.spacedBy(Spacing.Unit)) {
