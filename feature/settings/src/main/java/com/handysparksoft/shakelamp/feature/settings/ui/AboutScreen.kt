@@ -123,6 +123,13 @@ private fun AboutLegalCard(
 ) {
     SMLCard(modifier = modifier.fillMaxWidth(), contentPadding = PaddingValues(0.dp)) {
         AboutRow(
+            icon = painterResource(R.drawable.ic_language),
+            title = stringResource(SettingsR.string.about_visit_website_title),
+            trailingIcon = painterResource(R.drawable.ic_open_in_new),
+            onClick = { openUrl(context, SITE_URL) },
+        )
+        AboutDivider()
+        AboutRow(
             icon = painterResource(R.drawable.ic_privacy_policy),
             title = stringResource(SettingsR.string.about_privacy_policy_title),
             trailingIcon = painterResource(R.drawable.ic_open_in_new),

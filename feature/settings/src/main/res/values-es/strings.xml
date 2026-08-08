@@ -53,6 +53,7 @@
     <string name="about_rate_subtitle">Cuéntanos qué piensas</string>
     <string name="about_send_feedback_title">Enviar comentarios</string>
     <string name="about_send_feedback_subtitle">Envíanos un correo electrónico directamente</string>
+    <string name="about_visit_website_title">Visitar el sitio web</string>
     <string name="about_privacy_policy_title">Política de privacidad</string>
     <string name="about_terms_of_use_title">Términos de uso</string>
     <string name="about_share_chooser_title">Compartir ShakeMorseLamp</string>
