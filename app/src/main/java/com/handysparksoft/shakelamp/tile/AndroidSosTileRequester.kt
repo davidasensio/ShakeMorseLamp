@@ -29,7 +29,7 @@ class AndroidSosTileRequester(
         statusBarManager.requestAddTileService(
             ComponentName(context, SosTileService::class.java),
             TILE_LABEL,
-            Icon.createWithResource(context, R.drawable.ic_sos),
+            Icon.createWithResource(context, R.drawable.ic_sos_flashlight_horizontal),
             context.mainExecutor,
         ) { result ->
             val mapped =

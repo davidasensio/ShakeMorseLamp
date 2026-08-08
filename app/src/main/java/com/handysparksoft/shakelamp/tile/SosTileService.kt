@@ -60,7 +60,7 @@ class SosTileService : TileService() {
     private fun updateTile(isRunning: Boolean) {
         qsTile?.apply {
             state = if (isRunning) Tile.STATE_ACTIVE else Tile.STATE_INACTIVE
-            icon = Icon.createWithResource(this@SosTileService, R.drawable.ic_sos)
+            icon = Icon.createWithResource(this@SosTileService, R.drawable.ic_sos_flashlight_horizontal)
             label = "SOS"
             updateTile()
         }
