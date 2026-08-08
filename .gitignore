@@ -48,3 +48,9 @@ keystore/
 *.pfx
 keystore*.properties
 signing*.properties
+
+# Play App Signing working material: keystores, pepk exports and the pepk tool.
+# Nothing in here belongs in the repo.
+app_signing_bundles/
+*.jkss
+pepk.jar
