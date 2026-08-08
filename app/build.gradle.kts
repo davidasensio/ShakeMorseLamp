@@ -41,8 +41,8 @@ android {
 
     defaultConfig {
         applicationId = "com.handysparksoft.shakelamp"
-        versionCode = 1
-        versionName = "1.0"
+        versionCode = 20
+        versionName = "2.0.0"
         testInstrumentationRunner = "androidx.test.runner.AndroidJUnitRunner"
     }
 

@@ -8,18 +8,21 @@ than none, because it will be pasted into a form that Google reviews.
 ## Blockers to clear before the first upload
 
 This app replaces an **existing Play listing under the same package**
-(`com.handysparksoft.shakelamp`). Two things will stop an upload dead:
+(`com.handysparksoft.shakelamp`), so both of these had to be settled before an upload could work.
 
-1. **`versionCode` is 1.** Play rejects any upload whose `versionCode` is not greater than the
-   highest already published. Check the live listing's release history and bump
-   `app/build.gradle.kts` above it before building a release bundle.
-2. **No release signing is configured** — the module has no `signingConfigs`, so it is
-   debug-signed. Replacing an existing listing requires the *original* signing identity: the
-   original upload key if the app is enrolled in Play App Signing, or the original keystore if it
-   is legacy-signed. Confirm that key still exists before investing further in this package name;
-   without it the package is unusable and the app would have to ship under a new one. Keep the
-   keystore and its passwords out of the repo — `local.properties` or environment variables, per
-   `AGENTS.md`.
+1. **Version** — set to `versionCode = 20`, `versionName = "2.0.0"` in `app/build.gradle.kts`.
+   Play rejects any upload whose `versionCode` is not greater than the highest already published,
+   and only the Console knows that number. **Confirm 20 is above the live listing's highest
+   release before building the bundle**; if the old app ever reached 20 or beyond, raise it.
+2. **Release signing is configured** — `signingConfigs { create("release") }` reads
+   `keystore/keystore_new/keystore_pkcs12.properties`, with `SIGNING_*` Gradle properties or
+   environment variables taking precedence so CI can sign without the file present. A missing
+   file only warns, so debug builds and fresh clones still work. Verified: the release APK is
+   signed by `CN=David Asensio` using the v2 scheme.
+
+The `keystore/` directory is git-ignored in full — it holds the `.jks` files, the `.properties`
+files carrying the passwords, and `private_key.pepk`. Never commit any of it, and never paste its
+contents anywhere, per `AGENTS.md`.
 
 ## Foreground service types declaration
 
