@@ -62,9 +62,9 @@
 <ul>
   <li><code>FOREGROUND_SERVICE</code> and <code>FOREGROUND_SERVICE_SPECIAL_USE</code> — to keep the torch, a running timer, or a transmission alive while the screen is off</li>
   <li><code>POST_NOTIFICATIONS</code> — to show the ongoing status notification for those</li>
-  <li><code>WAKE_LOCK</code>, <code>ACCESS_NETWORK_STATE</code> and <code>RECEIVE_BOOT_COMPLETED</code> — added automatically by the Android WorkManager library, which the app uses to run the auto-off timer reliably</li>
+  <li><code>WAKE_LOCK</code>, <code>ACCESS_NETWORK_STATE</code> and <code>RECEIVE_BOOT_COMPLETED</code> — declared automatically by the Android WorkManager library, which the home screen widget component depends on to refresh the widget</li>
 </ul>
-<p>To be transparent about the last group: <code>ACCESS_NETWORK_STATE</code> only allows reading whether a network exists, and is declared by WorkManager so that scheduled work can carry connectivity conditions. ShakeMorseLamp schedules no such work and, lacking <code>INTERNET</code>, cannot reach the network regardless. You can verify the full list on the app's Google Play listing under "App permissions".</p>
+<p>To be transparent about the last group: the app's own code never uses those permissions, and they are not requested by anything ShakeMorseLamp does directly. <code>ACCESS_NETWORK_STATE</code> only permits reading whether a network connection exists; it grants no access to that network. Since the app does not hold <code>INTERNET</code>, it cannot reach the network regardless. You can verify the full list on the app's Google Play listing under "App permissions".</p>
 
 <h2>How Information Is Used</h2>
 <p>Locally stored settings are used only to make the app behave the way you configured it. Nothing is profiled, analysed, sold, or shared.</p>
