@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="flashlight_status_flashlight_active">LLUM ACTIVA</string>
+    <string name="flashlight_status_system_standby">SISTEMA EN ESPERA</string>
+    <string name="flashlight_settings_content_description">Configuració</string>
+    <string name="flashlight_status_unavailable">Llum no disponible</string>
+    <string name="flashlight_status_transmitting">Actiu - Transmissió del missatge</string>
+    <string name="flashlight_status_auto_off">Actiu - Apagada automàtica</string>
+    <string name="flashlight_status_emitting_light">Actiu - Emetent llum</string>
+    <string name="flashlight_status_ready">Preparat per encendre</string>
+    <string name="flashlight_autooff_timer_title">Temporitzador d\'apagada automàtica</string>
+    <string name="flashlight_morse_broadcast_title">Transmissió Morse</string>
+    <string name="flashlight_loop_label">BUCLE</string>
+    <string name="flashlight_message_placeholder">Introduïu un missatge per transmetre…</string>
+    <string name="flashlight_stop_transmission">Atura la transmissió</string>
+    <string name="flashlight_transmit_signal">Transmet senyals</string>
+    <string name="flashlight_quick_signals_title">Senyals ràpids</string>
+    <string name="flashlight_history_title">Historial</string>
+    <string name="flashlight_quick_access_widget_title">Widget d\'accés ràpid</string>
+    <string name="flashlight_quick_access_widget_subtitle">Controla la teva llum directament des de la pantalla d\'inici.</string>
+    <string name="flashlight_configure_widget_cta">Configura el widget</string>
+    <string name="flashlight_error_toggle_failed">No s\'ha pogut encendre/apagar la llum</string>
+    <string name="flashlight_widget_dialog_title">Afegir el widget manualment</string>
+    <string name="flashlight_widget_dialog_body">El teu llançador no permet afegir widgets directament des de l\'app. Mantén pres un espai buit a la teva pantalla d\'inici, tria Widgets, busca ShakeMorseLamp i arrossega\'l a la teva pantalla d\'inici.</string>
+    <string name="flashlight_widget_dialog_go_home">Ves a Inici</string>
+    <string name="flashlight_widget_dialog_stay_here">Queda-t aquí</string>
+</resources>

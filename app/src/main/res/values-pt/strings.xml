@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ShakeMorseLamp</string>
+    <string name="quick_phrase_widget_description">Sinal rápido com um toque via lanterna</string>
+    <string name="widget_config_title">Configuração do widget</string>
+    <string name="widget_config_subtitle">Personalize seu widget de tela inicial para acesso instantâneo a sinais críticos.</string>
+    <string name="widget_config_live_preview_label">VISUALIZAÇÃO AO VIVO</string>
+    <string name="widget_config_message_label">MENSAGEM</string>
+    <string name="widget_config_message_placeholder">Mensagem</string>
+    <string name="widget_config_loop_title">Loop</string>
+    <string name="widget_config_loop_subtitle">Repita a mensagem até que o widget seja tocado novamente</string>
+    <string name="widget_config_add_to_home_cta">Adicionar à tela inicial</string>
+    <string name="widget_loop_enabled_content_description">Loop ativado</string>
+    <string name="tile_sos_label">SOS</string>
+    <string name="notification_auto_off_channel_name">Temporizador de desligamento automático</string>
+    <string name="notification_auto_off_channel_description">Status persistente enquanto o temporizador de desligamento automático da lanterna faz a contagem regressiva</string>
+    <string name="notification_auto_off_title">Temporizador de desligamento automático ativo</string>
+    <string name="notification_auto_off_text">A lanterna será desligada automaticamente</string>
+    <string name="notification_shake_channel_name">Detecção de agitação</string>
+    <string name="notification_shake_channel_description">Status persistente enquanto a detecção de agitação está ouvindo em segundo plano</string>
+    <string name="notification_shake_title">Detecção de agitação ativa</string>
+    <string name="notification_shake_text_emergency">Agite duas vezes para iniciar ou parar sua mensagem de emergência</string>
+    <string name="notification_shake_text_normal">Agite duas vezes para ligar ou desligar a lanterna</string>
+    <string name="notification_shake_disable_action">Desativar</string>
+    <string name="notification_sos_channel_name">Transmissão SOS</string>
+    <string name="notification_sos_channel_description">Status persistente enquanto a mensagem Morse de emergência está em loop</string>
+    <string name="notification_sos_title">SOS transmitindo</string>
+    <string name="notification_sos_text">Transmitindo sua mensagem de emergência via lanterna</string>
+    <string name="notification_widget_channel_name">Transmissão do widget</string>
+    <string name="notification_widget_channel_description">Status persistente enquanto uma frase do widget de tela inicial está sendo transmitida</string>
+    <string name="notification_widget_title">Widget transmitindo</string>
+    <string name="notification_widget_text">Enviando \"%1$s\" via lanterna</string>
+    <string name="notification_widget_text_looping">Enviando \"%1$s\" via lanterna (em loop)</string>
+    <string name="notification_stop_action">Parar</string>
+</resources>

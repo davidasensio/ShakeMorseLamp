@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ShakeMorseLamp</string>
+    <string name="quick_phrase_widget_description">Schnelles Signal per Tap über die Taschenlampe</string>
+    <string name="widget_config_title">Widget-Konfiguration</string>
+    <string name="widget_config_subtitle">Passen Sie Ihr Home-Screen-Widget für sofortigen Zugriff auf kritische Signale an.</string>
+    <string name="widget_config_live_preview_label">LIVE-VORSCHAU</string>
+    <string name="widget_config_message_label">NACHRICHT</string>
+    <string name="widget_config_message_placeholder">Nachricht</string>
+    <string name="widget_config_loop_title">Schleife</string>
+    <string name="widget_config_loop_subtitle">Wiederholen Sie die Nachricht, bis das Widget erneut angetippt wird</string>
+    <string name="widget_config_add_to_home_cta">Zum Startbildschirm hinzufügen</string>
+    <string name="widget_loop_enabled_content_description">Schleife aktiviert</string>
+    <string name="tile_sos_label">SOS</string>
+    <string name="notification_auto_off_channel_name">Timer für automatisches Ausschalten</string>
+    <string name="notification_auto_off_channel_description">Persistenter Status während der Timer für automatisches Ausschalten der Taschenlampe lädt</string>
+    <string name="notification_auto_off_title">Timer für automatisches Ausschalten aktiv</string>
+    <string name="notification_auto_off_text">Die Taschenlampe wird automatisch ausgeschaltet</string>
+    <string name="notification_shake_channel_name">Schüttel-Erkennung</string>
+    <string name="notification_shake_channel_description">Persistenter Status während das Schütteln zum Einschalten im Hintergrund abhört</string>
+    <string name="notification_shake_title">Schüttel-Erkennung aktiv</string>
+    <string name="notification_shake_text_emergency">Zweimal schütteln, um Ihre Notfallnachricht zu starten oder zu stoppen</string>
+    <string name="notification_shake_text_normal">Zweimal schütteln, um die Taschenlampe ein- oder auszuschalten</string>
+    <string name="notification_shake_disable_action">Deaktivieren</string>
+    <string name="notification_sos_channel_name">SOS-Übertragung</string>
+    <string name="notification_sos_channel_description">Persistenter Status während die Morse-Notfallnachricht in einer Schleife läuft</string>
+    <string name="notification_sos_title">SOS wird übertragen</string>
+    <string name="notification_sos_text">Ihre Notfallnachricht wird über die Taschenlampe übertragen</string>
+    <string name="notification_widget_channel_name">Widget-Übertragung</string>
+    <string name="notification_widget_channel_description">Persistenter Status während eine Phrase des Home-Screen-Widget übertragen wird</string>
+    <string name="notification_widget_title">Widget wird übertragen</string>
+    <string name="notification_widget_text">\"%1$s\" wird über die Taschenlampe gesendet</string>
+    <string name="notification_widget_text_looping">\"%1$s\" wird über die Taschenlampe gesendet (in Schleife)</string>
+    <string name="notification_stop_action">Stoppen</string>
+</resources>

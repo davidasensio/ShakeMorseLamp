@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="flashlight_status_flashlight_active">TASCHENLAMPE AKTIV</string>
+    <string name="flashlight_status_system_standby">SYSTEM-STANDBY</string>
+    <string name="flashlight_settings_content_description">Einstellungen</string>
+    <string name="flashlight_status_unavailable">Taschenlampe nicht verfügbar</string>
+    <string name="flashlight_status_transmitting">Aktiv - Nachricht wird übertragen</string>
+    <string name="flashlight_status_auto_off">Aktiv - Automatisches Ausschalten</string>
+    <string name="flashlight_status_emitting_light">Aktiv - Licht wird abgegeben</string>
+    <string name="flashlight_status_ready">Bereit zum Einschalten</string>
+    <string name="flashlight_autooff_timer_title">Timer für automatisches Ausschalten</string>
+    <string name="flashlight_morse_broadcast_title">Morse-Übertragung</string>
+    <string name="flashlight_loop_label">SCHLEIFE</string>
+    <string name="flashlight_message_placeholder">Geben Sie eine Nachricht ein, um sie zu übertragen…</string>
+    <string name="flashlight_stop_transmission">Übertragung stoppen</string>
+    <string name="flashlight_transmit_signal">Signal übertragen</string>
+    <string name="flashlight_quick_signals_title">Schnelle Signale</string>
+    <string name="flashlight_history_title">Verlauf</string>
+    <string name="flashlight_quick_access_widget_title">Widget für schnellen Zugriff</string>
+    <string name="flashlight_quick_access_widget_subtitle">Steuern Sie Ihre Taschenlampe direkt vom Startbildschirm aus.</string>
+    <string name="flashlight_configure_widget_cta">Widget konfigurieren</string>
+    <string name="flashlight_error_toggle_failed">Taschenlampe konnte nicht ein-/ausgeschaltet werden</string>
+    <string name="flashlight_widget_dialog_title">Widget manuell hinzufügen</string>
+    <string name="flashlight_widget_dialog_body">Ihr Launcher unterstützt das direkte Hinzufügen von Widgets aus der App nicht. Halten Sie eine leere Stelle auf Ihrem Startbildschirm gedrückt, wählen Sie Widgets aus, suchen Sie nach ShakeMorseLamp und ziehen Sie es auf Ihren Startbildschirm.</string>
+    <string name="flashlight_widget_dialog_go_home">Zur Startseite gehen</string>
+    <string name="flashlight_widget_dialog_stay_here">Hier bleiben</string>
+</resources>

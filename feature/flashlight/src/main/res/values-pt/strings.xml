@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="flashlight_status_flashlight_active">LANTERNA ATIVA</string>
+    <string name="flashlight_status_system_standby">SISTEMA EM ESPERA</string>
+    <string name="flashlight_settings_content_description">Configurações</string>
+    <string name="flashlight_status_unavailable">Lanterna indisponível</string>
+    <string name="flashlight_status_transmitting">Ativo - Transmitindo mensagem</string>
+    <string name="flashlight_status_auto_off">Ativo - Desligamento automático</string>
+    <string name="flashlight_status_emitting_light">Ativo - Emitindo luz</string>
+    <string name="flashlight_status_ready">Pronto para ligar</string>
+    <string name="flashlight_autooff_timer_title">Temporizador de desligamento automático</string>
+    <string name="flashlight_morse_broadcast_title">Transmissão Morse</string>
+    <string name="flashlight_loop_label">LOOP</string>
+    <string name="flashlight_message_placeholder">Insira uma mensagem para transmitir…</string>
+    <string name="flashlight_stop_transmission">Parar transmissão</string>
+    <string name="flashlight_transmit_signal">Transmitir sinal</string>
+    <string name="flashlight_quick_signals_title">Sinais rápidos</string>
+    <string name="flashlight_history_title">Histórico</string>
+    <string name="flashlight_quick_access_widget_title">Widget de acesso rápido</string>
+    <string name="flashlight_quick_access_widget_subtitle">Controle sua lanterna diretamente da tela inicial.</string>
+    <string name="flashlight_configure_widget_cta">Configurar widget</string>
+    <string name="flashlight_error_toggle_failed">Não foi possível ligar/desligar a lanterna</string>
+    <string name="flashlight_widget_dialog_title">Adicionar o widget manualmente</string>
+    <string name="flashlight_widget_dialog_body">Seu inicializador não suporta adicionar widgets diretamente do aplicativo. Pressione e segure um espaço vazio na sua tela inicial, escolha Widgets, encontre ShakeMorseLamp e arraste-o para sua tela inicial.</string>
+    <string name="flashlight_widget_dialog_go_home">Ir para casa</string>
+    <string name="flashlight_widget_dialog_stay_here">Ficar aqui</string>
+</resources>

@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ShakeMorseLamp</string>
+    <string name="quick_phrase_widget_description">Senyal ràpid amb un toque a través de la llum</string>
+    <string name="widget_config_title">Configuració del widget</string>
+    <string name="widget_config_subtitle">Personalitza el teu widget de pantalla d\'inici per a accés instantani als senyals crítics.</string>
+    <string name="widget_config_live_preview_label">VISTA PRÈVIA EN DIRECTE</string>
+    <string name="widget_config_message_label">MISSATGE</string>
+    <string name="widget_config_message_placeholder">Missatge</string>
+    <string name="widget_config_loop_title">Bucle</string>
+    <string name="widget_config_loop_subtitle">Repeteix el missatge fins que el widget es toqui de nou</string>
+    <string name="widget_config_add_to_home_cta">Afegeix a la pantalla d\'inici</string>
+    <string name="widget_loop_enabled_content_description">Bucle activat</string>
+    <string name="tile_sos_label">SOS</string>
+    <string name="notification_auto_off_channel_name">Temporitzador d\'apagada automàtica</string>
+    <string name="notification_auto_off_channel_description">Estat persistent mentre el temporitzador d\'apagada automàtica de la llum fa la compte enrere</string>
+    <string name="notification_auto_off_title">Temporitzador d\'apagada automàtica actiu</string>
+    <string name="notification_auto_off_text">La llum s\'apagarà automàticament</string>
+    <string name="notification_shake_channel_name">Detecció de sacsejada</string>
+    <string name="notification_shake_channel_description">Estat persistent mentre la detecció de sacsejada està escoltant en segon pla</string>
+    <string name="notification_shake_title">Detecció de sacsejada activa</string>
+    <string name="notification_shake_text_emergency">Sacs dos cops per iniciar o atura el teu missatge d\'emergència</string>
+    <string name="notification_shake_text_normal">Sacs dos cops per encendre o apagar la llum</string>
+    <string name="notification_shake_disable_action">Desactiva</string>
+    <string name="notification_sos_channel_name">Transmissió SOS</string>
+    <string name="notification_sos_channel_description">Estat persistent mentre el missatge Morse d\'emergència està en bucle</string>
+    <string name="notification_sos_title">SOS transmitint</string>
+    <string name="notification_sos_text">Transmissió del teu missatge d\'emergència a través de la llum</string>
+    <string name="notification_widget_channel_name">Transmissió del widget</string>
+    <string name="notification_widget_channel_description">Estat persistent mentre una frase del widget de pantalla d\'inici s\'està transmeten</string>
+    <string name="notification_widget_title">Widget transmitint</string>
+    <string name="notification_widget_text">Enviant \"%1$s\" a través de la llum</string>
+    <string name="notification_widget_text_looping">Enviant \"%1$s\" a través de la llum (en bucle)</string>
+    <string name="notification_stop_action">Atura</string>
+</resources>

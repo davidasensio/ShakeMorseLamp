@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="flashlight_status_flashlight_active">TORCIA ATTIVA</string>
+    <string name="flashlight_status_system_standby">MODALITÀ STANDBY DI SISTEMA</string>
+    <string name="flashlight_settings_content_description">Impostazioni</string>
+    <string name="flashlight_status_unavailable">Torcia non disponibile</string>
+    <string name="flashlight_status_transmitting">Attivo - Trasmissione del messaggio</string>
+    <string name="flashlight_status_auto_off">Attivo - Spegnimento automatico</string>
+    <string name="flashlight_status_emitting_light">Attivo - Emissione di luce</string>
+    <string name="flashlight_status_ready">Pronto per l\'accensione</string>
+    <string name="flashlight_autooff_timer_title">Timer di spegnimento automatico</string>
+    <string name="flashlight_morse_broadcast_title">Trasmissione Morse</string>
+    <string name="flashlight_loop_label">CICLO</string>
+    <string name="flashlight_message_placeholder">Inserisci un messaggio da trasmettere…</string>
+    <string name="flashlight_stop_transmission">Interrompi trasmissione</string>
+    <string name="flashlight_transmit_signal">Trasmetti segnale</string>
+    <string name="flashlight_quick_signals_title">Segnali rapidi</string>
+    <string name="flashlight_history_title">Cronologia</string>
+    <string name="flashlight_quick_access_widget_title">Widget accesso rapido</string>
+    <string name="flashlight_quick_access_widget_subtitle">Controlla la tua torcia direttamente dalla schermata home.</string>
+    <string name="flashlight_configure_widget_cta">Configura widget</string>
+    <string name="flashlight_error_toggle_failed">Impossibile accendere/spegnere la torcia</string>
+    <string name="flashlight_widget_dialog_title">Aggiungi il widget manualmente</string>
+    <string name="flashlight_widget_dialog_body">Il tuo launcher non supporta l\'aggiunta di widget direttamente dall\'app. Tieni premuto uno spazio vuoto sulla tua schermata home, seleziona Widget, trova ShakeMorseLamp e trascinalo sulla tua schermata home.</string>
+    <string name="flashlight_widget_dialog_go_home">Vai a Home</string>
+    <string name="flashlight_widget_dialog_stay_here">Resta qui</string>
+</resources>

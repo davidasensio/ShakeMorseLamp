@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="flashlight_status_flashlight_active">LINTERNA ACTIVA</string>
+    <string name="flashlight_status_system_standby">MODO DE REPOSO DEL SISTEMA</string>
+    <string name="flashlight_settings_content_description">Configuración</string>
+    <string name="flashlight_status_unavailable">Linterna no disponible</string>
+    <string name="flashlight_status_transmitting">Activo - Transmitiendo mensaje</string>
+    <string name="flashlight_status_auto_off">Activo - Apagado automático</string>
+    <string name="flashlight_status_emitting_light">Activo - Emitiendo luz</string>
+    <string name="flashlight_status_ready">Listo para encender</string>
+    <string name="flashlight_autooff_timer_title">Temporizador de apagado automático</string>
+    <string name="flashlight_morse_broadcast_title">Difusión Morse</string>
+    <string name="flashlight_loop_label">BUCLE</string>
+    <string name="flashlight_message_placeholder">Ingresa un mensaje para transmitir…</string>
+    <string name="flashlight_stop_transmission">Detener transmisión</string>
+    <string name="flashlight_transmit_signal">Transmitir señal</string>
+    <string name="flashlight_quick_signals_title">Señales rápidas</string>
+    <string name="flashlight_history_title">Historial</string>
+    <string name="flashlight_quick_access_widget_title">Widget de acceso rápido</string>
+    <string name="flashlight_quick_access_widget_subtitle">Controla tu linterna directamente desde la pantalla de inicio.</string>
+    <string name="flashlight_configure_widget_cta">Configurar widget</string>
+    <string name="flashlight_error_toggle_failed">No se pudo encender/apagar la linterna</string>
+    <string name="flashlight_widget_dialog_title">Agregar el widget manualmente</string>
+    <string name="flashlight_widget_dialog_body">Tu lanzador no permite agregar widgets directamente desde la aplicación. Mantén presionado un espacio vacío en tu pantalla de inicio, elige Widgets, busca ShakeMorseLamp y arrástralo a tu pantalla de inicio.</string>
+    <string name="flashlight_widget_dialog_go_home">Ir a Inicio</string>
+    <string name="flashlight_widget_dialog_stay_here">Quedarse aquí</string>
+</resources>

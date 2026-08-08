@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="flashlight_status_flashlight_active">LAMPE DE POCHE ACTIVE</string>
+    <string name="flashlight_status_system_standby">ARRÊT SYSTÈME</string>
+    <string name="flashlight_settings_content_description">Paramètres</string>
+    <string name="flashlight_status_unavailable">Lampe de poche indisponible</string>
+    <string name="flashlight_status_transmitting">Actif - Transmission du message</string>
+    <string name="flashlight_status_auto_off">Actif - Extinction automatique</string>
+    <string name="flashlight_status_emitting_light">Actif - Émission de lumière</string>
+    <string name="flashlight_status_ready">Prêt à s\'allumer</string>
+    <string name="flashlight_autooff_timer_title">Minuteur d\'extinction automatique</string>
+    <string name="flashlight_morse_broadcast_title">Transmission Morse</string>
+    <string name="flashlight_loop_label">BOUCLE</string>
+    <string name="flashlight_message_placeholder">Entrez un message à transmettre…</string>
+    <string name="flashlight_stop_transmission">Arrêter la transmission</string>
+    <string name="flashlight_transmit_signal">Transmettre le signal</string>
+    <string name="flashlight_quick_signals_title">Signaux rapides</string>
+    <string name="flashlight_history_title">Historique</string>
+    <string name="flashlight_quick_access_widget_title">Widget d\'accès rapide</string>
+    <string name="flashlight_quick_access_widget_subtitle">Contrôlez votre lampe de poche directement depuis l\'écran d\'accueil.</string>
+    <string name="flashlight_configure_widget_cta">Configurer le widget</string>
+    <string name="flashlight_error_toggle_failed">Impossible d\'allumer/éteindre la lampe de poche</string>
+    <string name="flashlight_widget_dialog_title">Ajouter le widget manuellement</string>
+    <string name="flashlight_widget_dialog_body">Votre lanceur ne supporte pas l\'ajout de widgets directement depuis l\'application. Appuyez longuement sur une zone vide de votre écran d\'accueil, choisissez Widgets, trouvez ShakeMorseLamp et glissez-le sur votre écran d\'accueil.</string>
+    <string name="flashlight_widget_dialog_go_home">Aller à l\'accueil</string>
+    <string name="flashlight_widget_dialog_stay_here">Rester ici</string>
+</resources>

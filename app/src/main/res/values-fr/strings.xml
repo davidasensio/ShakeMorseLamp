@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ShakeMorseLamp</string>
+    <string name="quick_phrase_widget_description">Signal rapide en un seul tapotement via la lampe de poche</string>
+    <string name="widget_config_title">Configuration du widget</string>
+    <string name="widget_config_subtitle">Personnalisez votre widget d\'écran d\'accueil pour un accès instantané aux signaux critiques.</string>
+    <string name="widget_config_live_preview_label">APERÇU EN DIRECT</string>
+    <string name="widget_config_message_label">MESSAGE</string>
+    <string name="widget_config_message_placeholder">Message</string>
+    <string name="widget_config_loop_title">Boucle</string>
+    <string name="widget_config_loop_subtitle">Répétez le message jusqu\'à ce que le widget soit à nouveau tapé</string>
+    <string name="widget_config_add_to_home_cta">Ajouter à l\'écran d\'accueil</string>
+    <string name="widget_loop_enabled_content_description">Boucle activée</string>
+    <string name="tile_sos_label">SOS</string>
+    <string name="notification_auto_off_channel_name">Minuteur d\'extinction automatique</string>
+    <string name="notification_auto_off_channel_description">État persistant tandis que le minuteur d\'extinction automatique de la lampe de poche fait le compte à rebours</string>
+    <string name="notification_auto_off_title">Minuteur d\'extinction automatique actif</string>
+    <string name="notification_auto_off_text">La lampe de poche s\'éteindra automatiquement</string>
+    <string name="notification_shake_channel_name">Détection de secousse</string>
+    <string name="notification_shake_channel_description">État persistant tandis que la détection de secousse écoute en arrière-plan</string>
+    <string name="notification_shake_title">Détection de secousse active</string>
+    <string name="notification_shake_text_emergency">Secouez deux fois pour démarrer ou arrêter votre message d\'urgence</string>
+    <string name="notification_shake_text_normal">Secouez deux fois pour allumer ou éteindre la lampe de poche</string>
+    <string name="notification_shake_disable_action">Désactiver</string>
+    <string name="notification_sos_channel_name">Transmission SOS</string>
+    <string name="notification_sos_channel_description">État persistant tandis que le message Morse d\'urgence est en boucle</string>
+    <string name="notification_sos_title">SOS en transmission</string>
+    <string name="notification_sos_text">Transmission de votre message d\'urgence via la lampe de poche</string>
+    <string name="notification_widget_channel_name">Transmission du widget</string>
+    <string name="notification_widget_channel_description">État persistant tandis qu\'une phrase du widget d\'écran d\'accueil est en transmission</string>
+    <string name="notification_widget_title">Widget en transmission</string>
+    <string name="notification_widget_text">Envoi de \"%1$s\" via la lampe de poche</string>
+    <string name="notification_widget_text_looping">Envoi de \"%1$s\" via la lampe de poche (en boucle)</string>
+    <string name="notification_stop_action">Arrêter</string>
+</resources>

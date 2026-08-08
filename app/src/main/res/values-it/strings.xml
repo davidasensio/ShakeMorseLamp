@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="app_name">ShakeMorseLamp</string>
+    <string name="quick_phrase_widget_description">Segnale rapido con un tocco tramite la torcia</string>
+    <string name="widget_config_title">Configurazione widget</string>
+    <string name="widget_config_subtitle">Personalizza il tuo widget della schermata home per accesso istantaneo ai segnali critici.</string>
+    <string name="widget_config_live_preview_label">ANTEPRIMA LIVE</string>
+    <string name="widget_config_message_label">MESSAGGIO</string>
+    <string name="widget_config_message_placeholder">Messaggio</string>
+    <string name="widget_config_loop_title">Ciclo</string>
+    <string name="widget_config_loop_subtitle">Ripeti il messaggio fino a quando il widget non viene toccato di nuovo</string>
+    <string name="widget_config_add_to_home_cta">Aggiungi alla schermata home</string>
+    <string name="widget_loop_enabled_content_description">Ciclo abilitato</string>
+    <string name="tile_sos_label">SOS</string>
+    <string name="notification_auto_off_channel_name">Timer di spegnimento automatico</string>
+    <string name="notification_auto_off_channel_description">Stato persistente mentre il timer di spegnimento automatico della torcia è in conto alla rovescia</string>
+    <string name="notification_auto_off_title">Timer di spegnimento automatico attivo</string>
+    <string name="notification_auto_off_text">La torcia si spegnerà automaticamente</string>
+    <string name="notification_shake_channel_name">Rilevamento scossa</string>
+    <string name="notification_shake_channel_description">Stato persistente mentre la funzione scuoti per accendere è in ascolto in background</string>
+    <string name="notification_shake_title">Rilevamento scossa attivo</string>
+    <string name="notification_shake_text_emergency">Scuoti due volte per avviare o interrompere il tuo messaggio di emergenza</string>
+    <string name="notification_shake_text_normal">Scuoti due volte per accendere o spegnere la torcia</string>
+    <string name="notification_shake_disable_action">Disabilita</string>
+    <string name="notification_sos_channel_name">Trasmissione SOS</string>
+    <string name="notification_sos_channel_description">Stato persistente mentre il messaggio Morse di emergenza è in ciclo</string>
+    <string name="notification_sos_title">SOS in trasmissione</string>
+    <string name="notification_sos_text">Trasmissione del tuo messaggio di emergenza tramite la torcia</string>
+    <string name="notification_widget_channel_name">Trasmissione widget</string>
+    <string name="notification_widget_channel_description">Stato persistente mentre una frase del widget della schermata home è in trasmissione</string>
+    <string name="notification_widget_title">Widget in trasmissione</string>
+    <string name="notification_widget_text">Invio di \"%1$s\" tramite la torcia</string>
+    <string name="notification_widget_text_looping">Invio di \"%1$s\" tramite la torcia (in ciclo)</string>
+    <string name="notification_stop_action">Interrompi</string>
+</resources>
