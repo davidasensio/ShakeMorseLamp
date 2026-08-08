@@ -10,6 +10,7 @@ import com.handysparksoft.shakelamp.core.morse.domain.MorseTimingDefaults
 import com.handysparksoft.shakelamp.core.morse.domain.PlaybackResult
 import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
 import com.handysparksoft.shakelamp.feature.settings.domain.EmergencyMessageRepository
+import com.handysparksoft.shakelamp.feature.settings.domain.LocalePreferenceRepository
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeMode
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeServiceController
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeSettings
@@ -26,6 +27,7 @@ import io.mockk.verify
 import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.flowOf
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.test.advanceTimeBy
 import kotlinx.coroutines.test.runCurrent
@@ -48,11 +50,15 @@ class SettingsViewModelTest {
     private val loopPauseRepository = FakeLoopPauseRepository()
     private val transmissionSpeedRepository = FakeTransmissionSpeedRepository()
     private val sosTileRequester = mockk<SosTileRequester>()
+    private val localePreferenceRepository = mockk<LocalePreferenceRepository>()
 
     @BeforeEach
     fun setUp() {
         coEvery { sendMorseMessage(any(), any(), any()) } returns PlaybackResult.Completed
         every { sosTileRequester.isSupported() } returns true
+        every { localePreferenceRepository.isPerAppLanguageSupported() } returns true
+        every { localePreferenceRepository.observeSelectedLocaleTag() } returns flowOf(null)
+        every { localePreferenceRepository.currentDisplayLocaleTag() } returns "en"
     }
 
     @Test
@@ -339,6 +345,15 @@ class SettingsViewModelTest {
         }
 
     @Test
+    fun `initial state reflects per-app language support`() =
+        runTest {
+            every { localePreferenceRepository.isPerAppLanguageSupported() } returns false
+            val viewModel = newViewModel()
+
+            assertFalse(viewModel.uiState.value.isLanguagePickerSupported)
+        }
+
+    @Test
     fun `AddSosTileRequested emits the result`() =
         runTest {
             every { sosTileRequester.requestAddTile(any()) } answers {
@@ -366,6 +381,7 @@ class SettingsViewModelTest {
             loopPauseRepository,
             transmissionSpeedRepository,
             sosTileRequester,
+            localePreferenceRepository,
         )
 
     private class FakeThemePreferenceRepository : ThemePreferenceRepository {

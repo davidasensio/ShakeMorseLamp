@@ -9,6 +9,7 @@ import com.handysparksoft.shakelamp.core.common.domain.TransmissionSpeedReposito
 import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
 import com.handysparksoft.shakelamp.feature.settings.domain.EmergencyMessageRepository
 import com.handysparksoft.shakelamp.feature.settings.domain.LocaleDisplayFormatter
+import com.handysparksoft.shakelamp.feature.settings.domain.LocalePreferenceRepository
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeMode
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeServiceController
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeSettingsRepository
@@ -41,6 +42,7 @@ class SettingsViewModel(
     private val loopPauseRepository: LoopPauseRepository,
     private val transmissionSpeedRepository: TransmissionSpeedRepository,
     private val sosTileRequester: SosTileRequester,
+    private val localePreferenceRepository: LocalePreferenceRepository,
 ) : ViewModel() {
     private val _uiState =
         MutableStateFlow(
@@ -48,8 +50,7 @@ class SettingsViewModel(
                 dimmerLevel = torchBrightnessRepository.maxStrengthLevel(),
                 dimmerMaxLevel = torchBrightnessRepository.maxStrengthLevel(),
                 isAddSosTileSupported = sosTileRequester.isSupported(),
-                currentLanguageLabel = currentLanguageLabel(),
-                currentLanguageFlagEmoji = currentLanguageFlagEmoji(),
+                isLanguagePickerSupported = localePreferenceRepository.isPerAppLanguageSupported(),
             ),
         )
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
@@ -99,6 +100,16 @@ class SettingsViewModel(
         viewModelScope.launch {
             transmissionSpeedRepository.observeSpeedWpm().collect { wpm ->
                 _uiState.update { it.copy(transmissionSpeedWpm = wpm) }
+            }
+        }
+        viewModelScope.launch {
+            localePreferenceRepository.observeSelectedLocaleTag().collect { tag ->
+                _uiState.update {
+                    it.copy(
+                        currentLanguageLabel = currentLanguageLabel(tag),
+                        currentLanguageFlagEmoji = currentLanguageFlagEmoji(tag),
+                    )
+                }
             }
         }
     }
@@ -192,10 +203,18 @@ class SettingsViewModel(
         }
     }
 
-    private fun currentLanguageLabel(): String {
-        val currentLocale = Locale.getDefault()
-        return LocaleDisplayFormatter.displayNameIn(currentLocale.language, currentLocale)
+    /**
+     * A null [tag] means "follow the system language", so ask the repository what the app actually
+     * resolved to - `Locale.getDefault()` can still hold the previous value right after a switch.
+     */
+    private fun currentLocale(tag: String?): Locale =
+        Locale.forLanguageTag(tag ?: localePreferenceRepository.currentDisplayLocaleTag())
+
+    private fun currentLanguageLabel(tag: String?): String {
+        val locale = currentLocale(tag)
+        return LocaleDisplayFormatter.displayNameIn(locale.language, locale)
     }
 
-    private fun currentLanguageFlagEmoji(): String = LocaleDisplayFormatter.flagEmojiFor(Locale.getDefault().language)
+    private fun currentLanguageFlagEmoji(tag: String?): String =
+        LocaleDisplayFormatter.flagEmojiFor(currentLocale(tag).language)
 }

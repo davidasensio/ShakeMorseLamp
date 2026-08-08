@@ -118,6 +118,7 @@ private fun SettingsPreviewContent(initialScroll: Int = 0) {
                 themeMode = ThemeMode.LIGHT,
                 emergencyMessage = "SOS",
                 isStrobeActive = false,
+                isLanguagePickerSupported = true,
             ),
         onAction = {},
         onNavigateBack = {},

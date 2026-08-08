@@ -142,8 +142,7 @@ private fun SettingsContent(
                 performHaptic(HapticFeedbackType.SegmentTick)
                 onAction(SettingsUiAction.ThemeModeChanged(it))
             },
-            currentLanguageLabel = uiState.currentLanguageLabel,
-            currentLanguageFlagEmoji = uiState.currentLanguageFlagEmoji,
+            language = uiState.toLanguageRowUiState(),
             onLanguageClicked = onNavigateToLanguage,
         )
         AboutCard(onAboutClicked = onNavigateToAbout)
@@ -727,12 +726,24 @@ private fun HapticsCard(
     }
 }
 
+private data class LanguageRowUiState(
+    val isSupported: Boolean,
+    val label: String,
+    val flagEmoji: String,
+)
+
+private fun SettingsUiState.toLanguageRowUiState() =
+    LanguageRowUiState(
+        isSupported = isLanguagePickerSupported,
+        label = currentLanguageLabel,
+        flagEmoji = currentLanguageFlagEmoji,
+    )
+
 @Composable
 private fun AppearanceCard(
     themeMode: ThemeMode,
     onThemeModeChanged: (ThemeMode) -> Unit,
-    currentLanguageLabel: String,
-    currentLanguageFlagEmoji: String,
+    language: LanguageRowUiState,
     onLanguageClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -775,14 +786,16 @@ private fun AppearanceCard(
                     modifier = Modifier.weight(1f),
                 )
             }
-            Spacer(Modifier.height(Spacing.Gutter))
-            SectionDivider()
-            Spacer(Modifier.height(Spacing.Gutter))
-            LanguageRow(
-                flagEmoji = currentLanguageFlagEmoji,
-                label = currentLanguageLabel,
-                onClick = onLanguageClicked,
-            )
+            if (language.isSupported) {
+                Spacer(Modifier.height(Spacing.Gutter))
+                SectionDivider()
+                Spacer(Modifier.height(Spacing.Gutter))
+                LanguageRow(
+                    flagEmoji = language.flagEmoji,
+                    label = language.label,
+                    onClick = onLanguageClicked,
+                )
+            }
         }
     }
 }
@@ -892,6 +905,7 @@ internal fun SettingsScreenPreview() {
                         themeMode = ThemeMode.LIGHT,
                         emergencyMessage = "SOS",
                         isStrobeActive = false,
+                        isLanguagePickerSupported = true,
                     ),
                 onAction = {},
                 onNavigateBack = {},

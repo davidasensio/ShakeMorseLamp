@@ -71,6 +71,10 @@ class LanguageViewModelTest {
 
         fun current(): String? = tag.value
 
+        override fun isPerAppLanguageSupported(): Boolean = true
+
+        override fun currentDisplayLocaleTag(): String = "en"
+
         override fun observeSelectedLocaleTag(): Flow<String?> = tag
 
         override fun supportedLocaleTags(): List<String> = SUPPORTED_TAGS

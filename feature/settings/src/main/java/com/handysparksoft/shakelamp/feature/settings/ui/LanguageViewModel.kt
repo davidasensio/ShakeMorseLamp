@@ -52,8 +52,12 @@ class LanguageViewModel(
         }
     }
 
+    /**
+     * Names each language in the locale the app is currently rendering in - taken from the
+     * repository rather than [Locale.getDefault], which lags behind a per-app language switch.
+     */
     private fun localeOptions(): List<LocaleOption> {
-        val displayLocale = Locale.getDefault()
+        val displayLocale = Locale.forLanguageTag(localePreferenceRepository.currentDisplayLocaleTag())
         return localePreferenceRepository.supportedLocaleTags().map { tag ->
             LocaleOption(
                 tag = tag,
