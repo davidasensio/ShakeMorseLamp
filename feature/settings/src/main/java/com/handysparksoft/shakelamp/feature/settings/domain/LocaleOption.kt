@@ -4,4 +4,5 @@ package com.handysparksoft.shakelamp.feature.settings.domain
 data class LocaleOption(
     val tag: String?,
     val label: String,
+    val flagEmoji: String,
 )

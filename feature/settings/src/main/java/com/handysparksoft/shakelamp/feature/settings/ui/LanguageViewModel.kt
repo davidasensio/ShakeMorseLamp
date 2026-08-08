@@ -40,11 +40,27 @@ class LanguageViewModel(
     private fun localeOptions(): List<LocaleOption> =
         localePreferenceRepository.supportedLocaleTags().map { tag ->
             val locale = Locale.forLanguageTag(tag)
-            LocaleOption(tag = tag, label = locale.nativeDisplayName())
+            LocaleOption(tag = tag, label = locale.nativeDisplayName(), flagEmoji = flagEmojiForTag(tag))
         }
 
     private fun Locale.nativeDisplayName(): String {
         val name = getDisplayName(this)
         return name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(this) else it.toString() }
+    }
+
+    private fun flagEmojiForTag(tag: String): String =
+        when (tag) {
+            "en" -> "🇺🇸"
+            "ca" -> "🇪🇸"
+            "de" -> "🇩🇪"
+            "es" -> "🇪🇸"
+            "fr" -> "🇫🇷"
+            "it" -> "🇮🇹"
+            "pt" -> "🇵🇹"
+            else -> SYSTEM_DEFAULT_FLAG_EMOJI
+        }
+
+    companion object {
+        const val SYSTEM_DEFAULT_FLAG_EMOJI = "🌐"
     }
 }

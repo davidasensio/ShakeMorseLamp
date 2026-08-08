@@ -46,6 +46,7 @@ fun LanguageScreen(
         ScreenHeader(title = stringResource(SettingsR.string.language_screen_title), onNavigateBack = onNavigateBack)
         SMLCard(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(0.dp)) {
             LanguageOptionRow(
+                flagEmoji = LanguageViewModel.SYSTEM_DEFAULT_FLAG_EMOJI,
                 label = stringResource(SettingsR.string.language_system_default_label),
                 selected = uiState.selectedTag == null,
                 onClick = { onAction(LanguageUiAction.LocaleSelected(null)) },
@@ -53,6 +54,7 @@ fun LanguageScreen(
             uiState.options.forEach { option ->
                 LanguageOptionDivider()
                 LanguageOptionRow(
+                    flagEmoji = option.flagEmoji,
                     label = option.label,
                     selected = uiState.selectedTag == option.tag,
                     onClick = { onAction(LanguageUiAction.LocaleSelected(option.tag)) },
@@ -64,6 +66,7 @@ fun LanguageScreen(
 
 @Composable
 private fun LanguageOptionRow(
+    flagEmoji: String,
     label: String,
     selected: Boolean,
     onClick: () -> Unit,
@@ -75,9 +78,10 @@ private fun LanguageOptionRow(
                 .fillMaxWidth()
                 .clickable(onClick = onClick)
                 .padding(horizontal = Spacing.Margin, vertical = Spacing.Margin),
-        horizontalArrangement = Arrangement.SpaceBetween,
+        horizontalArrangement = Arrangement.spacedBy(Spacing.Unit),
         verticalAlignment = Alignment.CenterVertically,
     ) {
+        Text(text = flagEmoji, style = MaterialTheme.typography.bodyMedium)
         Text(
             text = label,
             style = MaterialTheme.typography.bodyMedium,
@@ -106,9 +110,9 @@ internal fun LanguageScreenPreview() {
                     LanguageUiState(
                         options =
                             listOf(
-                                LocaleOption(tag = "en", label = "English"),
-                                LocaleOption(tag = "es", label = "Español"),
-                                LocaleOption(tag = "de", label = "Deutsch"),
+                                LocaleOption(tag = "en", label = "English", flagEmoji = "🇺🇸"),
+                                LocaleOption(tag = "es", label = "Español", flagEmoji = "🇪🇸"),
+                                LocaleOption(tag = "de", label = "Deutsch", flagEmoji = "🇩🇪"),
                             ),
                         selectedTag = null,
                     ),
