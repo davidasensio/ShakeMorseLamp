@@ -16,7 +16,7 @@ fun ProviderFactory.propertyOrEnv(name: String): String? =
 // Signing material is git-ignored and absent on CI and on a fresh clone, so a missing file must
 // leave debug builds working rather than fail configuration. Gradle properties and environment
 // variables take precedence so CI can supply credentials without the file existing at all.
-val keystorePropertiesFile: File = rootProject.file("./keystore/keystore_old/keystore.properties")
+val keystorePropertiesFile: File = rootProject.file("./keystore/keystore_old/keystore.properties") // Since this an old app, needs the keystore_old to manage certificates
 val keystoreProperties = Properties()
 try {
     FileInputStream(keystorePropertiesFile).use(keystoreProperties::load)
