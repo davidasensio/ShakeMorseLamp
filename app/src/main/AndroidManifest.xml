@@ -36,7 +36,7 @@
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Detects shake gestures while backgrounded to toggle the flashlight or trigger the configured emergency Morse message" />
+                android:value="Detects the double-shake gesture the user opted into in Settings, while the screen is off, to switch the flashlight on or transmit their emergency Morse message" />
         </service>
 
         <service
@@ -45,7 +45,7 @@
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Keeps the process alive so the flashlight auto-off countdown fires on schedule while backgrounded" />
+                android:value="Keeps the user-activated flashlight lit and counts down to the auto-off time the user selected, continuing while the screen is off, and switches the light off when it elapses" />
         </service>
 
         <service
@@ -54,7 +54,7 @@
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Keeps the process alive to loop the emergency Morse message via the flashlight, started from the SOS Quick Settings tile" />
+                android:value="Transmits the emergency Morse message the user configured by blinking the flashlight, repeating until the user stops it, started on demand from the SOS Quick Settings tile" />
         </service>
 
         <service
@@ -74,7 +74,7 @@
             android:foregroundServiceType="specialUse">
             <property
                 android:name="android.app.PROPERTY_SPECIAL_USE_FGS_SUBTYPE"
-                android:value="Keeps the process alive to send a quick phrase via the flashlight, started from a home screen widget" />
+                android:value="Transmits the quick phrase the user saved to their home screen widget by blinking the flashlight, started by the user tapping that widget" />
         </service>
 
         <receiver
