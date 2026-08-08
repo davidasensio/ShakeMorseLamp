@@ -58,6 +58,7 @@ fun SettingsScreen(
     onNavigateToAbout: () -> Unit,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
+    initialScroll: Int = 0,
 ) {
     Scaffold(
         modifier = modifier,
@@ -73,7 +74,7 @@ fun SettingsScreen(
                 Modifier
                     .fillMaxSize()
                     .background(MaterialTheme.colorScheme.background)
-                    .verticalScroll(rememberScrollState())
+                    .verticalScroll(rememberScrollState(initial = initialScroll))
                     .padding(innerPadding)
                     .padding(Spacing.Margin),
         )

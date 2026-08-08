@@ -1,3 +1,4 @@
+import com.android.build.api.dsl.ApplicationExtension
 import com.android.build.api.dsl.LibraryExtension
 import org.gradle.api.Plugin
 import org.gradle.api.Project
@@ -6,7 +7,7 @@ import org.gradle.kotlin.dsl.dependencies
 
 /**
  * Convention plugin that wires Roborazzi (Robolectric-based Compose screenshot testing)
- * to any module that opts in.
+ * to any module that opts in - Android library or application modules alike.
  *
  * Opt-in usage in a module's build.gradle.kts:
  *   plugins { alias(libs.plugins.shakelamp.android.roborazzi) }
@@ -25,10 +26,20 @@ class AndroidRoborazziConventionPlugin : Plugin<Project> {
         with(target) {
             pluginManager.apply("io.github.takahirom.roborazzi")
 
-            extensions.configure<LibraryExtension> {
-                testOptions.unitTests {
-                    isIncludeAndroidResources = true
-                    isReturnDefaultValues = true
+            pluginManager.withPlugin("com.android.library") {
+                extensions.configure<LibraryExtension> {
+                    testOptions.unitTests {
+                        isIncludeAndroidResources = true
+                        isReturnDefaultValues = true
+                    }
+                }
+            }
+            pluginManager.withPlugin("com.android.application") {
+                extensions.configure<ApplicationExtension> {
+                    testOptions.unitTests {
+                        isIncludeAndroidResources = true
+                        isReturnDefaultValues = true
+                    }
                 }
             }
 

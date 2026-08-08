@@ -92,7 +92,7 @@ class WidgetConfigActivity : ComponentActivity() {
 }
 
 @Composable
-private fun WidgetConfigScreen(onAddToHomeScreen: (WidgetConfig) -> Unit) {
+internal fun WidgetConfigScreen(onAddToHomeScreen: (WidgetConfig) -> Unit) {
     var message by remember { mutableStateOf(WidgetConfig.DEFAULT_MESSAGE) }
     var loopEnabled by remember { mutableStateOf(false) }
 

@@ -1,6 +1,7 @@
 plugins {
     alias(libs.plugins.shakelamp.android.application)
     alias(libs.plugins.shakelamp.android.application.compose)
+    alias(libs.plugins.shakelamp.android.roborazzi)
 }
 
 android {
@@ -38,6 +39,8 @@ dependencies {
     implementation(libs.androidx.datastore.preferences)
 
     testImplementation(libs.junit)
+    testImplementation(libs.androidx.compose.ui.test.junit4)
+    testImplementation(libs.androidx.compose.ui.test.manifest)
     androidTestImplementation(libs.androidx.junit)
     androidTestImplementation(libs.androidx.espresso.core)
 }
