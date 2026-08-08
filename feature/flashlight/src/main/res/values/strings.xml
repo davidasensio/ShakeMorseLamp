@@ -1,0 +1,26 @@
+<resources>
+    <string name="flashlight_status_flashlight_active">FLASHLIGHT ACTIVE</string>
+    <string name="flashlight_status_system_standby">SYSTEM STANDBY</string>
+    <string name="flashlight_settings_content_description">Settings</string>
+    <string name="flashlight_status_unavailable">Flashlight unavailable</string>
+    <string name="flashlight_status_transmitting">Active - Transmitting message</string>
+    <string name="flashlight_status_auto_off">Active - Auto-Off</string>
+    <string name="flashlight_status_emitting_light">Active - Emitting Light</string>
+    <string name="flashlight_status_ready">Ready to ignite</string>
+    <string name="flashlight_autooff_timer_title">Auto-Off Timer</string>
+    <string name="flashlight_morse_broadcast_title">Morse Broadcast</string>
+    <string name="flashlight_loop_label">LOOP</string>
+    <string name="flashlight_message_placeholder">Enter message to broadcast…</string>
+    <string name="flashlight_stop_transmission">Stop Transmission</string>
+    <string name="flashlight_transmit_signal">Transmit Signal</string>
+    <string name="flashlight_quick_signals_title">Quick Signals</string>
+    <string name="flashlight_history_title">History</string>
+    <string name="flashlight_quick_access_widget_title">Quick Access Widget</string>
+    <string name="flashlight_quick_access_widget_subtitle">Control your flashlight directly from the home screen.</string>
+    <string name="flashlight_configure_widget_cta">Configure Widget</string>
+    <string name="flashlight_error_toggle_failed">Couldn\'t toggle the flashlight</string>
+    <string name="flashlight_widget_dialog_title">Add the widget manually</string>
+    <string name="flashlight_widget_dialog_body">Your launcher doesn\'t support adding widgets directly from the app. Long-press an empty spot on your home screen, choose Widgets, find ShakeMorseLamp, and drag it onto your home screen.</string>
+    <string name="flashlight_widget_dialog_go_home">Go to Home</string>
+    <string name="flashlight_widget_dialog_stay_here">Stay Here</string>
+</resources>

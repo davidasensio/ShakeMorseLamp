@@ -34,6 +34,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.unit.dp
 import androidx.glance.appwidget.GlanceAppWidgetManager
@@ -47,6 +48,7 @@ import com.handysparksoft.shakelamp.core.designsystem.component.SMLTextField
 import com.handysparksoft.shakelamp.core.designsystem.theme.ShakeMorseLampTheme
 import com.handysparksoft.shakelamp.core.designsystem.theme.Spacing
 import kotlinx.coroutines.launch
+import com.handysparksoft.shakelamp.R as AppR
 
 private val WidgetBackground = Color(0xFF121508)
 private val WidgetAccent = Color(0xFFCBF200)
@@ -106,9 +108,12 @@ internal fun WidgetConfigScreen(onAddToHomeScreen: (WidgetConfig) -> Unit) {
             verticalArrangement = Arrangement.spacedBy(Spacing.ContainerPadding),
         ) {
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.S)) {
-                Text(text = "Widget Config", style = MaterialTheme.typography.headlineMedium)
                 Text(
-                    text = "Customize your home screen widget for instant access to critical signals.",
+                    text = stringResource(AppR.string.widget_config_title),
+                    style = MaterialTheme.typography.headlineMedium,
+                )
+                Text(
+                    text = stringResource(AppR.string.widget_config_subtitle),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -116,7 +121,7 @@ internal fun WidgetConfigScreen(onAddToHomeScreen: (WidgetConfig) -> Unit) {
 
             Column(verticalArrangement = Arrangement.spacedBy(Spacing.Unit)) {
                 Text(
-                    text = "LIVE PREVIEW",
+                    text = stringResource(AppR.string.widget_config_live_preview_label),
                     style = MaterialTheme.typography.labelSmall,
                     color = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
@@ -137,14 +142,14 @@ internal fun WidgetConfigScreen(onAddToHomeScreen: (WidgetConfig) -> Unit) {
             ) {
                 Column(verticalArrangement = Arrangement.spacedBy(Spacing.Unit)) {
                     Text(
-                        text = "MESSAGE",
+                        text = stringResource(AppR.string.widget_config_message_label),
                         style = MaterialTheme.typography.labelSmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant,
                     )
                     SMLTextField(
                         value = message,
                         onValueChange = { message = it.uppercase().take(WidgetConfig.MAX_MESSAGE_LENGTH) },
-                        placeholder = "Message",
+                        placeholder = stringResource(AppR.string.widget_config_message_placeholder),
                         onClear = { message = "" },
                         modifier = Modifier.fillMaxWidth(),
                     )
@@ -161,9 +166,12 @@ internal fun WidgetConfigScreen(onAddToHomeScreen: (WidgetConfig) -> Unit) {
                     verticalAlignment = Alignment.CenterVertically,
                 ) {
                     Column {
-                        Text(text = "Loop", style = MaterialTheme.typography.bodyLarge)
                         Text(
-                            text = "Repeat the message until the widget is tapped again",
+                            text = stringResource(AppR.string.widget_config_loop_title),
+                            style = MaterialTheme.typography.bodyLarge,
+                        )
+                        Text(
+                            text = stringResource(AppR.string.widget_config_loop_subtitle),
                             style = MaterialTheme.typography.bodySmall,
                             color = MaterialTheme.colorScheme.onSurfaceVariant,
                         )
@@ -173,7 +181,7 @@ internal fun WidgetConfigScreen(onAddToHomeScreen: (WidgetConfig) -> Unit) {
             }
 
             SMLButton(
-                text = "Add to Home Screen",
+                text = stringResource(AppR.string.widget_config_add_to_home_cta),
                 onClick = {
                     val finalMessage = message.ifBlank { WidgetConfig.DEFAULT_MESSAGE }
                     onAddToHomeScreen(WidgetConfig(finalMessage, loopEnabled))
@@ -220,7 +228,7 @@ private fun WidgetLivePreview(
             Box(modifier = Modifier.fillMaxSize().padding(6.dp), contentAlignment = Alignment.TopEnd) {
                 Icon(
                     painter = painterResource(R.drawable.ic_loop),
-                    contentDescription = "Loop enabled",
+                    contentDescription = stringResource(AppR.string.widget_loop_enabled_content_description),
                     tint = WidgetBackground,
                     modifier =
                         Modifier

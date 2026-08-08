@@ -42,9 +42,7 @@ sealed interface FlashlightUiAction {
 }
 
 sealed interface FlashlightUiEvent {
-    data class ShowError(
-        val message: String,
-    ) : FlashlightUiEvent
+    data object ShowError : FlashlightUiEvent
 
     /** The launcher doesn't support one-tap widget placement - show manual instructions instead. */
     data object ShowWidgetPinInstructions : FlashlightUiEvent

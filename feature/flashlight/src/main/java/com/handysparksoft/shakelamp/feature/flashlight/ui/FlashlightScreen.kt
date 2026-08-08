@@ -33,6 +33,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
@@ -47,6 +48,7 @@ import com.handysparksoft.shakelamp.core.designsystem.component.SMLTextField
 import com.handysparksoft.shakelamp.core.designsystem.theme.ShakeMorseLampTheme
 import com.handysparksoft.shakelamp.core.designsystem.theme.Spacing
 import kotlin.math.roundToInt
+import com.handysparksoft.shakelamp.feature.flashlight.R as FlashlightR
 
 @Composable
 fun FlashlightScreen(
@@ -104,13 +106,15 @@ fun FlashlightScreen(
     }
 }
 
+@Composable
 private fun statusLabel(uiState: FlashlightUiState): String =
     when {
-        !uiState.isAvailable -> "Flashlight unavailable"
-        uiState.isTransmitting -> "Active - Transmitting message"
-        uiState.isOn && uiState.autoOffRemainingMillis != null -> "Active - Auto-Off"
-        uiState.isOn -> "Active - Emitting Light"
-        else -> "Ready to ignite"
+        !uiState.isAvailable -> stringResource(FlashlightR.string.flashlight_status_unavailable)
+        uiState.isTransmitting -> stringResource(FlashlightR.string.flashlight_status_transmitting)
+        uiState.isOn && uiState.autoOffRemainingMillis != null ->
+            stringResource(FlashlightR.string.flashlight_status_auto_off)
+        uiState.isOn -> stringResource(FlashlightR.string.flashlight_status_emitting_light)
+        else -> stringResource(FlashlightR.string.flashlight_status_ready)
     }
 
 /** Fraction of the auto-off timer remaining, or null when no countdown is active. */
@@ -152,14 +156,19 @@ private fun StatusRow(
                         .background(statusColor),
             )
             Text(
-                text = if (isOn) "FLASHLIGHT ACTIVE" else "SYSTEM STANDBY",
+                text =
+                    if (isOn) {
+                        stringResource(FlashlightR.string.flashlight_status_flashlight_active)
+                    } else {
+                        stringResource(FlashlightR.string.flashlight_status_system_standby)
+                    },
                 style = MaterialTheme.typography.labelSmall,
                 color = statusColor,
             )
         }
         Icon(
             painter = painterResource(R.drawable.ic_tune),
-            contentDescription = "Settings",
+            contentDescription = stringResource(FlashlightR.string.flashlight_settings_content_description),
             tint = MaterialTheme.colorScheme.onSurfaceVariant,
             modifier = Modifier.clickable(onClick = onSettingsClicked),
         )
@@ -261,7 +270,7 @@ private fun AutoOffTimerCard(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
-                    text = "Auto-Off Timer",
+                    text = stringResource(FlashlightR.string.flashlight_autooff_timer_title),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -321,7 +330,7 @@ private fun MorseBroadcastHeader(
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
             )
             Text(
-                text = "Morse Broadcast",
+                text = stringResource(FlashlightR.string.flashlight_morse_broadcast_title),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
@@ -331,7 +340,7 @@ private fun MorseBroadcastHeader(
             horizontalArrangement = Arrangement.spacedBy(Spacing.Unit),
         ) {
             Text(
-                text = "LOOP",
+                text = stringResource(FlashlightR.string.flashlight_loop_label),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -361,14 +370,19 @@ private fun MorseBroadcastCard(
         SMLTextField(
             value = uiState.morseMessage,
             onValueChange = { onAction(FlashlightUiAction.MessageChanged(it)) },
-            placeholder = "Enter message to broadcast...",
+            placeholder = stringResource(FlashlightR.string.flashlight_message_placeholder),
             enabled = !isTransmitting,
             onClear = { onAction(FlashlightUiAction.MessageChanged("")) },
             modifier = Modifier.fillMaxWidth(),
         )
         Spacer(Modifier.height(Spacing.Unit))
         SMLButton(
-            text = if (isTransmitting) "Stop Transmission" else "Transmit Signal",
+            text =
+                if (isTransmitting) {
+                    stringResource(FlashlightR.string.flashlight_stop_transmission)
+                } else {
+                    stringResource(FlashlightR.string.flashlight_transmit_signal)
+                },
             onClick = { onAction(FlashlightUiAction.TransmitClicked) },
             variant = SMLButtonVariant.Secondary,
             enabled = isTransmitting || uiState.morseMessage.isNotBlank(),
@@ -406,7 +420,7 @@ private fun QuickSignalsRow(
 ) {
     Column(modifier = modifier) {
         Text(
-            text = "Quick Signals",
+            text = stringResource(FlashlightR.string.flashlight_quick_signals_title),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -438,7 +452,7 @@ private fun HistorySection(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "History",
+                text = stringResource(FlashlightR.string.flashlight_history_title),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -496,20 +510,20 @@ private fun QuickAccessWidgetCard(
         }
         Spacer(Modifier.height(Spacing.Unit))
         Text(
-            text = "Quick Access Widget",
+            text = stringResource(FlashlightR.string.flashlight_quick_access_widget_title),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
         Spacer(Modifier.height(Spacing.S))
         Text(
-            text = "Control your flashlight directly from the home screen.",
+            text = stringResource(FlashlightR.string.flashlight_quick_access_widget_subtitle),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
             textAlign = TextAlign.Center,
         )
         Spacer(Modifier.height(Spacing.Gutter))
         SMLButton(
-            text = "Configure Widget",
+            text = stringResource(FlashlightR.string.flashlight_configure_widget_cta),
             onClick = onConfigureClicked,
             variant = SMLButtonVariant.Primary,
             leadingIcon = {

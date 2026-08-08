@@ -25,6 +25,8 @@ import com.handysparksoft.shakelamp.feature.settings.domain.ThemePreferenceRepos
 import com.handysparksoft.shakelamp.feature.settings.ui.AboutEntry
 import com.handysparksoft.shakelamp.feature.settings.ui.AboutRoute
 import com.handysparksoft.shakelamp.feature.settings.ui.AppVersionInfo
+import com.handysparksoft.shakelamp.feature.settings.ui.LanguageEntry
+import com.handysparksoft.shakelamp.feature.settings.ui.LanguageRoute
 import com.handysparksoft.shakelamp.feature.settings.ui.SettingsEntry
 import com.handysparksoft.shakelamp.feature.settings.ui.SettingsRoute
 import org.koin.compose.koinInject
@@ -73,6 +75,7 @@ private fun ShakeMorseLampApp() {
                         SettingsEntry(
                             onNavigateBack = { backStack.removeLastOrNull() },
                             onNavigateToAbout = { backStack.add(AboutRoute) },
+                            onNavigateToLanguage = { backStack.add(LanguageRoute) },
                         )
                     }
                     entry<AboutRoute> {
@@ -80,6 +83,9 @@ private fun ShakeMorseLampApp() {
                             onNavigateBack = { backStack.removeLastOrNull() },
                             appVersion = AppVersionInfo(BuildConfig.VERSION_NAME, BuildConfig.VERSION_CODE),
                         )
+                    }
+                    entry<LanguageRoute> {
+                        LanguageEntry(onNavigateBack = { backStack.removeLastOrNull() })
                     }
                 },
         )

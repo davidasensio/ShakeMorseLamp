@@ -122,6 +122,7 @@ private fun SettingsPreviewContent(initialScroll: Int = 0) {
         onAction = {},
         onNavigateBack = {},
         onNavigateToAbout = {},
+        onNavigateToLanguage = {},
         initialScroll = initialScroll,
     )
 }

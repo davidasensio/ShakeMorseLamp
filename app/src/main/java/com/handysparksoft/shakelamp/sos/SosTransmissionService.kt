@@ -24,6 +24,7 @@ import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
+import com.handysparksoft.shakelamp.R as AppR
 
 /**
  * Loops the configured emergency Morse message until stopped. A foreground service is required to
@@ -94,8 +95,12 @@ class SosTransmissionService : Service() {
 
     private fun ensureChannel() {
         val channel =
-            NotificationChannel(CHANNEL_ID, "SOS transmission", NotificationManager.IMPORTANCE_LOW).apply {
-                description = "Persistent status while the emergency Morse message is looping"
+            NotificationChannel(
+                CHANNEL_ID,
+                getString(AppR.string.notification_sos_channel_name),
+                NotificationManager.IMPORTANCE_LOW,
+            ).apply {
+                description = getString(AppR.string.notification_sos_channel_description)
             }
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
     }
@@ -117,12 +122,12 @@ class SosTransmissionService : Service() {
             )
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notifications)
-            .setContentTitle("SOS transmitting")
-            .setContentText("Looping your emergency message via the flashlight")
+            .setContentTitle(getString(AppR.string.notification_sos_title))
+            .setContentText(getString(AppR.string.notification_sos_text))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
             .setContentIntent(contentIntent)
-            .addAction(R.drawable.ic_stop, "Stop", stopIntent)
+            .addAction(R.drawable.ic_stop, getString(AppR.string.notification_stop_action), stopIntent)
             .build()
     }
 

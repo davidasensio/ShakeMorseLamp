@@ -13,9 +13,11 @@ import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import com.handysparksoft.shakelamp.core.designsystem.R
 import com.handysparksoft.shakelamp.core.designsystem.theme.Spacing
+import com.handysparksoft.shakelamp.feature.settings.R as SettingsR
 
 /**
  * Shared back-arrow + title header, with an optional trailing [actions] slot. Uses a plain
@@ -40,7 +42,7 @@ internal fun ScreenHeader(
         ) {
             Icon(
                 painter = painterResource(R.drawable.ic_arrow_back),
-                contentDescription = "Back",
+                contentDescription = stringResource(SettingsR.string.screen_header_back_content_description),
                 tint = MaterialTheme.colorScheme.onSurface,
                 modifier =
                     Modifier

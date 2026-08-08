@@ -30,6 +30,7 @@ import androidx.glance.text.FontWeight
 import androidx.glance.text.Text
 import androidx.glance.text.TextStyle
 import com.handysparksoft.shakelamp.core.designsystem.R
+import com.handysparksoft.shakelamp.R as AppR
 
 private val WidgetBackground = Color(0xFF121508)
 private val WidgetAccent = Color(0xFFCBF200)
@@ -45,15 +46,19 @@ class QuickPhraseWidget : GlanceAppWidget() {
         context: Context,
         id: GlanceId,
     ) {
+        val loopEnabledContentDescription = context.getString(AppR.string.widget_loop_enabled_content_description)
         provideContent {
             val config = currentState<Preferences>().widgetConfig()
-            QuickPhraseContent(config)
+            QuickPhraseContent(config, loopEnabledContentDescription)
         }
     }
 }
 
 @Composable
-private fun QuickPhraseContent(config: WidgetConfig) {
+private fun QuickPhraseContent(
+    config: WidgetConfig,
+    loopEnabledContentDescription: String,
+) {
     Box(
         modifier =
             GlanceModifier
@@ -91,7 +96,7 @@ private fun QuickPhraseContent(config: WidgetConfig) {
             ) {
                 Image(
                     provider = ImageProvider(R.drawable.ic_loop),
-                    contentDescription = "Loop enabled",
+                    contentDescription = loopEnabledContentDescription,
                     colorFilter = ColorFilter.tint(fixedColor(WidgetBackground)),
                     modifier =
                         GlanceModifier

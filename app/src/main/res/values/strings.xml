@@ -1,4 +1,34 @@
 <resources>
     <string name="app_name">ShakeMorseLamp</string>
     <string name="quick_phrase_widget_description">One-tap quick signal via the flashlight</string>
+    <string name="widget_config_title">Widget Config</string>
+    <string name="widget_config_subtitle">Customize your home screen widget for instant access to critical signals.</string>
+    <string name="widget_config_live_preview_label">LIVE PREVIEW</string>
+    <string name="widget_config_message_label">MESSAGE</string>
+    <string name="widget_config_message_placeholder">Message</string>
+    <string name="widget_config_loop_title">Loop</string>
+    <string name="widget_config_loop_subtitle">Repeat the message until the widget is tapped again</string>
+    <string name="widget_config_add_to_home_cta">Add to Home Screen</string>
+    <string name="widget_loop_enabled_content_description">Loop enabled</string>
+    <string name="tile_sos_label">SOS</string>
+    <string name="notification_auto_off_channel_name">Auto-off timer</string>
+    <string name="notification_auto_off_channel_description">Persistent status while the flashlight auto-off timer is counting down</string>
+    <string name="notification_auto_off_title">Auto-off timer active</string>
+    <string name="notification_auto_off_text">The flashlight will turn off automatically</string>
+    <string name="notification_shake_channel_name">Shake detection</string>
+    <string name="notification_shake_channel_description">Persistent status while shake-to-turn-on is listening in the background</string>
+    <string name="notification_shake_title">Shake detection active</string>
+    <string name="notification_shake_text_emergency">Double-shake to start or stop your emergency message</string>
+    <string name="notification_shake_text_normal">Double-shake to toggle the flashlight</string>
+    <string name="notification_shake_disable_action">Disable</string>
+    <string name="notification_sos_channel_name">SOS transmission</string>
+    <string name="notification_sos_channel_description">Persistent status while the emergency Morse message is looping</string>
+    <string name="notification_sos_title">SOS transmitting</string>
+    <string name="notification_sos_text">Looping your emergency message via the flashlight</string>
+    <string name="notification_widget_channel_name">Widget transmission</string>
+    <string name="notification_widget_channel_description">Persistent status while a home screen widget phrase is transmitting</string>
+    <string name="notification_widget_title">Widget transmitting</string>
+    <string name="notification_widget_text">Sending \"%1$s\" via the flashlight</string>
+    <string name="notification_widget_text_looping">Sending \"%1$s\" via the flashlight (looping)</string>
+    <string name="notification_stop_action">Stop</string>
 </resources>

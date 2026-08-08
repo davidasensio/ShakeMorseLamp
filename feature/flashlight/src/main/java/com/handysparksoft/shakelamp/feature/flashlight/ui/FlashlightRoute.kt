@@ -12,11 +12,13 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.setValue
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.lifecycle.Lifecycle
 import androidx.lifecycle.compose.LocalLifecycleOwner
 import androidx.lifecycle.compose.collectAsStateWithLifecycle
 import androidx.lifecycle.repeatOnLifecycle
 import androidx.navigation3.runtime.NavKey
+import com.handysparksoft.shakelamp.feature.flashlight.R
 import kotlinx.coroutines.flow.filterIsInstance
 import kotlinx.serialization.Serializable
 import org.koin.androidx.compose.koinViewModel
@@ -69,19 +71,13 @@ private fun WidgetPinInstructionsDialog(
 ) {
     AlertDialog(
         onDismissRequest = onDismiss,
-        title = { Text("Add the widget manually") },
-        text = {
-            Text(
-                "Your launcher doesn't support adding widgets directly from the app. " +
-                    "Long-press an empty spot on your home screen, choose Widgets, find " +
-                    "ShakeMorseLamp, and drag it onto your home screen.",
-            )
-        },
+        title = { Text(stringResource(R.string.flashlight_widget_dialog_title)) },
+        text = { Text(stringResource(R.string.flashlight_widget_dialog_body)) },
         confirmButton = {
-            TextButton(onClick = onGoToHome) { Text("Go to Home") }
+            TextButton(onClick = onGoToHome) { Text(stringResource(R.string.flashlight_widget_dialog_go_home)) }
         },
         dismissButton = {
-            TextButton(onClick = onDismiss) { Text("Stay Here") }
+            TextButton(onClick = onDismiss) { Text(stringResource(R.string.flashlight_widget_dialog_stay_here)) }
         },
     )
 }

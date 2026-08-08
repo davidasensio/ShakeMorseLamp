@@ -115,7 +115,7 @@ class FlashlightViewModel(
                 _uiState.update { it.copy(isOn = newIsOn) }
                 if (newIsOn) scheduleAutoOff(state.timerMinutes) else cancelAutoOff()
             } else {
-                _uiEvent.emit(FlashlightUiEvent.ShowError("Couldn't toggle the flashlight"))
+                _uiEvent.emit(FlashlightUiEvent.ShowError)
             }
         }
     }

@@ -33,6 +33,7 @@ import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
+import com.handysparksoft.shakelamp.R as AppR
 
 /**
  * Keeps listening for shake gestures while backgrounded. A foreground service (with its required
@@ -143,8 +144,12 @@ class ShakeDetectionService : Service() {
 
     private fun ensureChannel() {
         val channel =
-            NotificationChannel(CHANNEL_ID, "Shake detection", NotificationManager.IMPORTANCE_LOW).apply {
-                description = "Persistent status while shake-to-turn-on is listening in the background"
+            NotificationChannel(
+                CHANNEL_ID,
+                getString(AppR.string.notification_shake_channel_name),
+                NotificationManager.IMPORTANCE_LOW,
+            ).apply {
+                description = getString(AppR.string.notification_shake_channel_description)
             }
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
     }
@@ -166,18 +171,18 @@ class ShakeDetectionService : Service() {
             )
         val text =
             if (mode == ShakeMode.EMERGENCY) {
-                "Double-shake to start or stop your emergency message"
+                getString(AppR.string.notification_shake_text_emergency)
             } else {
-                "Double-shake to toggle the flashlight"
+                getString(AppR.string.notification_shake_text_normal)
             }
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notifications)
-            .setContentTitle("Shake detection active")
+            .setContentTitle(getString(AppR.string.notification_shake_title))
             .setContentText(text)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
             .setContentIntent(contentIntent)
-            .addAction(R.drawable.ic_stop, "Disable", stopIntent)
+            .addAction(R.drawable.ic_stop, getString(AppR.string.notification_shake_disable_action), stopIntent)
             .build()
     }
 

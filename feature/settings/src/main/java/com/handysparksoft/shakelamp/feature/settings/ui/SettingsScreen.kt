@@ -34,6 +34,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.hapticfeedback.HapticFeedbackType
 import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.handysparksoft.shakelamp.core.designsystem.R
@@ -49,6 +50,7 @@ import com.handysparksoft.shakelamp.core.designsystem.theme.Spacing
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeMode
 import com.handysparksoft.shakelamp.feature.settings.domain.ThemeMode
 import kotlin.math.roundToInt
+import com.handysparksoft.shakelamp.feature.settings.R as SettingsR
 
 @Composable
 fun SettingsScreen(
@@ -56,6 +58,7 @@ fun SettingsScreen(
     onAction: (SettingsUiAction) -> Unit,
     onNavigateBack: () -> Unit,
     onNavigateToAbout: () -> Unit,
+    onNavigateToLanguage: () -> Unit,
     modifier: Modifier = Modifier,
     snackbarHostState: SnackbarHostState = remember { SnackbarHostState() },
     initialScroll: Int = 0,
@@ -70,6 +73,7 @@ fun SettingsScreen(
             onAction = onAction,
             onNavigateBack = onNavigateBack,
             onNavigateToAbout = onNavigateToAbout,
+            onNavigateToLanguage = onNavigateToLanguage,
             modifier =
                 Modifier
                     .fillMaxSize()
@@ -87,6 +91,7 @@ private fun SettingsContent(
     onAction: (SettingsUiAction) -> Unit,
     onNavigateBack: () -> Unit,
     onNavigateToAbout: () -> Unit,
+    onNavigateToLanguage: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     val haptic = LocalHapticFeedback.current
@@ -97,10 +102,10 @@ private fun SettingsContent(
         modifier = modifier,
         verticalArrangement = Arrangement.spacedBy(Spacing.Gutter),
     ) {
-        ScreenHeader(title = "Settings", onNavigateBack = onNavigateBack) {
+        ScreenHeader(title = stringResource(SettingsR.string.settings_title), onNavigateBack = onNavigateBack) {
             Icon(
                 painter = painterResource(R.drawable.ic_info),
-                contentDescription = "About",
+                contentDescription = stringResource(SettingsR.string.settings_about_title),
                 tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 modifier = Modifier.clickable(onClick = onNavigateToAbout),
             )
@@ -137,6 +142,7 @@ private fun SettingsContent(
                 performHaptic(HapticFeedbackType.SegmentTick)
                 onAction(SettingsUiAction.ThemeModeChanged(it))
             },
+            onLanguageClicked = onNavigateToLanguage,
         )
         AboutCard(onAboutClicked = onNavigateToAbout)
     }
@@ -265,12 +271,15 @@ private fun GesturesCard(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
-        SectionLabel(text = "GESTURES", color = MaterialTheme.colorScheme.primaryContainer)
+        SectionLabel(
+            text = stringResource(SettingsR.string.settings_gestures_section),
+            color = MaterialTheme.colorScheme.primaryContainer,
+        )
         Spacer(Modifier.height(Spacing.Unit))
         SMLCard(modifier = Modifier.fillMaxWidth()) {
             SettingToggleRow(
-                title = "Shake to Turn On",
-                subtitle = "Double-shake to toggle the flashlight on or off",
+                title = stringResource(SettingsR.string.settings_gestures_shake_title),
+                subtitle = stringResource(SettingsR.string.settings_gestures_shake_subtitle),
                 checked = state.isShakeEnabled,
                 onCheckedChange = { onShakeEnabledToggled() },
             )
@@ -299,7 +308,7 @@ private fun SensitivitySelector(
             verticalAlignment = Alignment.CenterVertically,
         ) {
             Text(
-                text = "Sensor Sensitivity",
+                text = stringResource(SettingsR.string.settings_gestures_sensitivity_label),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
@@ -331,7 +340,7 @@ private fun ShakeModeSelector(
 ) {
     Column(modifier = modifier) {
         Text(
-            text = "When shake gesture detected, run as:",
+            text = stringResource(SettingsR.string.settings_gestures_when_shaken_label),
             style = MaterialTheme.typography.bodyMedium,
             color = MaterialTheme.colorScheme.onSurface,
         )
@@ -339,8 +348,16 @@ private fun ShakeModeSelector(
         SMLSegmentedButtonRow(
             options =
                 listOf(
-                    SMLSegmentedOption(ShakeMode.NORMAL, "Normal", painterResource(R.drawable.ic_flashlight_on)),
-                    SMLSegmentedOption(ShakeMode.EMERGENCY, "Emergency", painterResource(R.drawable.ic_warning)),
+                    SMLSegmentedOption(
+                        ShakeMode.NORMAL,
+                        stringResource(SettingsR.string.settings_gestures_mode_normal),
+                        painterResource(R.drawable.ic_flashlight_on),
+                    ),
+                    SMLSegmentedOption(
+                        ShakeMode.EMERGENCY,
+                        stringResource(SettingsR.string.settings_gestures_mode_emergency),
+                        painterResource(R.drawable.ic_warning),
+                    ),
                 ),
             selected = mode,
             onOptionSelected = onModeChanged,
@@ -349,11 +366,12 @@ private fun ShakeModeSelector(
     }
 }
 
+@Composable
 private fun sensitivityLabel(level: Int): String =
     when (level) {
-        SENSITIVITY_LOW -> "Low"
-        SENSITIVITY_HIGH -> "High"
-        else -> "Medium"
+        SENSITIVITY_LOW -> stringResource(SettingsR.string.settings_gestures_sensitivity_low)
+        SENSITIVITY_HIGH -> stringResource(SettingsR.string.settings_gestures_sensitivity_high)
+        else -> stringResource(SettingsR.string.settings_gestures_sensitivity_medium)
     }
 
 @Composable
@@ -365,17 +383,25 @@ private fun HardwareCard(
 ) {
     val isSupported = dimmerMaxLevel > 1
     Column(modifier = modifier) {
-        SectionLabel(text = "HARDWARE", color = MaterialTheme.colorScheme.primaryContainer)
+        SectionLabel(
+            text = stringResource(SettingsR.string.settings_hardware_section),
+            color = MaterialTheme.colorScheme.primaryContainer,
+        )
         Spacer(Modifier.height(Spacing.Unit))
         SMLCard(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "Flashlight Dimmer",
+                text = stringResource(SettingsR.string.settings_hardware_dimmer_title),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Spacer(Modifier.height(Spacing.S))
             Text(
-                text = if (isSupported) "Adjust flashlight brightness" else "Requires supported hardware",
+                text =
+                    if (isSupported) {
+                        stringResource(SettingsR.string.settings_hardware_dimmer_supported_subtitle)
+                    } else {
+                        stringResource(SettingsR.string.settings_hardware_dimmer_unsupported_subtitle)
+                    },
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -394,8 +420,8 @@ private fun HardwareCard(
                 )
             }
             Row(modifier = Modifier.fillMaxWidth(), horizontalArrangement = Arrangement.SpaceBetween) {
-                SliderStopLabel("Min")
-                SliderStopLabel("Max")
+                SliderStopLabel(stringResource(SettingsR.string.settings_hardware_dimmer_stop_min))
+                SliderStopLabel(stringResource(SettingsR.string.settings_hardware_dimmer_stop_max))
             }
         }
     }
@@ -410,13 +436,16 @@ private fun TransmissionCard(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
-        SectionLabel(text = "TRANSMISSION", color = MaterialTheme.colorScheme.primaryContainer)
+        SectionLabel(
+            text = stringResource(SettingsR.string.settings_transmission_section),
+            color = MaterialTheme.colorScheme.primaryContainer,
+        )
         Spacer(Modifier.height(Spacing.Unit))
         SMLCard(modifier = Modifier.fillMaxWidth()) {
             TransmissionStat(
-                title = "Transmission Speed",
+                title = stringResource(SettingsR.string.settings_transmission_speed_title),
                 value = "$speedWpm WPM",
-                subtitle = "Speed of the flashlight blink pattern",
+                subtitle = stringResource(SettingsR.string.settings_transmission_speed_subtitle),
             )
             Spacer(Modifier.height(Spacing.Gutter))
             SMLSlider(
@@ -434,9 +463,9 @@ private fun TransmissionCard(
             SectionDivider()
             Spacer(Modifier.height(Spacing.Gutter))
             TransmissionStat(
-                title = "Pause Between Loops",
+                title = stringResource(SettingsR.string.settings_transmission_pause_title),
                 value = formatLoopPause(pauseMillis),
-                subtitle = "Delay before repeating a looped or emergency message",
+                subtitle = stringResource(SettingsR.string.settings_transmission_pause_subtitle),
             )
             Spacer(Modifier.height(Spacing.Gutter))
             val stopIndex = LOOP_PAUSE_STOPS_MILLIS.indexOf(pauseMillis).coerceAtLeast(0)
@@ -530,7 +559,10 @@ private fun EmergencyModeCard(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
-        SectionLabel(text = "EMERGENCY MODE", color = MaterialTheme.colorScheme.error)
+        SectionLabel(
+            text = stringResource(SettingsR.string.settings_emergency_section),
+            color = MaterialTheme.colorScheme.error,
+        )
         Spacer(Modifier.height(Spacing.Unit))
         SMLCard(
             modifier =
@@ -543,7 +575,7 @@ private fun EmergencyModeCard(
                     ),
         ) {
             Text(
-                text = "Morse Message",
+                text = stringResource(SettingsR.string.settings_emergency_message_title),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
@@ -551,7 +583,7 @@ private fun EmergencyModeCard(
             SMLTextField(
                 value = state.message,
                 onValueChange = onMessageChanged,
-                placeholder = "Enter emergency message...",
+                placeholder = stringResource(SettingsR.string.settings_emergency_message_placeholder),
                 enabled = !state.isStrobeActive,
                 modifier = Modifier.fillMaxWidth(),
             )
@@ -585,13 +617,13 @@ private fun AddSosTileRow(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = "Add to Quick Settings",
+                text = stringResource(SettingsR.string.settings_emergency_add_sos_tile_title),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
             Spacer(Modifier.height(Spacing.S))
             Text(
-                text = "One-tap SOS access from the notification shade",
+                text = stringResource(SettingsR.string.settings_emergency_add_sos_tile_subtitle),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -619,13 +651,18 @@ private fun EmergencyTestRow(
     ) {
         Column(modifier = Modifier.weight(1f)) {
             Text(
-                text = if (isActive) "Testing…" else "Test It",
+                text =
+                    if (isActive) {
+                        stringResource(SettingsR.string.settings_emergency_testing_label)
+                    } else {
+                        stringResource(SettingsR.string.settings_emergency_test_it_label)
+                    },
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.error,
             )
             Spacer(Modifier.height(Spacing.S))
             Text(
-                text = "Plays the saved message when shaken in Emergency mode or from the SOS tile",
+                text = stringResource(SettingsR.string.settings_emergency_test_subtitle),
                 style = MaterialTheme.typography.labelSmall,
                 color = MaterialTheme.colorScheme.onSurfaceVariant,
             )
@@ -653,7 +690,12 @@ private fun EmergencyTestButton(
     ) {
         Icon(
             painter = painterResource(if (isActive) R.drawable.ic_stop else R.drawable.ic_send),
-            contentDescription = if (isActive) "Stop test" else "Test emergency message",
+            contentDescription =
+                if (isActive) {
+                    stringResource(SettingsR.string.settings_emergency_stop_test_content_description)
+                } else {
+                    stringResource(SettingsR.string.settings_emergency_test_content_description)
+                },
             tint = tint,
             modifier = Modifier.size(20.dp),
         )
@@ -667,12 +709,15 @@ private fun HapticsCard(
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
-        SectionLabel(text = "HAPTICS", color = MaterialTheme.colorScheme.primaryContainer)
+        SectionLabel(
+            text = stringResource(SettingsR.string.settings_haptics_section),
+            color = MaterialTheme.colorScheme.primaryContainer,
+        )
         Spacer(Modifier.height(Spacing.Unit))
         SMLCard(modifier = Modifier.fillMaxWidth()) {
             SettingToggleRow(
-                title = "Haptic Feedback",
-                subtitle = "Vibrate on configuration changes",
+                title = stringResource(SettingsR.string.settings_haptics_title),
+                subtitle = stringResource(SettingsR.string.settings_haptics_subtitle),
                 checked = isEnabled,
                 onCheckedChange = { onToggled() },
             )
@@ -684,14 +729,18 @@ private fun HapticsCard(
 private fun AppearanceCard(
     themeMode: ThemeMode,
     onThemeModeChanged: (ThemeMode) -> Unit,
+    onLanguageClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
     Column(modifier = modifier) {
-        SectionLabel(text = "APPEARANCE", color = MaterialTheme.colorScheme.primaryContainer)
+        SectionLabel(
+            text = stringResource(SettingsR.string.settings_appearance_section),
+            color = MaterialTheme.colorScheme.primaryContainer,
+        )
         Spacer(Modifier.height(Spacing.Unit))
         SMLCard(modifier = Modifier.fillMaxWidth()) {
             Text(
-                text = "App Theme",
+                text = stringResource(SettingsR.string.settings_appearance_theme_title),
                 style = MaterialTheme.typography.bodyMedium,
                 color = MaterialTheme.colorScheme.onSurface,
             )
@@ -701,28 +750,56 @@ private fun AppearanceCard(
                 horizontalArrangement = Arrangement.spacedBy(Spacing.Unit),
             ) {
                 SMLOptionCard(
-                    label = "Dark",
+                    label = stringResource(SettingsR.string.settings_appearance_theme_dark),
                     icon = painterResource(R.drawable.ic_theme_dark),
                     selected = themeMode == ThemeMode.DARK,
                     onClick = { onThemeModeChanged(ThemeMode.DARK) },
                     modifier = Modifier.weight(1f),
                 )
                 SMLOptionCard(
-                    label = "Light",
+                    label = stringResource(SettingsR.string.settings_appearance_theme_light),
                     icon = painterResource(R.drawable.ic_theme_light),
                     selected = themeMode == ThemeMode.LIGHT,
                     onClick = { onThemeModeChanged(ThemeMode.LIGHT) },
                     modifier = Modifier.weight(1f),
                 )
                 SMLOptionCard(
-                    label = "Auto",
+                    label = stringResource(SettingsR.string.settings_appearance_theme_auto),
                     icon = painterResource(R.drawable.ic_theme_light_dark),
                     selected = themeMode == ThemeMode.AUTO,
                     onClick = { onThemeModeChanged(ThemeMode.AUTO) },
                     modifier = Modifier.weight(1f),
                 )
             }
+            Spacer(Modifier.height(Spacing.Gutter))
+            SectionDivider()
+            Spacer(Modifier.height(Spacing.Gutter))
+            LanguageRow(onClick = onLanguageClicked)
         }
+    }
+}
+
+@Composable
+private fun LanguageRow(
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier,
+) {
+    Row(
+        modifier = modifier.fillMaxWidth().clickable(onClick = onClick),
+        horizontalArrangement = Arrangement.SpaceBetween,
+        verticalAlignment = Alignment.CenterVertically,
+    ) {
+        Text(
+            text = stringResource(SettingsR.string.settings_appearance_language_title),
+            style = MaterialTheme.typography.bodyMedium,
+            color = MaterialTheme.colorScheme.onSurface,
+        )
+        Icon(
+            painter = painterResource(R.drawable.ic_arrow_forward),
+            contentDescription = null,
+            tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            modifier = Modifier.size(16.dp),
+        )
     }
 }
 
@@ -751,7 +828,7 @@ private fun AboutCard(
                     tint = MaterialTheme.colorScheme.onSurfaceVariant,
                 )
                 Text(
-                    text = "About",
+                    text = stringResource(SettingsR.string.settings_about_title),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
                 )
@@ -792,6 +869,7 @@ internal fun SettingsScreenPreview() {
                 onAction = {},
                 onNavigateBack = {},
                 onNavigateToAbout = {},
+                onNavigateToLanguage = {},
             )
         }
     }

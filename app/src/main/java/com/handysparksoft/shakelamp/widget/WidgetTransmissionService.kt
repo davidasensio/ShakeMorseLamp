@@ -22,6 +22,7 @@ import kotlinx.coroutines.cancel
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.android.ext.android.inject
+import com.handysparksoft.shakelamp.R as AppR
 
 /**
  * Runs a single home screen widget tap: sends a morse phrase once or on loop until stopped. A
@@ -109,8 +110,12 @@ class WidgetTransmissionService : Service() {
 
     private fun ensureChannel() {
         val channel =
-            NotificationChannel(CHANNEL_ID, "Widget transmission", NotificationManager.IMPORTANCE_LOW).apply {
-                description = "Persistent status while a home screen widget phrase is transmitting"
+            NotificationChannel(
+                CHANNEL_ID,
+                getString(AppR.string.notification_widget_channel_name),
+                NotificationManager.IMPORTANCE_LOW,
+            ).apply {
+                description = getString(AppR.string.notification_widget_channel_description)
             }
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
     }
@@ -133,15 +138,20 @@ class WidgetTransmissionService : Service() {
                 Intent(this, WidgetTransmissionService::class.java).setAction(ACTION_STOP),
                 PendingIntent.FLAG_IMMUTABLE,
             )
-        val text = "Sending \"$message\" via the flashlight" + if (loop) " (looping)" else ""
+        val text =
+            if (loop) {
+                getString(AppR.string.notification_widget_text_looping, message)
+            } else {
+                getString(AppR.string.notification_widget_text, message)
+            }
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notifications)
-            .setContentTitle("Widget transmitting")
+            .setContentTitle(getString(AppR.string.notification_widget_title))
             .setContentText(text)
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
             .setContentIntent(contentIntent)
-            .addAction(R.drawable.ic_stop, "Stop", stopIntent)
+            .addAction(R.drawable.ic_stop, getString(AppR.string.notification_stop_action), stopIntent)
             .build()
     }
 

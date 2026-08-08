@@ -37,6 +37,7 @@ import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.platform.LocalContext
 import androidx.compose.ui.res.painterResource
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.handysparksoft.shakelamp.core.designsystem.R
@@ -45,6 +46,7 @@ import com.handysparksoft.shakelamp.core.designsystem.theme.ShakeMorseLampTheme
 import com.handysparksoft.shakelamp.core.designsystem.theme.Spacing
 import timber.log.Timber
 import java.time.Year
+import com.handysparksoft.shakelamp.feature.settings.R as SettingsR
 
 @Composable
 fun AboutScreen(
@@ -69,7 +71,10 @@ fun AboutScreen(
                     .verticalScroll(rememberScrollState()),
             verticalArrangement = Arrangement.spacedBy(Spacing.Gutter),
         ) {
-            ScreenHeader(title = "About", onNavigateBack = onNavigateBack)
+            ScreenHeader(
+                title = stringResource(SettingsR.string.settings_about_title),
+                onNavigateBack = onNavigateBack,
+            )
             AboutAppBadge(appVersion = appVersion)
             Spacer(Modifier.height(Spacing.Margin))
             AboutActionsCard(context = context)
@@ -84,26 +89,29 @@ private fun AboutActionsCard(
     context: Context,
     modifier: Modifier = Modifier,
 ) {
+    val shareChooserTitle = stringResource(SettingsR.string.about_share_chooser_title)
+    val shareMessage = stringResource(SettingsR.string.about_share_message, PLAY_STORE_WEB_URL + PACKAGE_ID)
+    val feedbackEmailSubject = stringResource(SettingsR.string.about_feedback_email_subject)
     SMLCard(modifier = modifier.fillMaxWidth(), contentPadding = PaddingValues(0.dp)) {
         AboutRow(
             icon = painterResource(R.drawable.ic_share),
-            title = "Share app",
-            subtitle = "Share it with friends and family",
-            onClick = { shareApp(context) },
+            title = stringResource(SettingsR.string.about_share_app_title),
+            subtitle = stringResource(SettingsR.string.about_share_app_subtitle),
+            onClick = { shareApp(context, chooserTitle = shareChooserTitle, message = shareMessage) },
         )
         AboutDivider()
         AboutRow(
             icon = painterResource(R.drawable.ic_star_filled),
-            title = "Rate on Google Play",
-            subtitle = "Tell us what you think",
+            title = stringResource(SettingsR.string.about_rate_title),
+            subtitle = stringResource(SettingsR.string.about_rate_subtitle),
             onClick = { rateApp(context) },
         )
         AboutDivider()
         AboutRow(
             icon = painterResource(R.drawable.ic_send_feedback),
-            title = "Send feedback",
-            subtitle = "Email us directly",
-            onClick = { sendFeedback(context) },
+            title = stringResource(SettingsR.string.about_send_feedback_title),
+            subtitle = stringResource(SettingsR.string.about_send_feedback_subtitle),
+            onClick = { sendFeedback(context, subject = feedbackEmailSubject) },
         )
     }
 }
@@ -113,27 +121,31 @@ private fun AboutLegalCard(modifier: Modifier = Modifier) {
     SMLCard(modifier = modifier.fillMaxWidth(), contentPadding = PaddingValues(0.dp)) {
         AboutRow(
             icon = painterResource(R.drawable.ic_privacy_policy),
-            title = "Privacy Policy",
+            title = stringResource(SettingsR.string.about_privacy_policy_title),
             trailingIcon = painterResource(R.drawable.ic_open_in_new),
             onClick = {},
         )
         AboutDivider()
         AboutRow(
             icon = painterResource(R.drawable.ic_contract),
-            title = "Terms of Use",
+            title = stringResource(SettingsR.string.about_terms_of_use_title),
             trailingIcon = painterResource(R.drawable.ic_open_in_new),
             onClick = {},
         )
     }
 }
 
-private fun shareApp(context: Context) {
+private fun shareApp(
+    context: Context,
+    chooserTitle: String,
+    message: String,
+) {
     val shareIntent =
         Intent(Intent.ACTION_SEND).apply {
             type = "text/plain"
-            putExtra(Intent.EXTRA_TEXT, SHARE_MESSAGE)
+            putExtra(Intent.EXTRA_TEXT, message)
         }
-    context.startActivity(Intent.createChooser(shareIntent, "Share ShakeMorseLamp"))
+    context.startActivity(Intent.createChooser(shareIntent, chooserTitle))
 }
 
 private fun rateApp(context: Context) {
@@ -149,12 +161,15 @@ private fun rateApp(context: Context) {
     }
 }
 
-private fun sendFeedback(context: Context) {
+private fun sendFeedback(
+    context: Context,
+    subject: String,
+) {
     val emailIntent =
         Intent(Intent.ACTION_SENDTO).apply {
             data = Uri.parse("mailto:")
             putExtra(Intent.EXTRA_EMAIL, arrayOf(FEEDBACK_EMAIL))
-            putExtra(Intent.EXTRA_SUBJECT, "ShakeMorseLamp - Send Feedback")
+            putExtra(Intent.EXTRA_SUBJECT, subject)
         }
     context.startActivity(emailIntent)
 }
@@ -195,12 +210,17 @@ private fun AboutAppBadge(
         }
         Spacer(Modifier.height(Spacing.Margin))
         Text(
-            text = "ShakeMorseLamp",
+            text = stringResource(SettingsR.string.about_app_badge_title),
             style = MaterialTheme.typography.titleLarge,
             color = MaterialTheme.colorScheme.onSurface,
         )
         Text(
-            text = "v${appVersion.versionName} (Build ${appVersion.versionCode})",
+            text =
+                stringResource(
+                    SettingsR.string.about_version_label,
+                    appVersion.versionName,
+                    appVersion.versionCode,
+                ),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -279,7 +299,7 @@ private fun AboutFooter(modifier: Modifier = Modifier) {
         horizontalAlignment = Alignment.CenterHorizontally,
     ) {
         Text(
-            text = "© $year ShakeMorseLamp\nMade with ❤️ in Spain",
+            text = stringResource(SettingsR.string.about_footer, year),
             style = MaterialTheme.typography.labelSmall,
             color = MaterialTheme.colorScheme.onSurfaceVariant,
         )
@@ -293,9 +313,6 @@ private const val DIVIDER_ALPHA = 0.08f
 private const val PACKAGE_ID = "com.handysparksoft.shakelamp"
 private const val PLAY_STORE_WEB_URL = "https://play.google.com/store/apps/details?id="
 private const val FEEDBACK_EMAIL = "handysparksoft@gmail.com"
-private const val SHARE_MESSAGE =
-    "Check out ShakeMorseLamp — turn your phone's flashlight into a Morse code transmitter! " +
-        PLAY_STORE_WEB_URL + PACKAGE_ID
 
 @PreviewLightDark
 @Composable

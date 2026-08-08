@@ -13,6 +13,7 @@ import androidx.core.app.ServiceCompat
 import com.handysparksoft.shakelamp.MainActivity
 import com.handysparksoft.shakelamp.core.designsystem.R
 import com.handysparksoft.shakelamp.feature.flashlight.domain.FlashlightRepository
+import com.handysparksoft.shakelamp.R as AppR
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
@@ -98,8 +99,12 @@ class AutoOffKeepAliveService : Service() {
 
     private fun ensureChannel() {
         val channel =
-            NotificationChannel(CHANNEL_ID, "Auto-off timer", NotificationManager.IMPORTANCE_LOW).apply {
-                description = "Persistent status while the flashlight auto-off timer is counting down"
+            NotificationChannel(
+                CHANNEL_ID,
+                getString(AppR.string.notification_auto_off_channel_name),
+                NotificationManager.IMPORTANCE_LOW,
+            ).apply {
+                description = getString(AppR.string.notification_auto_off_channel_description)
             }
         getSystemService(NotificationManager::class.java).createNotificationChannel(channel)
     }
@@ -114,8 +119,8 @@ class AutoOffKeepAliveService : Service() {
             )
         return NotificationCompat.Builder(this, CHANNEL_ID)
             .setSmallIcon(R.drawable.ic_notifications)
-            .setContentTitle("Auto-off timer active")
-            .setContentText("The flashlight will turn off automatically")
+            .setContentTitle(getString(AppR.string.notification_auto_off_title))
+            .setContentText(getString(AppR.string.notification_auto_off_text))
             .setPriority(NotificationCompat.PRIORITY_LOW)
             .setOngoing(true)
             .setContentIntent(contentIntent)
