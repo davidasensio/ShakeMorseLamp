@@ -8,22 +8,29 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.layout.fillMaxWidth
+import androidx.compose.foundation.layout.navigationBarsPadding
 import androidx.compose.foundation.layout.padding
+import androidx.compose.foundation.layout.size
+import androidx.compose.foundation.layout.statusBarsPadding
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.HorizontalDivider
+import androidx.compose.material3.Icon
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Surface
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
+import com.handysparksoft.shakelamp.core.designsystem.R
 import com.handysparksoft.shakelamp.core.designsystem.component.SMLCard
 import com.handysparksoft.shakelamp.core.designsystem.theme.ShakeMorseLampTheme
 import com.handysparksoft.shakelamp.core.designsystem.theme.Spacing
+import com.handysparksoft.shakelamp.feature.settings.domain.LocaleDisplayFormatter
 import com.handysparksoft.shakelamp.feature.settings.domain.LocaleOption
 import com.handysparksoft.shakelamp.feature.settings.R as SettingsR
 
@@ -39,6 +46,8 @@ fun LanguageScreen(
             modifier
                 .fillMaxSize()
                 .background(MaterialTheme.colorScheme.background)
+                .statusBarsPadding()
+                .navigationBarsPadding()
                 .verticalScroll(rememberScrollState())
                 .padding(Spacing.Margin),
         verticalArrangement = Arrangement.spacedBy(Spacing.Gutter),
@@ -46,7 +55,7 @@ fun LanguageScreen(
         ScreenHeader(title = stringResource(SettingsR.string.language_screen_title), onNavigateBack = onNavigateBack)
         SMLCard(modifier = Modifier.fillMaxWidth(), contentPadding = PaddingValues(0.dp)) {
             LanguageOptionRow(
-                flagEmoji = LanguageViewModel.SYSTEM_DEFAULT_FLAG_EMOJI,
+                flagEmoji = LocaleDisplayFormatter.SYSTEM_DEFAULT_FLAG_EMOJI,
                 label = stringResource(SettingsR.string.language_system_default_label),
                 selected = uiState.selectedTag == null,
                 onClick = { onAction(LanguageUiAction.LocaleSelected(null)) },
@@ -56,8 +65,11 @@ fun LanguageScreen(
                 LanguageOptionRow(
                     flagEmoji = option.flagEmoji,
                     label = option.label,
+                    nativeLabel = option.nativeLabel,
                     selected = uiState.selectedTag == option.tag,
-                    onClick = { onAction(LanguageUiAction.LocaleSelected(option.tag)) },
+                    onClick = {
+                        onAction(LanguageUiAction.LocaleSelected(option.tag))
+                    },
                 )
             }
         }
@@ -71,22 +83,42 @@ private fun LanguageOptionRow(
     selected: Boolean,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
+    nativeLabel: String? = null,
 ) {
+    val labelColor = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.onSurface
     Row(
         modifier =
             modifier
                 .fillMaxWidth()
                 .clickable(onClick = onClick)
-                .padding(horizontal = Spacing.Margin, vertical = Spacing.Margin),
-        horizontalArrangement = Arrangement.spacedBy(Spacing.Unit),
+                .padding(horizontal = Spacing.Margin, vertical = Spacing.ContainerPadding),
+        horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(text = flagEmoji, style = MaterialTheme.typography.bodyMedium)
-        Text(
-            text = label,
-            style = MaterialTheme.typography.bodyMedium,
-            color = if (selected) MaterialTheme.colorScheme.primaryContainer else MaterialTheme.colorScheme.onSurface,
-        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.Unit),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Text(text = flagEmoji, style = MaterialTheme.typography.bodyMedium)
+            Column {
+                Text(text = label, style = MaterialTheme.typography.bodyMedium, color = labelColor)
+                if (nativeLabel != null) {
+                    Text(
+                        text = nativeLabel,
+                        style = MaterialTheme.typography.labelSmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant,
+                    )
+                }
+            }
+        }
+        if (selected) {
+            Icon(
+                painter = painterResource(R.drawable.ic_check),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.primaryContainer,
+                modifier = Modifier.size(20.dp),
+            )
+        }
     }
 }
 
@@ -110,9 +142,24 @@ internal fun LanguageScreenPreview() {
                     LanguageUiState(
                         options =
                             listOf(
-                                LocaleOption(tag = "en", label = "English", flagEmoji = "🇺🇸"),
-                                LocaleOption(tag = "es", label = "Español", flagEmoji = "🇪🇸"),
-                                LocaleOption(tag = "de", label = "Deutsch", flagEmoji = "🇩🇪"),
+                                LocaleOption(
+                                    tag = "en",
+                                    label = "English",
+                                    nativeLabel = "English",
+                                    flagEmoji = "🇺🇸",
+                                ),
+                                LocaleOption(
+                                    tag = "es",
+                                    label = "Spanish",
+                                    nativeLabel = "Español",
+                                    flagEmoji = "🇪🇸",
+                                ),
+                                LocaleOption(
+                                    tag = "de",
+                                    label = "German",
+                                    nativeLabel = "Deutsch",
+                                    flagEmoji = "🇩🇪",
+                                ),
                             ),
                         selectedTag = null,
                     ),

@@ -2,10 +2,14 @@ package com.handysparksoft.shakelamp.feature.settings.ui
 
 import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
+import com.handysparksoft.shakelamp.feature.settings.domain.LocaleDisplayFormatter
 import com.handysparksoft.shakelamp.feature.settings.domain.LocaleOption
 import com.handysparksoft.shakelamp.feature.settings.domain.LocalePreferenceRepository
+import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
@@ -18,6 +22,9 @@ class LanguageViewModel(
 ) : ViewModel() {
     private val _uiState = MutableStateFlow(LanguageUiState(options = localeOptions()))
     val uiState: StateFlow<LanguageUiState> = _uiState.asStateFlow()
+
+    private val _uiEvent = MutableSharedFlow<LanguageUiEvent>()
+    val uiEvent: SharedFlow<LanguageUiEvent> = _uiEvent.asSharedFlow()
 
     init {
         viewModelScope.launch {
@@ -33,34 +40,27 @@ class LanguageViewModel(
         }
     }
 
+    /**
+     * Persistence must finish - and only then emit the navigate-back event - before the UI pops
+     * this screen: popping the back stack clears this ViewModel and cancels viewModelScope, so a
+     * fire-and-forget launch here would risk the locale change never actually being applied.
+     */
     private fun selectLocale(tag: String?) {
-        viewModelScope.launch { localePreferenceRepository.setLocaleTag(tag) }
+        viewModelScope.launch {
+            localePreferenceRepository.setLocaleTag(tag)
+            _uiEvent.emit(LanguageUiEvent.NavigateBack)
+        }
     }
 
-    private fun localeOptions(): List<LocaleOption> =
-        localePreferenceRepository.supportedLocaleTags().map { tag ->
-            val locale = Locale.forLanguageTag(tag)
-            LocaleOption(tag = tag, label = locale.nativeDisplayName(), flagEmoji = flagEmojiForTag(tag))
+    private fun localeOptions(): List<LocaleOption> {
+        val displayLocale = Locale.getDefault()
+        return localePreferenceRepository.supportedLocaleTags().map { tag ->
+            LocaleOption(
+                tag = tag,
+                label = LocaleDisplayFormatter.displayNameIn(tag, displayLocale),
+                nativeLabel = LocaleDisplayFormatter.displayNameIn(tag, Locale.forLanguageTag(tag)),
+                flagEmoji = LocaleDisplayFormatter.flagEmojiFor(tag),
+            )
         }
-
-    private fun Locale.nativeDisplayName(): String {
-        val name = getDisplayName(this)
-        return name.replaceFirstChar { if (it.isLowerCase()) it.titlecase(this) else it.toString() }
-    }
-
-    private fun flagEmojiForTag(tag: String): String =
-        when (tag) {
-            "en" -> "🇺🇸"
-            "ca" -> "🇪🇸"
-            "de" -> "🇩🇪"
-            "es" -> "🇪🇸"
-            "fr" -> "🇫🇷"
-            "it" -> "🇮🇹"
-            "pt" -> "🇵🇹"
-            else -> SYSTEM_DEFAULT_FLAG_EMOJI
-        }
-
-    companion object {
-        const val SYSTEM_DEFAULT_FLAG_EMOJI = "🌐"
     }
 }

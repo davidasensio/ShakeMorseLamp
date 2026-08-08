@@ -14,3 +14,7 @@ sealed interface LanguageUiAction {
         val tag: String?,
     ) : LanguageUiAction
 }
+
+sealed interface LanguageUiEvent {
+    data object NavigateBack : LanguageUiEvent
+}

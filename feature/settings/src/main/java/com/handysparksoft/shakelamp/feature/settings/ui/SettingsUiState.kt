@@ -21,6 +21,8 @@ data class SettingsUiState(
     val loopPauseMillis: Long = 2_000L,
     val transmissionSpeedWpm: Int = MorseTimingDefaults.DEFAULT_WPM,
     val isAddSosTileSupported: Boolean = false,
+    val currentLanguageLabel: String = "English",
+    val currentLanguageFlagEmoji: String = "🇺🇸",
 )
 
 sealed interface SettingsUiAction {

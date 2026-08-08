@@ -142,6 +142,8 @@ private fun SettingsContent(
                 performHaptic(HapticFeedbackType.SegmentTick)
                 onAction(SettingsUiAction.ThemeModeChanged(it))
             },
+            currentLanguageLabel = uiState.currentLanguageLabel,
+            currentLanguageFlagEmoji = uiState.currentLanguageFlagEmoji,
             onLanguageClicked = onNavigateToLanguage,
         )
         AboutCard(onAboutClicked = onNavigateToAbout)
@@ -729,6 +731,8 @@ private fun HapticsCard(
 private fun AppearanceCard(
     themeMode: ThemeMode,
     onThemeModeChanged: (ThemeMode) -> Unit,
+    currentLanguageLabel: String,
+    currentLanguageFlagEmoji: String,
     onLanguageClicked: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -774,13 +778,19 @@ private fun AppearanceCard(
             Spacer(Modifier.height(Spacing.Gutter))
             SectionDivider()
             Spacer(Modifier.height(Spacing.Gutter))
-            LanguageRow(onClick = onLanguageClicked)
+            LanguageRow(
+                flagEmoji = currentLanguageFlagEmoji,
+                label = currentLanguageLabel,
+                onClick = onLanguageClicked,
+            )
         }
     }
 }
 
 @Composable
 private fun LanguageRow(
+    flagEmoji: String,
+    label: String,
     onClick: () -> Unit,
     modifier: Modifier = Modifier,
 ) {
@@ -789,11 +799,28 @@ private fun LanguageRow(
         horizontalArrangement = Arrangement.SpaceBetween,
         verticalAlignment = Alignment.CenterVertically,
     ) {
-        Text(
-            text = stringResource(SettingsR.string.settings_appearance_language_title),
-            style = MaterialTheme.typography.bodyMedium,
-            color = MaterialTheme.colorScheme.onSurface,
-        )
+        Row(
+            horizontalArrangement = Arrangement.spacedBy(Spacing.Unit),
+            verticalAlignment = Alignment.CenterVertically,
+        ) {
+            Icon(
+                painter = painterResource(R.drawable.ic_language),
+                contentDescription = null,
+                tint = MaterialTheme.colorScheme.onSurfaceVariant,
+            )
+            Column {
+                Text(
+                    text = stringResource(SettingsR.string.settings_appearance_language_title),
+                    style = MaterialTheme.typography.bodyMedium,
+                    color = MaterialTheme.colorScheme.onSurface,
+                )
+                Text(
+                    text = stringResource(SettingsR.string.settings_appearance_language_subtitle, label, flagEmoji),
+                    style = MaterialTheme.typography.labelSmall,
+                    color = MaterialTheme.colorScheme.onSurfaceVariant,
+                )
+            }
+        }
         Icon(
             painter = painterResource(R.drawable.ic_arrow_forward),
             contentDescription = null,

@@ -8,6 +8,7 @@ import com.handysparksoft.shakelamp.core.common.domain.TorchBrightnessRepository
 import com.handysparksoft.shakelamp.core.common.domain.TransmissionSpeedRepository
 import com.handysparksoft.shakelamp.core.morse.domain.SendMorseMessageUseCase
 import com.handysparksoft.shakelamp.feature.settings.domain.EmergencyMessageRepository
+import com.handysparksoft.shakelamp.feature.settings.domain.LocaleDisplayFormatter
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeMode
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeServiceController
 import com.handysparksoft.shakelamp.feature.settings.domain.ShakeSettingsRepository
@@ -26,6 +27,7 @@ import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
 import org.koin.core.annotation.KoinViewModel
+import java.util.Locale
 
 @KoinViewModel
 class SettingsViewModel(
@@ -46,6 +48,8 @@ class SettingsViewModel(
                 dimmerLevel = torchBrightnessRepository.maxStrengthLevel(),
                 dimmerMaxLevel = torchBrightnessRepository.maxStrengthLevel(),
                 isAddSosTileSupported = sosTileRequester.isSupported(),
+                currentLanguageLabel = currentLanguageLabel(),
+                currentLanguageFlagEmoji = currentLanguageFlagEmoji(),
             ),
         )
     val uiState: StateFlow<SettingsUiState> = _uiState.asStateFlow()
@@ -187,4 +191,11 @@ class SettingsViewModel(
             viewModelScope.launch { _uiEvent.emit(SettingsUiEvent.ShowSosTileResult(result)) }
         }
     }
+
+    private fun currentLanguageLabel(): String {
+        val currentLocale = Locale.getDefault()
+        return LocaleDisplayFormatter.displayNameIn(currentLocale.language, currentLocale)
+    }
+
+    private fun currentLanguageFlagEmoji(): String = LocaleDisplayFormatter.flagEmojiFor(Locale.getDefault().language)
 }

@@ -61,6 +61,7 @@
     <string name="about_version_label">v%1$s (Build %2$d)</string>
     <string name="about_footer">© %1$d ShakeMorseLamp\nMade with ❤️ in Spain</string>
     <string name="settings_appearance_language_title">Language</string>
+    <string name="settings_appearance_language_subtitle">App language: %1$s %2$s</string>
     <string name="language_screen_title">Language</string>
     <string name="language_system_default_label">System Default</string>
 </resources>
