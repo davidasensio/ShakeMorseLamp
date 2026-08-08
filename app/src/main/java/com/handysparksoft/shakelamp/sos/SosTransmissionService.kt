@@ -20,6 +20,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
+import kotlinx.coroutines.delay
 import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.isActive
 import kotlinx.coroutines.launch
@@ -73,6 +74,7 @@ class SosTransmissionService : Service() {
                 val message = emergencyMessageRepository.observeMessage().first().ifBlank { DEFAULT_MESSAGE }
                 do {
                     sendMorseMessage(message, MorseTimingDefaults.DEFAULT_WPM)
+                    delay(LOOP_PAUSE_MILLIS)
                 } while (isActive)
             }
     }
@@ -136,5 +138,12 @@ class SosTransmissionService : Service() {
         private const val CHANNEL_ID = "sos_transmission"
         private const val NOTIFICATION_ID = 1003
         private const val DEFAULT_MESSAGE = "SOS"
+
+        /**
+         * Fixed gap between repetitions, so the loop reads as a distinct repeated signal rather
+         * than one continuous strobe. Deliberately not the user's Transmission "Pause Between
+         * Loops" setting: the tile is a one-tap distress control and stays predictable.
+         */
+        private const val LOOP_PAUSE_MILLIS = 3_000L
     }
 }
