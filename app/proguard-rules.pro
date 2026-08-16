@@ -25,3 +25,18 @@
 # Glance resolves ActionCallback implementations reflectively by class name when a widget is
 # tapped, so TransmitAction has no compile-time reference from app code.
 -keep class * implements androidx.glance.appwidget.action.ActionCallback { <init>(); }
+
+# Room loads its generated database implementation reflectively:
+# Class.forName("<Database>_Impl").newInstance(). Room ships
+# `-keep class * extends androidx.room.RoomDatabase`, which preserves the class NAME but not its
+# members, so R8 strips the no-arg constructor it cannot see being called. The class then loads
+# and fails to instantiate, throwing InstantiationException at app startup:
+#   Failed to create an instance of androidx.work.impl.WorkDatabase
+# This crashed every launch in 2.0.0 (versionCode 20) via WorkManager's InitializationProvider.
+-keep class * extends androidx.room.RoomDatabase { <init>(); }
+
+# Same reflective pattern: Room resolves the auto-migration and callback specs by name too.
+-keep class * extends androidx.room.migration.AutoMigrationSpec { <init>(); }
+
+# WorkManager instantiates Workers reflectively from the class name stored in its database.
+-keep class * extends androidx.work.ListenableWorker { <init>(...); }
