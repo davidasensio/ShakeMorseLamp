@@ -10,10 +10,10 @@ than none, because it will be pasted into a form that Google reviews.
 This app replaces an **existing Play listing under the same package**
 (`com.handysparksoft.shakelamp`), so both of these had to be settled before an upload could work.
 
-1. **Version** — set to `versionCode = 20`, `versionName = "2.0.0"` in `app/build.gradle.kts`.
-   Play rejects any upload whose `versionCode` is not greater than the highest already published,
-   and only the Console knows that number. **Confirm 20 is above the live listing's highest
-   release before building the bundle**; if the old app ever reached 20 or beyond, raise it.
+1. **Version** — currently `versionCode = 21`, `versionName = "2.0.1"` in `app/build.gradle.kts`.
+   2.0.0 (code 20) shipped and crashed on launch, so 21 is the hotfix. Play rejects any upload
+   whose `versionCode` is not greater than the highest already published, and only the Console
+   knows that number — **check it before every build**, and bump again for each new upload.
 2. **Release signing is configured** — `signingConfigs { create("release") }` reads
    `keystore/keystore_old/keystore.properties`, with `SIGNING_*` Gradle properties or environment
    variables taking precedence so CI can sign without the file present. A missing file only warns,
