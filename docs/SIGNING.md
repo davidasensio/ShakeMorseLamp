@@ -63,22 +63,31 @@ unzip -p app/build/outputs/bundle/release/app-release.aab 'META-INF/*.RSA' \
 ## Folder layout, and why the names mislead
 
 ```
-keystore/
-├── keystore_old/          ← ACTIVE. The build reads this. Valid JKS.
-├── keystore_new/          ← the 2021 PKCS12 conversion. Valid, but NOT what the build uses.
-├── keystore_new_other/    ← a backup copy of that same PKCS12
-└── private_key.pepk       ← 2021 Play App Signing export (see history)
+keystore/                              ← the only home for signing material
+├── keystore_old/                      ← ACTIVE. The build reads this.
+│   ├── release_certificate.jks        ← valid JKS, all three aliases
+│   ├── keystore.properties            ← the only .properties with the correct alias
+│   └── keystore.properties.bak
+├── keystore_new/                      ← the 2021 PKCS12 conversion. NOT what the build uses.
+│   ├── release_certificate_pkcs12.jks ← same three aliases, PKCS12 format
+│   └── keystore_pkcs12.properties     ← names the alias Play REJECTS (see below)
+└── private_key.pepk                   ← 2021 Play App Signing export (see history)
 ```
+
+Everything signing-related lives here and nowhere else. Duplicate copies previously existed under
+`docs/google-play/` and in a `keystore_new_other/` folder; both were removed because three copies
+on one disk protect against a stray overwrite but not against losing the machine, and each extra
+copy carried a `.properties` file naming the wrong alias.
 
 The names are backwards: **`keystore_old` is the live one**, and `keystore_new` is the older 2021
 migration artifact. The build was once wired to `keystore_new` on the assumption that "new" meant
 current; it does not. Renaming `keystore_old` → something honest would prevent a repeat, but it
 touches signing material, so it has not been done unilaterally.
 
-Both PKCS12 copies (7131 bytes, magic `30 82`) are byte-identical and hold the same three aliases
-as the JKS. Either could sign correctly **provided the alias is `release_certificate`** — and note
-that `keystore_new/keystore_pkcs12.properties` specifies `release_certificate_bundle_01`, the alias
-Play rejects. Fix the alias before ever pointing a build at that folder.
+The PKCS12 (7131 bytes, magic `30 82`) holds the same three aliases as the JKS, so it *could* sign
+correctly — **provided the alias is `release_certificate`**. Its
+`keystore_new/keystore_pkcs12.properties` specifies `release_certificate_bundle_01`, the alias Play
+rejects. Fix the alias before ever pointing a build at that folder.
 
 ### Hazard: PEPK overwrites its destination
 
@@ -92,8 +101,11 @@ Failed to read key release_certificate from store "…/release_certificate_pkcs1
 toDerInputStream rejects tag type 19
 ```
 
-That file has since been restored from backup. **Always write PEPK output to a fresh filename**, and
-keep a copy of any keystore off-machine before running signing tools near it.
+That file was restored from a copy. **Always write PEPK output to a fresh filename** — the run that
+caused this had been given the keystore's own path — and keep a copy of any keystore off-machine
+before running signing tools near it. Nothing here is unrecoverable except the keys themselves:
+`pepk.jar` and Google's encryption public key are re-downloadable from Play Console, and a fresh
+PEPK export can be produced from the keystore at any time.
 
 ## History: why a PKCS12 file exists at all
 
@@ -127,8 +139,8 @@ repo root.
 
 ## What is git-ignored
 
-The whole `keystore/` directory, plus `docs/google-play/app_signing_bundles/`, `*.pepk`, `*.p12`,
-`*.pfx`, `*.jkss`, `pepk.jar` and `keystore*.properties`. Nothing signing-related has ever been
+The whole `keystore/` directory, plus `*.pepk`, `*.p12`, `*.pfx`, `*.jkss`, `pepk.jar` and
+`keystore*.properties`. Nothing signing-related has ever been
 committed, and it must stay that way — see `AGENTS.md`.
 
 Because `keystore/` is ignored as a *directory*, a README placed inside it could never be

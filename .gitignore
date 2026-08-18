@@ -49,9 +49,8 @@ keystore/
 keystore*.properties
 signing*.properties
 
-# Play App Signing working material: keystores, pepk exports and the pepk tool.
-# Nothing in here belongs in the repo.
-app_signing_bundles/
+# Play App Signing working material: pepk exports and the pepk tool.
+# Nothing of this kind belongs in the repo, wherever it is placed.
 *.jkss
 pepk.jar
 
