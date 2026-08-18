@@ -54,3 +54,9 @@ signing*.properties
 app_signing_bundles/
 *.jkss
 pepk.jar
+
+# Play Console declaration videos: large binaries, kept locally only.
+# Ignore the media, not the directory, so its README stays committed.
+docs/google-play/declaration-videos/*.mp4
+docs/google-play/declaration-videos/*.mov
+docs/google-play/declaration-videos/*.webm
