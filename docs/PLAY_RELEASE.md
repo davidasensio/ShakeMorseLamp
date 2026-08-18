@@ -17,36 +17,17 @@ This app replaces an **existing Play listing under the same package**
 2. **Release signing is configured** — `signingConfigs { create("release") }` reads
    `keystore/keystore_old/keystore.properties`, with `SIGNING_*` Gradle properties or environment
    variables taking precedence so CI can sign without the file present. A missing file only warns,
-   so debug builds and fresh clones still work. See "Which key signs the upload" below — the alias
-   matters and the wrong one is silently accepted locally but rejected by Play.
+   so debug builds and fresh clones still work.
 
-### Which key signs the upload
+## Signing
 
-**Alias `release_certificate`**, in `keystore/keystore_old/release_certificate.jks`. Its
-certificate is `CN=rocketsoft`, created 2015, and its SHA1 fingerprint ends **`…BB:12:F0:30`** —
-this is the value Play checks the upload against, and it is shown in Play Console under Setup →
-App signing.
+See **[SIGNING.md](SIGNING.md)** — it is the single source of truth for which key signs this app,
+why the other aliases in the keystore are rejected, how to verify a build before uploading, and
+the history behind the confusing folder names. Do not duplicate any of it here; the two would
+drift and one of them would be wrong when it mattered.
 
-This app is legacy-signed: uploads must carry the *original* signing key, not a separate upload
-key. The same keystore also holds `release_certificate_bundle` (`…D5:F0:BB:02`) and
-`release_certificate_bundle_01` (`…CE:EA:85:8E`). **Neither is accepted** — Play rejects the
-bundle with "signed with the wrong key". They were created in 2021 for an app-bundle migration
-that this listing does not use.
-
-The alias lives in `keystore/keystore_old/keystore.properties`, which is git-ignored, so it is
-recorded here too. Verify a build before uploading:
-
-```
-unzip -p app/build/outputs/bundle/release/app-release.aab 'META-INF/*.RSA' \
-  | openssl pkcs7 -inform DER -print_certs | openssl x509 -noout -fingerprint -sha1
-```
-
-Do not validate a new build by comparing it against a previous local build — a locally signed
-artifact proves nothing about which key Play expects. Compare against the Console fingerprint.
-
-The `keystore/` directory is git-ignored in full — it holds the `.jks` files, the `.properties`
-files carrying the passwords, and `private_key.pepk`. Never commit any of it, and never paste its
-contents anywhere, per `AGENTS.md`.
+The one line worth repeating: the upload must be signed with alias **`release_certificate`**,
+SHA1 ending **`…BB:12:F0:30`**.
 
 ## Foreground service types declaration
 
