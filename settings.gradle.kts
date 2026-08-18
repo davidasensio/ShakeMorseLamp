@@ -29,12 +29,10 @@ rootProject.name = "ShakeMorseLamp"
 include(":app")
 
 // Core modules
-include(":core:ui")
 include(":core:designsystem")
 include(":core:common")
 include(":core:morse")
 
 // Feature modules
 include(":feature:flashlight")
-include(":feature:morse")
 include(":feature:settings")

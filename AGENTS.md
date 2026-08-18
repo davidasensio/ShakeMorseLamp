@@ -58,10 +58,8 @@ These take priority over everything else in this file:
 
 ```
 :app
- ├── :feature:flashlight  ← flashlight control UI + ViewModel + domain + data
- ├── :feature:morse       ← morse encoder UI + ViewModel + domain + data
- ├── :feature:settings    ← settings/about UI + ViewModel + domain + data
- ├── :core:ui             ← shared cross-feature Compose UI (composite/stateful pieces)
+ ├── :feature:flashlight  ← flashlight + Morse transmission UI, ViewModel, domain, data
+ ├── :feature:settings    ← settings/about/language UI + ViewModel + domain + data
  ├── :core:designsystem   ← design system: theme, typography, color, reusable components
  ├── :core:morse          ← pure-Kotlin Morse encoding/timing/playback engine (shakelamp.jvm.library)
  └── :core:common         ← shared utilities, extensions
@@ -69,8 +67,7 @@ These take priority over everything else in this file:
 
 Feature modules depend on core modules. **No module may depend on `:app`.**
 Core modules must not depend on feature modules. Feature modules must not depend on each other —
-share code by pushing it down into `:core:*`. `:core:ui` may depend on `:core:designsystem`
-(composite components are built on top of design system primitives).
+share code by pushing it down into `:core:*`.
 
 ### Cross-module access to platform/hardware resources
 
@@ -92,7 +89,7 @@ Clean Architecture boundary is visible, but there is no separate `:domain`/`:dat
 feature — that split happens as packages inside the one feature module:
 
 ```
-feature/morse/src/main/java/com/handysparksoft/shakelamp/feature/morse/
+feature/settings/src/main/java/com/handysparksoft/shakelamp/feature/settings/
  ├── ui/            → Composables, ViewModel, UiState/UiEvent/UiAction, Koin UI module
  ├── domain/        → use cases, domain models, repository interfaces (pure Kotlin, no Android)
  └── data/          → repository implementations, data sources, mappers
@@ -103,7 +100,7 @@ feature/morse/src/main/java/com/handysparksoft/shakelamp/feature/morse/
 
 ### testFixtures
 
-Shared test doubles, fakes, and builders that other modules need (e.g. `:feature:morse` unit
+Shared test doubles, fakes, and builders that other modules need (e.g. `:feature:settings` unit
 tests wanting a fake flashlight repository from `:feature:flashlight`, or `:core:common` fakes)
 live in that module's `src/testFixtures/java` source set, not in a separate test-only module.
 Consumers add `testFixtures(project(":feature:flashlight"))` under `testImplementation`. Enable
@@ -189,9 +186,9 @@ class MorseViewModel(private val sendMorseMessage: SendMorseMessageUseCase) : Vi
 - Feature modules **must use `:core:designsystem` components when a suitable one exists** instead
   of raw Material3 primitives or one-off styled Composables. If a feature needs a new reusable
   primitive, add it to `:core:designsystem` rather than duplicating it locally.
-- Feature-specific composites that combine several design-system components with app/business
-  logic (e.g. a loading/error wrapper used across features) belong in `:core:ui`, not in
-  `:core:designsystem` — keep the design system itself free of feature/business concerns.
+- Keep `:core:designsystem` free of feature/business concerns. A composite that combines
+  design-system components with app logic belongs in the feature that uses it; if a second feature
+  needs it, introduce a shared UI module at that point rather than pre-emptively.
 - `:core:designsystem` has no dependency on `:core:common` or any feature module; it only depends
   on Compose/Material3.
 - Icons are Material Symbols vector drawables under `core/designsystem/src/main/res/drawable/`,

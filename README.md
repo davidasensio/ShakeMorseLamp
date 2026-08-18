@@ -111,11 +111,8 @@ from that directory.
 
 ```
 :app
- ├── :feature:flashlight  ← flashlight control UI + ViewModel + domain + data
- ├── :feature:morse       ← reserved. Currently empty; Morse UI lives in :feature:flashlight,
- │                          and the engine in :core:morse.
- ├── :feature:settings    ← settings/about UI + ViewModel + domain + data
- ├── :core:ui             ← reserved: shared cross-feature Compose UI. Currently empty.
+ ├── :feature:flashlight  ← flashlight + Morse transmission UI, ViewModel, domain, data
+ ├── :feature:settings    ← settings/about/language UI + ViewModel + domain + data
  ├── :core:designsystem   ← design system: theme, typography, color, reusable components
  ├── :core:morse          ← pure-Kotlin Morse encoding/timing/playback engine
  └── :core:common         ← shared utilities, extensions
