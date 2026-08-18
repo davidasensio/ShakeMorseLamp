@@ -341,9 +341,14 @@ releasable; all work happens on short-lived branches cut directly from `main`.
   etc.) and a short description, then create and switch to `<type>/<short-description>` before
   making any changes.
 - **Before merging a branch into `main`**: run `./gradlew ktlintCheck detekt` on the branch.
-  Report and fix any violations first — only merge once both are clean. Merge as a single
-  squashed commit onto `main` (no merge commits, no leftover WIP history), written in the
-  [Commit Message Format](#commit-message-format) below.
+  Report and fix any violations first — only merge once both are clean.
+- **Merge by fast-forward, keeping `main` linear and the branch's commits intact.** Do not squash
+  a branch whose commits are individually meaningful — the history of *why* each change was made
+  is worth more than a tidy one-line summary, and a squash also leaves the branch looking unmerged
+  forever unless it is then deleted. Squash only to collapse genuine WIP noise ("fix typo",
+  "wip", "address review") into the change it belongs to; rebase or interactively tidy the branch
+  first, then fast-forward.
+- No merge commits either way: `main` stays a straight line.
 - Commit messages follow the format in [Commits](#commits) below.
 
 ## Commits
@@ -420,6 +425,10 @@ to expected UI, not a way to make a failing screenshot test pass.
   design system primitives rather than raw Material3.
 - **No hardcoded user-facing strings** — every one is a `strings.xml` resource in its own
   module, added to `values/` and all 6 `values-<lang>/` files. See [Localization](#localization).
+- **Install and launch the release build before any upload.** R8 strips reflectively-resolved code
+  that every test, lint and screenshot check passes over — this shipped a crash-on-launch to
+  production once. A compiled, signed artifact is not evidence the app starts. See `docs/ROADMAP.md`'s
+  Known Constraints, and `docs/PLAY_RELEASE.md` for the rest of the release procedure.
 
 ## Anti-Patterns to Avoid
 
@@ -445,3 +454,8 @@ to expected UI, not a way to make a failing screenshot test pass.
   the platform `LocaleManager`. See [Localization](#localization).
 - Don't read `Locale.getDefault()` to decide what language the app is showing — it lags a
   per-app locale switch.
+- Don't remove the non-incremental release compilation in `AndroidKoin.kt` as dead weight — it
+  works around a Koin compiler plugin bug that makes release builds fail at random. See
+  `docs/ROADMAP.md`'s Known Constraints.
+- Don't add a keep rule to `proguard-rules.pro` without a comment saying what breaks without it;
+  an unexplained keep can never be safely retired.
