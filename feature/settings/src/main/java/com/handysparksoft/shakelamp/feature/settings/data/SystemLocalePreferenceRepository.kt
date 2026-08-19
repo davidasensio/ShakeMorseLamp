@@ -4,6 +4,7 @@ import android.app.LocaleManager
 import android.content.Context
 import android.os.Build
 import android.os.LocaleList
+import androidx.annotation.RequiresApi
 import androidx.core.app.LocaleManagerCompat
 import com.handysparksoft.shakelamp.feature.settings.domain.LocalePreferenceRepository
 import kotlinx.coroutines.flow.Flow
@@ -47,7 +48,13 @@ class SystemLocalePreferenceRepository(
 
     override fun supportedLocaleTags(): List<String> = SUPPORTED_LOCALE_TAGS
 
+    /**
+     * The `SDK_INT` check is written inline rather than delegated to [isPerAppLanguageSupported]:
+     * lint cannot follow a version check through an interface override, so only an inline one makes
+     * [LocaleManager] provably unreachable below API 33 instead of merely unreachable in practice.
+     */
     override suspend fun setLocaleTag(tag: String?) {
+        if (Build.VERSION.SDK_INT < Build.VERSION_CODES.TIRAMISU) return
         val localeManager = localeManager() ?: return
         val locales =
             tag
@@ -63,10 +70,6 @@ class SystemLocalePreferenceRepository(
         return if (locales.isEmpty) null else locales[0]?.toLanguageTag()
     }
 
-    private fun localeManager(): LocaleManager? =
-        if (isPerAppLanguageSupported()) {
-            context.getSystemService(LocaleManager::class.java)
-        } else {
-            null
-        }
+    @RequiresApi(Build.VERSION_CODES.TIRAMISU)
+    private fun localeManager(): LocaleManager? = context.getSystemService(LocaleManager::class.java)
 }
