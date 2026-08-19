@@ -1,9 +1,36 @@
 # ShakeMorseLamp
 
+<p align="center">
+  <a href="https://play.google.com/store/apps/details?id=com.handysparksoft.shakelamp">
+    <img alt="Get it on Google Play"
+         src="https://play.google.com/intl/en_us/badges/static/images/badges/en_badge_web_generic.png"
+         height="76" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://morseshakelamp.web.app/"><img alt="Website"
+    src="https://img.shields.io/badge/Website-morseshakelamp.web.app-FFA000?style=for-the-badge&logo=firebase&logoColor=white" /></a>
+</p>
+
+<p align="center">
+  <img alt="Kotlin" src="https://img.shields.io/badge/Kotlin-2.4-7F52FF?logo=kotlin&logoColor=white" />
+  <img alt="Jetpack Compose" src="https://img.shields.io/badge/Jetpack_Compose-Material_3-4285F4?logo=jetpackcompose&logoColor=white" />
+  <img alt="min SDK 30" src="https://img.shields.io/badge/min_SDK-30-3DDC84?logo=android&logoColor=white" />
+  <img alt="7 languages" src="https://img.shields.io/badge/languages-7-informational" />
+</p>
+
 An Android app that turns your phone into a Morse code flashlight: control the torch directly,
 type a message and transmit it as Morse code blinks, turn the light on with a shake, and trigger
 an emergency SOS from the notification shade. Designs are sourced from Google Stitch and Claude,
 then implemented as Jetpack Compose UI.
+
+<p align="center">
+  <img alt="Flashlight screen" src="docs/google-play/images/screenshots/en_flashlight_dark.png" width="23%" />
+  <img alt="Settings screen" src="docs/google-play/images/screenshots/en_settings_dark.png" width="23%" />
+  <img alt="Transmission settings" src="docs/google-play/images/screenshots/en_settings_scrolled_dark.png" width="23%" />
+  <img alt="Widget configuration" src="docs/google-play/images/screenshots/en_widget_config_dark.png" width="23%" />
+</p>
 
 ## Status
 
@@ -21,7 +48,7 @@ then implemented as Jetpack Compose UI.
   instead of the manual Edit Tiles flow
 - ✅ Home screen widget (Glance): pin a quick phrase and transmit it with one tap
 - ✅ Design system (`:core:designsystem`) with light/dark theming, sourced from the Stitch designs
-- ✅ Localized into 7 languages (en, ca, de, es, fr, it, pt) with an in-app language picker
+- ✅ Localized into 7 languages (en, es, pt, it, fr, de, ca) with an in-app language picker
 - 🚧 Morse receiver via camera
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for the full feature list and build order.
@@ -111,9 +138,14 @@ whether the app starts.
 
 ## Website
 
+Live at **[morseshakelamp.web.app](https://morseshakelamp.web.app/)**.
+
 `web-landing/` holds the Firebase-hosted landing page (English and Spanish) plus the privacy policy
 and terms that the Play listing and the app's About screen link to. Deploy with `firebase deploy`
 from that directory.
+
+- Privacy policy: <https://morseshakelamp.web.app/privacy-policy>
+- Terms of use: <https://morseshakelamp.web.app/terms>
 
 ## Module Graph
 
