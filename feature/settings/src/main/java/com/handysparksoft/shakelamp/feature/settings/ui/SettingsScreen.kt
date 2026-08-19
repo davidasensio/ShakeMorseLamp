@@ -529,9 +529,9 @@ private fun formatLoopPause(millis: Long): String {
     if (millis <= 0) return "OFF"
     val totalSeconds = millis / MILLIS_PER_SECOND
     return if (totalSeconds < SECONDS_PER_MINUTE) {
-        "${totalSeconds}S"
+        "$totalSeconds S"
     } else {
-        "${totalSeconds / SECONDS_PER_MINUTE}MIN"
+        "${totalSeconds / SECONDS_PER_MINUTE} MIN"
     }
 }
 

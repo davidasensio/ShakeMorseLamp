@@ -15,6 +15,7 @@ import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.layout.size
 import androidx.compose.foundation.layout.systemBarsPadding
+import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.layout.widthIn
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
@@ -35,6 +36,7 @@ import androidx.compose.ui.platform.LocalHapticFeedback
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextAlign
+import androidx.compose.ui.text.style.TextOverflow
 import androidx.compose.ui.tooling.preview.PreviewLightDark
 import androidx.compose.ui.unit.dp
 import com.handysparksoft.shakelamp.core.designsystem.R
@@ -113,6 +115,7 @@ private fun statusLabel(uiState: FlashlightUiState): String =
         uiState.isTransmitting -> stringResource(FlashlightR.string.flashlight_status_transmitting)
         uiState.isOn && uiState.autoOffRemainingMillis != null ->
             stringResource(FlashlightR.string.flashlight_status_auto_off)
+
         uiState.isOn -> stringResource(FlashlightR.string.flashlight_status_emitting_light)
         else -> stringResource(FlashlightR.string.flashlight_status_ready)
     }
@@ -235,7 +238,12 @@ private fun PowerIcon(
 ) {
     if (isOn) {
         val glowBrush = Brush.radialGradient(listOf(glowColor.copy(alpha = 0.5f), Color.Transparent))
-        Box(modifier = Modifier.size(PowerIconGlowSize).background(brush = glowBrush, shape = CircleShape))
+        Box(
+            modifier =
+                Modifier
+                    .size(PowerIconGlowSize)
+                    .background(brush = glowBrush, shape = CircleShape),
+        )
     }
     Icon(
         painter = painterResource(R.drawable.ic_power),
@@ -263,6 +271,7 @@ private fun AutoOffTimerCard(
             Row(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.spacedBy(Spacing.Unit),
+                modifier = Modifier.weight(1f),
             ) {
                 Icon(
                     painter = painterResource(R.drawable.ic_timer),
@@ -273,8 +282,11 @@ private fun AutoOffTimerCard(
                     text = stringResource(FlashlightR.string.flashlight_autooff_timer_title),
                     style = MaterialTheme.typography.bodyMedium,
                     color = MaterialTheme.colorScheme.onSurface,
+                    maxLines = 1,
+                    overflow = TextOverflow.Ellipsis,
                 )
             }
+            Spacer(Modifier.width(Spacing.Gutter))
             Text(
                 text = formatTimerDuration(timerMinutes),
                 style = MaterialTheme.typography.labelSmall,
@@ -447,7 +459,10 @@ private fun HistorySection(
     if (history.isEmpty()) return
     Column(modifier = modifier.padding(top = Spacing.Gutter)) {
         Row(
-            modifier = Modifier.fillMaxWidth().clickable(onClick = onToggleExpanded),
+            modifier =
+                Modifier
+                    .fillMaxWidth()
+                    .clickable(onClick = onToggleExpanded),
             horizontalArrangement = Arrangement.SpaceBetween,
             verticalAlignment = Alignment.CenterVertically,
         ) {
