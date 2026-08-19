@@ -120,6 +120,21 @@ The previous version of this listing declared ads. That declaration is editable 
 **App content → Ads** and is meant to describe the *current* app; leaving it saying "contains ads"
 when the app has none is itself the policy problem. There is no ad SDK in this build.
 
+That earlier declaration was accurate for v1, which embedded an AdMob banner and requested
+`INTERNET` and `ACCESS_NETWORK_STATE` to serve it. The archived v1 source in
+[former-app-codebase/](former-app-codebase/) is where to confirm that if the declaration is ever
+questioned.
+
+**v2 never requests `INTERNET`**, in the app manifest or anywhere in the merged one, so it cannot
+contact an ad network. `ACCESS_NETWORK_STATE` *does* still appear in the merged manifest — but it
+is added by `androidx.work:work-runtime` (a Glance transitive dependency), not by an ad SDK. Check
+the merged manifest, not the app's own, before answering any permission question:
+
+```bash
+grep -o 'android.permission.[A-Z_]*' \
+  app/build/intermediates/merged_manifests/release/processReleaseManifest/AndroidManifest.xml | sort -u
+```
+
 ## Store listing links
 
 Both are served by the Firebase site in `web-landing/` (project `morseshakelamp`) and are the same

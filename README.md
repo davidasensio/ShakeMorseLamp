@@ -26,6 +26,14 @@ then implemented as Jetpack Compose UI.
 
 See [docs/ROADMAP.md](docs/ROADMAP.md) for the full feature list and build order.
 
+## History
+
+This app replaces **ShakeLamp v1** (2015, Java, flashlight + shake only) and publishes over the
+same Play listing under the same `applicationId`. The v1 source is archived at
+[docs/former-app-codebase/](docs/former-app-codebase/) for reference — it is not built, tested or
+depended on by anything here. Its README explains what changed, and why v1's ads and permissions
+still matter when answering Play Console questions about the listing.
+
 ## Architecture
 
 Clean Architecture (UI → Domain → Data) with MVI on the UI layer, packages-by-feature inside each
