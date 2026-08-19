@@ -29,7 +29,7 @@ class LanguageViewModel(
     init {
         viewModelScope.launch {
             localePreferenceRepository.observeSelectedLocaleTag().collect { tag ->
-                _uiState.update { it.copy(selectedTag = tag) }
+                _uiState.update { it.copy(selectedTag = tag, options = localeOptions(tag)) }
             }
         }
     }
@@ -55,9 +55,16 @@ class LanguageViewModel(
     /**
      * Names each language in the locale the app is currently rendering in - taken from the
      * repository rather than [Locale.getDefault], which lags behind a per-app language switch.
+     *
+     * Recomputed on every tag change, not once at construction: changing the locale recreates the
+     * Activity but *retains* this ViewModel, so labels built in the constructor stay in the
+     * previous language until the app is restarted - the picker then reads as if nothing happened.
+     * [selectedTag] is preferred over the repository because it is already the newly chosen value,
+     * which avoids depending on the platform having published the override by the time this runs.
      */
-    private fun localeOptions(): List<LocaleOption> {
-        val displayLocale = Locale.forLanguageTag(localePreferenceRepository.currentDisplayLocaleTag())
+    private fun localeOptions(selectedTag: String? = null): List<LocaleOption> {
+        val displayLocale =
+            Locale.forLanguageTag(selectedTag ?: localePreferenceRepository.currentDisplayLocaleTag())
         return localePreferenceRepository.supportedLocaleTags().map { tag ->
             LocaleOption(
                 tag = tag,

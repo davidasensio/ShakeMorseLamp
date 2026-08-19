@@ -12,7 +12,7 @@ import kotlinx.coroutines.flow.asStateFlow
 import org.koin.core.annotation.Single
 import java.util.Locale
 
-private val SUPPORTED_LOCALE_TAGS = listOf("en", "ca", "de", "es", "fr", "it", "pt")
+private val SUPPORTED_LOCALE_TAGS = listOf("en", "es", "pt", "it", "fr", "de", "ca")
 
 /**
  * Per-app language backed by the platform [LocaleManager] (API 33+), which is the single source of
